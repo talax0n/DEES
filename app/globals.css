@@ -132,6 +132,8 @@
     --color-gray-text: var(--gray-text);
     --color-gray-line: var(--gray-line);
 
+    --font-serif: var(--font-serif);
+
     --radius-sm: calc(var(--radius) - 4px);
     --radius-md: calc(var(--radius) - 2px);
     --radius-lg: var(--radius);

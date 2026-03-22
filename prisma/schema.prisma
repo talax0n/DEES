@@ -1,0 +1,76 @@
+generator client {
+  provider = "prisma-client-js"
+  output   = "../node_modules/.prisma/client"
+}
+
+datasource db {
+  provider = "postgresql"
+}
+
+model JadwalIbadah {
+  id            String   @id @default(cuid())
+  namaIbadah    String
+  hari          String
+  waktu         String
+  lokasi        String
+  metode        String   @default("offline")
+  linkStreaming  String?
+  isActive      Boolean  @default(true)
+  createdAt     DateTime @default(now())
+  updatedAt     DateTime @updatedAt
+
+  @@map("jadwal_ibadah")
+}
+
+model PelayananKategorial {
+  id           String  @id @default(cuid())
+  nama         String
+  singkatan    String  @unique
+  deskripsi    String
+  jadwal       String
+  kontakPerson String?
+  iconUrl      String?
+  order        Int     @default(0)
+
+  @@map("pelayanan_kategorial")
+}
+
+model Unduhan {
+  id        String   @id @default(cuid())
+  judul     String
+  tipe      String   // "TAIB" | "WARTA"
+  tanggal   DateTime
+  fileUrl   String
+  fileSize  Int?
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@map("unduhan")
+}
+
+model Kegiatan {
+  id          String        @id @default(cuid())
+  judul       String
+  slug        String        @unique
+  deskripsi   String
+  tanggal     DateTime
+  lokasi      String?
+  coverImage  String?
+  isPublished Boolean       @default(false)
+  createdAt   DateTime      @default(now())
+  updatedAt   DateTime      @updatedAt
+  galeri      GaleriImage[]
+
+  @@map("kegiatan")
+}
+
+model GaleriImage {
+  id        String   @id @default(cuid())
+  url       String
+  caption   String?
+  order     Int      @default(0)
+  kegiatan  Kegiatan @relation(fields: [kegiatanId], references: [id], onDelete: Cascade)
+  kegiatanId String
+
+  @@map("galeri_image")
+}
