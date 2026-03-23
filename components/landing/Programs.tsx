@@ -135,10 +135,10 @@ export function Programs() {
               {pelkat.map((item) => (
                 <div
                   key={item.id}
-                  className="relative flex w-48 h-48 sm:w-64 sm:h-64 cursor-pointer overflow-hidden rounded-3xl border border-gray-line bg-white hover:shadow-xl transition-all duration-300 items-center justify-center p-6 group"
+                  className="group/card relative flex w-48 h-48 sm:w-64 sm:h-64 cursor-pointer overflow-hidden rounded-3xl border border-gray-line bg-white hover:shadow-xl transition-all duration-300 items-center justify-center p-6"
                 >
-                  <div className="absolute inset-0 bg-gradient-to-br from-navy/5 to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-300" />
-                  <div className="relative w-full h-full transform group-hover:scale-105 transition-transform duration-300">
+                  <div className="absolute inset-0 bg-gradient-to-br from-navy/5 to-transparent opacity-0 group-hover/card:opacity-100 transition-opacity duration-300" />
+                  <div className="relative w-full h-full transform group-hover/card:scale-105 transition-transform duration-300">
                     <Image
                       src={item.icon}
                       alt={`Logo ${item.nama}`}
@@ -147,9 +147,9 @@ export function Programs() {
                       className="object-contain"
                     />
                   </div>
-                  <div className="absolute bottom-4 left-0 right-0 text-center opacity-0 group-hover:opacity-100 transition-opacity duration-300">
+                  <div className="absolute bottom-4 left-0 right-0 text-center opacity-0 group-hover/card:opacity-100 transition-opacity duration-300">
                     <Badge variant="secondary" className="bg-navy text-white hover:bg-navy-mid border-none shadow-sm">
-                      Detail
+                      {item.nama}
                     </Badge>
                   </div>
                 </div>
