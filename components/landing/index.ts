@@ -6,3 +6,4 @@ export { Downloads } from "./Downloads";
 export { Activities } from "./Activities";
 export { Contact } from "./Contact";
 export { Footer } from "./Footer";
+export { AnimatedSection } from "./AnimatedSection";

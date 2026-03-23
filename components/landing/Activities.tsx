@@ -1,35 +1,41 @@
-import { Badge } from "@/components/ui/badge";
-import { ArrowUpRight, ImageIcon } from "lucide-react";
-import { kegiatan } from "@/lib/data";
+"use client"
+
+import { motion, useReducedMotion } from "framer-motion"
+import { Badge } from "@/components/ui/badge"
+import { ArrowUpRight, ImageIcon } from "lucide-react"
+import { kegiatan } from "@/lib/data"
+import { AnimatedSection } from "./AnimatedSection"
 
 export function Activities() {
+  const shouldReduceMotion = useReducedMotion()
+
   const formatDate = (dateStr: string) => {
-    const date = new Date(dateStr);
+    const date = new Date(dateStr)
     return date.toLocaleDateString("id-ID", {
       day: "numeric",
       month: "long",
       year: "numeric",
-    });
-  };
+    })
+  }
 
   const getCategoryColor = (kategori: string) => {
     switch (kategori) {
       case "Ibadah":
-        return "bg-navy text-white";
+        return "bg-navy text-white"
       case "Sosial":
-        return "bg-green-600 text-white";
+        return "bg-green-600 text-white"
       case "Pelkat":
-        return "bg-gold text-white";
+        return "bg-gold text-white"
       default:
-        return "bg-gray-500 text-white";
+        return "bg-gray-500 text-white"
     }
-  };
+  }
 
   return (
     <section id="activities" className="w-full py-20 lg:py-32 bg-white">
       <div className="w-full px-4 sm:px-6 lg:px-8 xl:px-12">
         {/* Header row */}
-        <div className="flex flex-col sm:flex-row sm:items-end sm:justify-between gap-4 mb-10">
+        <AnimatedSection className="flex flex-col sm:flex-row sm:items-end sm:justify-between gap-4 mb-10">
           <div className="space-y-4">
             {/* Section pill */}
             <Badge
@@ -53,19 +59,31 @@ export function Activities() {
             Lihat Semua
             <ArrowUpRight className="w-4 h-4 group-hover:translate-x-0.5 group-hover:-translate-y-0.5 transition-transform" />
           </a>
-        </div>
+        </AnimatedSection>
 
         {/* Card grid */}
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
           {kegiatan.map((item, index) => {
-            const isFeatured = index === 0;
+            const isFeatured = index === 0
 
             return (
-              <div
+              <motion.div
                 key={item.id}
-                className={`group rounded-3xl overflow-hidden bg-white border border-gray-line hover:shadow-xl transition-all duration-300 hover:scale-[1.02] ${
+                className={`group rounded-3xl overflow-hidden bg-white border border-gray-line ${
                   isFeatured ? "md:col-span-2 lg:col-span-2" : ""
                 }`}
+                initial={{ opacity: 0, y: shouldReduceMotion ? 0 : 30 }}
+                whileInView={{ opacity: 1, y: 0 }}
+                viewport={{ once: true, margin: "-80px" }}
+                transition={{
+                  duration: shouldReduceMotion ? 0 : 0.5,
+                  delay: shouldReduceMotion ? 0 : index * 0.1,
+                  ease: "easeOut",
+                }}
+                whileHover={{
+                  y: shouldReduceMotion ? 0 : -4,
+                  boxShadow: "0 20px 40px rgba(0,0,0,0.12)",
+                }}
               >
                 {/* Image placeholder */}
                 <div
@@ -97,11 +115,11 @@ export function Activities() {
                     {item.deskripsi}
                   </p>
                 </div>
-              </div>
-            );
+              </motion.div>
+            )
           })}
         </div>
       </div>
     </section>
-  );
+  )
 }

@@ -1,5 +1,6 @@
 import { Navbar } from "@/components/landing/Navbar";
 import { Footer } from "@/components/landing/Footer";
+import { PageTransition } from "@/components/landing/PageTransition";
 
 export default function LandingLayout({
   children,
@@ -9,7 +10,7 @@ export default function LandingLayout({
   return (
     <>
       <Navbar />
-      {children}
+      <PageTransition>{children}</PageTransition>
       <Footer />
     </>
   );

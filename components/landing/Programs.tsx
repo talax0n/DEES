@@ -1,6 +1,7 @@
 "use client";
 
 import { useState } from "react";
+import { motion, AnimatePresence, useReducedMotion } from "framer-motion";
 import { Badge } from "@/components/ui/badge";
 import {
   ArrowUpRight,
@@ -15,6 +16,7 @@ import {
   Play,
 } from "lucide-react";
 import { jadwalIbadah, pelkat } from "@/lib/data";
+import { AnimatedSection } from "./AnimatedSection";
 
 const iconMap: Record<string, React.ComponentType<{ className?: string }>> = {
   Baby,
@@ -27,6 +29,7 @@ const iconMap: Record<string, React.ComponentType<{ className?: string }>> = {
 
 export function Programs() {
   const [expandedPelkat, setExpandedPelkat] = useState<string>("1");
+  const shouldReduceMotion = useReducedMotion();
 
   return (
     <section id="programs" className="w-full py-20 lg:py-32 bg-white">
@@ -34,7 +37,7 @@ export function Programs() {
         {/* TOP HALF - Two columns */}
         <div className="grid grid-cols-1 lg:grid-cols-2 gap-8 lg:gap-12 mb-16">
           {/* Left - Large photo card */}
-          <div className="relative">
+          <AnimatedSection>
             <div className="rounded-3xl overflow-hidden aspect-[4/3] bg-gradient-to-br from-navy to-navy-mid relative">
               {/* Placeholder for congregation image */}
               <div className="absolute inset-0 flex items-center justify-center">
@@ -48,10 +51,10 @@ export function Programs() {
                 </Badge>
               </div>
             </div>
-          </div>
+          </AnimatedSection>
 
           {/* Right - Content */}
-          <div className="space-y-6">
+          <AnimatedSection className="space-y-6" delay={0.15}>
             {/* Section pill */}
             <Badge
               variant="default"
@@ -68,10 +71,18 @@ export function Programs() {
 
             {/* Service times grid */}
             <div className="grid grid-cols-2 gap-4">
-              {jadwalIbadah.map((jadwal) => (
-                <div
+              {jadwalIbadah.map((jadwal, i) => (
+                <motion.div
                   key={jadwal.id}
                   className="relative rounded-2xl border border-gray-line p-4 hover:shadow-md transition-shadow bg-white"
+                  initial={{ opacity: 0, y: shouldReduceMotion ? 0 : 20 }}
+                  whileInView={{ opacity: 1, y: 0 }}
+                  viewport={{ once: true, margin: "-100px" }}
+                  transition={{
+                    duration: shouldReduceMotion ? 0 : 0.4,
+                    delay: shouldReduceMotion ? 0 : 0.3 + i * 0.08,
+                    ease: "easeOut",
+                  }}
                 >
                   <div className="absolute top-3 right-3">
                     <ArrowUpRight className="w-4 h-4 text-gray-text" />
@@ -88,7 +99,7 @@ export function Programs() {
                       <span className="text-xs text-red-500">Live</span>
                     </div>
                   )}
-                </div>
+                </motion.div>
               ))}
             </div>
 
@@ -108,11 +119,11 @@ export function Programs() {
               mingguan, persekutuan doa, pendalaman Alkitab, dan pertemuan
               lintas usia.
             </p>
-          </div>
+          </AnimatedSection>
         </div>
 
         {/* BOTTOM HALF - Pelkat List */}
-        <div className="border-t border-gray-line pt-12">
+        <AnimatedSection className="border-t border-gray-line pt-12" delay={0.1}>
           <h3 className="font-semibold text-navy text-lg mb-6">
             Pelkat tahun ini
           </h3>
@@ -146,41 +157,51 @@ export function Programs() {
                         </span>
                       </div>
                     </div>
-                    <div
-                      className={`w-8 h-8 rounded-full border border-gray-line flex items-center justify-center transition-all group-hover:border-gold group-hover:bg-gold ${
+                    <motion.div
+                      className={`w-8 h-8 rounded-full border border-gray-line flex items-center justify-center transition-colors group-hover:border-gold group-hover:bg-gold ${
                         isExpanded ? "bg-gold border-gold" : ""
                       }`}
+                      animate={{ rotate: isExpanded ? 90 : 0 }}
+                      transition={{ duration: shouldReduceMotion ? 0 : 0.2 }}
                     >
-                      <ChevronRight
-                        className={`w-4 h-4 text-navy transition-transform ${
-                          isExpanded
-                            ? "rotate-90"
-                            : "group-hover:translate-x-0.5"
-                        }`}
-                      />
-                    </div>
+                      <ChevronRight className="w-4 h-4 text-navy" />
+                    </motion.div>
                   </button>
 
-                  {/* Expanded content */}
-                  {isExpanded && (
-                    <div className="px-4 pb-4 pl-16">
-                      <div className="bg-white rounded-xl p-4 shadow-sm">
-                        <div className="flex items-center gap-2 mb-2">
-                          <Badge variant="secondary" className="text-xs">
-                            {item.targetGroup}
-                          </Badge>
+                  {/* Expanded content with AnimatePresence */}
+                  <AnimatePresence initial={false}>
+                    {isExpanded && (
+                      <motion.div
+                        key="content"
+                        initial={{ height: 0, opacity: 0 }}
+                        animate={{ height: "auto", opacity: 1 }}
+                        exit={{ height: 0, opacity: 0 }}
+                        transition={{
+                          height: { duration: shouldReduceMotion ? 0 : 0.3, ease: "easeOut" },
+                          opacity: { duration: shouldReduceMotion ? 0 : 0.2 },
+                        }}
+                        style={{ overflow: "hidden" }}
+                      >
+                        <div className="px-4 pb-4 pl-16">
+                          <div className="bg-white rounded-xl p-4 shadow-sm">
+                            <div className="flex items-center gap-2 mb-2">
+                              <Badge variant="secondary" className="text-xs">
+                                {item.targetGroup}
+                              </Badge>
+                            </div>
+                            <p className="text-gray-text text-sm leading-relaxed">
+                              {item.deskripsi}
+                            </p>
+                          </div>
                         </div>
-                        <p className="text-gray-text text-sm leading-relaxed">
-                          {item.deskripsi}
-                        </p>
-                      </div>
-                    </div>
-                  )}
+                      </motion.div>
+                    )}
+                  </AnimatePresence>
                 </div>
               );
             })}
           </div>
-        </div>
+        </AnimatedSection>
       </div>
     </section>
   );

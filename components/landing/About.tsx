@@ -1,5 +1,33 @@
+"use client"
+
+import { useEffect, useRef, useState } from 'react'
+import { motion, useInView, useReducedMotion, animate } from 'framer-motion'
 import { Badge } from '@/components/ui/badge'
 import { ArrowUpRight, Cross } from 'lucide-react'
+import { AnimatedSection } from './AnimatedSection'
+
+function AnimatedCounter({ target, suffix = "" }: { target: number; suffix?: string }) {
+  const [count, setCount] = useState(0)
+  const ref = useRef<HTMLSpanElement>(null)
+  const inView = useInView(ref, { once: true, margin: "-100px" })
+  const shouldReduceMotion = useReducedMotion()
+
+  useEffect(() => {
+    if (!inView) return
+    if (shouldReduceMotion) {
+      setCount(target)
+      return
+    }
+    const controls = animate(0, target, {
+      duration: 2,
+      ease: "easeOut",
+      onUpdate: (v) => setCount(Math.round(v)),
+    })
+    return controls.stop
+  }, [inView, target, shouldReduceMotion])
+
+  return <span ref={ref}>{count}{suffix}</span>
+}
 
 export function About() {
   return (
@@ -7,7 +35,7 @@ export function About() {
       <div className="w-full px-4 sm:px-6 lg:px-8 xl:px-12">
         <div className="grid grid-cols-1 lg:grid-cols-12 gap-8 lg:gap-12 items-center">
           {/* Left column - 40% */}
-          <div className="lg:col-span-5 space-y-6">
+          <AnimatedSection className="lg:col-span-5 space-y-6">
             {/* Section pill */}
             <Badge
               variant="default"
@@ -32,16 +60,18 @@ export function About() {
             </p>
 
             {/* CTA Link */}
-            <a
+            <motion.a
               href="#"
               className="inline-flex items-center gap-2 text-navy font-medium hover:text-gold transition-colors group"
+              whileHover={{ x: 4 }}
+              transition={{ type: "spring", stiffness: 300 }}
             >
               Pelajari Lebih
               <span className="w-8 h-8 rounded-full bg-navy text-white flex items-center justify-center group-hover:bg-gold transition-colors">
                 <ArrowUpRight className="w-4 h-4" />
               </span>
-            </a>
-          </div>
+            </motion.a>
+          </AnimatedSection>
 
           {/* Center decorative element */}
           <div className="hidden lg:flex lg:col-span-1 justify-center">
@@ -54,7 +84,7 @@ export function About() {
           </div>
 
           {/* Right column - 60% */}
-          <div className="lg:col-span-6 relative">
+          <AnimatedSection className="lg:col-span-6 relative" delay={0.2}>
             {/* Main image card with rotation */}
             <div
               className="relative rounded-3xl overflow-hidden shadow-xl aspect-[4/3]"
@@ -74,11 +104,11 @@ export function About() {
               className="absolute -bottom-6 -left-6 bg-white rounded-2xl shadow-lg px-6 py-4 z-10"
             >
               <p className="font-serif text-2xl lg:text-3xl font-semibold text-navy">
-                700<span className="text-gold">+</span>
+                <AnimatedCounter target={700} suffix="+" />
               </p>
               <p className="text-gray-text text-sm">Keluarga Jemaat</p>
             </div>
-          </div>
+          </AnimatedSection>
         </div>
       </div>
     </section>

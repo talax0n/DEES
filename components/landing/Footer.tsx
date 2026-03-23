@@ -1,3 +1,6 @@
+"use client"
+
+import { motion, useReducedMotion } from 'framer-motion'
 import { Cross, Youtube, Instagram } from 'lucide-react'
 
 const navLinks = [
@@ -21,6 +24,8 @@ const socialLinks = [
 ]
 
 export function Footer() {
+  const shouldReduceMotion = useReducedMotion()
+
   return (
     <footer className="w-full bg-navy pt-16 lg:pt-20 pb-8">
       <div className="w-full px-4 sm:px-6 lg:px-8 xl:px-12">
@@ -85,14 +90,16 @@ export function Footer() {
               {socialLinks.map((link) => {
                 const Icon = link.icon
                 return (
-                  <a
+                  <motion.a
                     key={link.label}
                     href={link.href}
                     className="w-10 h-10 rounded-full bg-white/10 flex items-center justify-center hover:bg-gold transition-colors"
                     aria-label={link.label}
+                    whileHover={{ scale: shouldReduceMotion ? 1 : 1.15 }}
+                    transition={{ type: "spring", stiffness: 400, damping: 10 }}
                   >
                     <Icon className="w-5 h-5 text-white" />
-                  </a>
+                  </motion.a>
                 )
               })}
             </div>

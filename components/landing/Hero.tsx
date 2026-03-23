@@ -1,6 +1,24 @@
-import { ArrowDown } from "lucide-react";
+"use client"
+
+import { motion, useReducedMotion, type Transition } from "framer-motion"
+import { ArrowDown } from "lucide-react"
 
 export function Hero() {
+  const shouldReduceMotion = useReducedMotion()
+
+  const fadeUp = (delay: number) => {
+    const transition: Transition = {
+      duration: shouldReduceMotion ? 0 : 0.6,
+      ease: "easeOut",
+      delay: shouldReduceMotion ? 0 : delay,
+    }
+    return {
+      initial: { opacity: 0, y: shouldReduceMotion ? 0 : 30 },
+      animate: { opacity: 1, y: 0 },
+      transition,
+    }
+  }
+
   return (
     <section className="relative w-full h-screen min-h-[600px] overflow-hidden">
       {/* Background Image with Gradient Overlay */}
@@ -24,8 +42,11 @@ export function Hero() {
 
       {/* Content */}
       <div className="relative z-10 w-full h-full px-4 sm:px-6 lg:px-8 xl:px-12">
-        {/* Top-left overlay */}
-        <div className="absolute top-20 lg:top-24 left-4 sm:left-6 lg:left-8 xl:left-12 max-w-xs">
+        {/* Top-left overlay - welcome quote */}
+        <motion.div
+          className="absolute top-20 lg:top-24 left-4 sm:left-6 lg:left-8 xl:left-12 max-w-xs"
+          {...fadeUp(0.3)}
+        >
           {/* Avatar stack */}
           <div className="flex items-center mb-4">
             <div className="w-10 h-10 rounded-full bg-gold/80 flex items-center justify-center text-white text-xs font-semibold border-2 border-white/30 -ml-0">
@@ -40,31 +61,35 @@ export function Hero() {
           </div>
           {/* Welcome text */}
           <p className="text-white/90 text-sm lg:text-base italic leading-relaxed">
-            `&quot;`Kami menyambut Anda di keluarga rohani kami — tempat di mana
+            &quot;Kami menyambut Anda di keluarga rohani kami — tempat di mana
             hati menemukan kedamaian, jiwa dipenuhi iman, dan setiap langkah
-            membawa Anda lebih dekat pada cahaya kasih Tuhan.`&quot;`
+            membawa Anda lebih dekat pada cahaya kasih Tuhan.&quot;
           </p>
-        </div>
+        </motion.div>
 
         {/* Bottom-left headline */}
-        <div className="absolute bottom-12 lg:bottom-16 left-4 sm:left-6 lg:left-8 xl:left-12 max-w-xl">
-          <h1 className="font-serif text-white text-4xl sm:text-5xl lg:text-6xl xl:text-7xl font-medium leading-[1.1] tracking-tight">
-            Selamat datang
-            <br />
-            di keluarga kami.
-            <br />
-            Semua disambut.
-          </h1>
-        </div>
+        <motion.h1
+          className="absolute bottom-12 lg:bottom-16 left-4 sm:left-6 lg:left-8 xl:left-12 max-w-xl font-serif text-white text-4xl sm:text-5xl lg:text-6xl xl:text-7xl font-medium leading-[1.1] tracking-tight"
+          {...fadeUp(0)}
+        >
+          Selamat datang
+          <br />
+          di keluarga kami.
+          <br />
+          Semua disambut.
+        </motion.h1>
 
         {/* Bottom-right scroll indicator */}
-        <div className="absolute bottom-12 lg:bottom-16 right-4 sm:right-6 lg:right-8 xl:right-12 flex flex-col items-center gap-2">
+        <motion.div
+          className="absolute bottom-12 lg:bottom-16 right-4 sm:right-6 lg:right-8 xl:right-12 flex flex-col items-center gap-2"
+          {...fadeUp(0.6)}
+        >
           <span className="text-white/80 text-sm">Scroll Down</span>
-          <div className="w-10 h-10 rounded-full bg-white/10 backdrop-blur-sm flex items-center justify-center animate-bounce-subtle">
+          <div className="w-10 h-10 rounded-full bg-white/10 backdrop-blur-sm flex items-center justify-center animate-bounce">
             <ArrowDown className="w-5 h-5 text-white" />
           </div>
-        </div>
+        </motion.div>
       </div>
     </section>
-  );
+  )
 }

@@ -1,6 +1,7 @@
 "use client"
 
 import { useState } from 'react'
+import { motion, useReducedMotion } from 'framer-motion'
 import { useScrollY } from '@/hooks/useScrollY'
 import { Button } from '@/components/ui/button'
 import { Sheet, SheetContent, SheetTrigger } from '@/components/ui/sheet'
@@ -16,6 +17,7 @@ export function Navbar() {
   const scrollY = useScrollY()
   const [isOpen, setIsOpen] = useState(false)
   const isScrolled = scrollY > 50
+  const shouldReduceMotion = useReducedMotion()
 
   return (
     <header
@@ -28,7 +30,13 @@ export function Navbar() {
       <div className="w-full px-4 sm:px-6 lg:px-8 xl:px-12">
         <nav className="flex items-center justify-between h-16 lg:h-20">
           {/* Logo */}
-          <a href="#" className="flex items-center gap-2 group">
+          <motion.a
+            href="#"
+            className="flex items-center gap-2 group"
+            initial={{ opacity: 0, x: shouldReduceMotion ? 0 : -20 }}
+            animate={{ opacity: 1, x: 0 }}
+            transition={{ duration: shouldReduceMotion ? 0 : 0.5, ease: "easeOut" }}
+          >
             <div className={`w-8 h-8 rounded-full flex items-center justify-center transition-colors ${
               isScrolled ? 'bg-navy' : 'bg-white/20'
             }`}>
@@ -39,10 +47,15 @@ export function Navbar() {
             }`}>
               GPIB Damai Sejahtera
             </span>
-          </a>
+          </motion.a>
 
           {/* Desktop Navigation */}
-          <div className="hidden lg:flex items-center gap-8">
+          <motion.div
+            className="hidden lg:flex items-center gap-8"
+            initial={{ opacity: 0, y: shouldReduceMotion ? 0 : -10 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ duration: shouldReduceMotion ? 0 : 0.5, ease: "easeOut", delay: shouldReduceMotion ? 0 : 0.1 }}
+          >
             {navLinks.map((link) => (
               <a
                 key={link.href}
@@ -54,27 +67,36 @@ export function Navbar() {
                 {link.label}
               </a>
             ))}
-          </div>
+          </motion.div>
 
           {/* Desktop CTA Buttons */}
-          <div className="hidden lg:flex items-center gap-3">
-            <Button
-              variant="outline"
-              className={`rounded-full px-5 py-2 text-sm font-medium transition-all ${
-                isScrolled
-                  ? 'border-navy text-navy hover:bg-navy hover:text-white'
-                  : 'border-white text-white hover:bg-white hover:text-navy'
-              }`}
-            >
-              Hubungi Kami
-            </Button>
-            <Button
-              className="rounded-full px-5 py-2 text-sm font-medium bg-navy text-white hover:bg-navy-mid flex items-center gap-1"
-            >
-              Masuk
-              <ArrowUpRight className="w-4 h-4" />
-            </Button>
-          </div>
+          <motion.div
+            className="hidden lg:flex items-center gap-3"
+            initial={{ opacity: 0, x: shouldReduceMotion ? 0 : 20 }}
+            animate={{ opacity: 1, x: 0 }}
+            transition={{ duration: shouldReduceMotion ? 0 : 0.5, ease: "easeOut", delay: shouldReduceMotion ? 0 : 0.2 }}
+          >
+            <motion.div whileHover={{ scale: shouldReduceMotion ? 1 : 1.02 }}>
+              <Button
+                variant="outline"
+                className={`rounded-full px-5 py-2 text-sm font-medium transition-all ${
+                  isScrolled
+                    ? 'border-navy text-navy hover:bg-navy hover:text-white'
+                    : 'border-white text-white hover:bg-white hover:text-navy'
+                }`}
+              >
+                Hubungi Kami
+              </Button>
+            </motion.div>
+            <motion.div whileHover={{ scale: shouldReduceMotion ? 1 : 1.02 }}>
+              <Button
+                className="rounded-full px-5 py-2 text-sm font-medium bg-navy text-white hover:bg-navy-mid flex items-center gap-1"
+              >
+                Masuk
+                <ArrowUpRight className="w-4 h-4" />
+              </Button>
+            </motion.div>
+          </motion.div>
 
           {/* Mobile Menu */}
           <Sheet open={isOpen} onOpenChange={setIsOpen}>
