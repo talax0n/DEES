@@ -1,7 +1,14 @@
 "use client"
 
-import { useState } from "react"
-import { jadwalIbadah } from "@/lib/data"
+import { useEffect, useState } from "react"
+import { useForm } from "react-hook-form"
+import { zodResolver } from "@hookform/resolvers/zod"
+import { z } from "zod"
+import { toast } from "sonner"
+import { jadwalSchema } from "@/lib/validations"
+
+type JadwalInput = z.input<typeof jadwalSchema>
+type JadwalOutput = z.output<typeof jadwalSchema>
 import { PageHeader } from "@/components/admin/PageHeader"
 import { DeleteDialog } from "@/components/admin/DeleteDialog"
 import { Button } from "@/components/ui/button"
@@ -33,51 +40,77 @@ import {
 
 type Jadwal = {
   id: string
-  jenis: string
+  namaIbadah: string
+  hari: string
   waktu: string
-  metode: "Luring" | "Daring" | "Luring & Live Streaming"
-  highlight: boolean
-  streamingUrl?: string
+  lokasi: string
+  metode: string
+  linkStreaming: string | null
+  isActive: boolean
 }
 
-type FormState = {
-  jenis: string
-  waktu: string
-  metode: "Luring" | "Daring" | "Luring & Live Streaming"
-  streamingUrl: string
-  active: boolean
-}
-
-const emptyForm: FormState = {
-  jenis: "",
-  waktu: "",
-  metode: "Luring",
-  streamingUrl: "",
-  active: true,
+const METODE_LABEL: Record<string, string> = {
+  offline: "Luring",
+  online: "Daring",
+  hybrid: "Hybrid",
 }
 
 export default function AdminJadwalPage() {
-  const [data, setData] = useState<Jadwal[]>(jadwalIbadah)
+  const [data, setData] = useState<Jadwal[]>([])
+  const [loading, setLoading] = useState(true)
   const [formOpen, setFormOpen] = useState(false)
   const [deleteOpen, setDeleteOpen] = useState(false)
   const [editingId, setEditingId] = useState<string | null>(null)
   const [deleteId, setDeleteId] = useState<string | null>(null)
-  const [form, setForm] = useState<FormState>(emptyForm)
+  const [saving, setSaving] = useState(false)
+  const [deleting, setDeleting] = useState(false)
+
+  const {
+    register,
+    handleSubmit,
+    reset,
+    watch,
+    setValue,
+    formState: { errors },
+  } = useForm<JadwalInput, unknown, JadwalOutput>({
+    resolver: zodResolver(jadwalSchema),
+    defaultValues: { metode: "offline", isActive: true, linkStreaming: "" },
+  })
+
+  const metode = watch("metode")
+  const isActive = watch("isActive")
+
+  async function fetchData() {
+    setLoading(true)
+    try {
+      const res = await fetch("/api/jadwal")
+      const json = await res.json()
+      if (json.success) setData(json.data)
+    } catch {
+      toast.error("Gagal memuat data")
+    } finally {
+      setLoading(false)
+    }
+  }
+
+  useEffect(() => { fetchData() }, [])
 
   function openAdd() {
     setEditingId(null)
-    setForm(emptyForm)
+    reset({ namaIbadah: "", hari: "", waktu: "", lokasi: "", metode: "offline", linkStreaming: "", isActive: true })
     setFormOpen(true)
   }
 
   function openEdit(jadwal: Jadwal) {
     setEditingId(jadwal.id)
-    setForm({
-      jenis: jadwal.jenis,
+    reset({
+      namaIbadah: jadwal.namaIbadah,
+      hari: jadwal.hari,
       waktu: jadwal.waktu,
-      metode: jadwal.metode,
-      streamingUrl: jadwal.streamingUrl ?? "",
-      active: jadwal.highlight,
+      lokasi: jadwal.lokasi,
+      metode: jadwal.metode as "offline" | "online" | "hybrid",
+      linkStreaming: jadwal.linkStreaming ?? "",
+      isActive: jadwal.isActive,
     })
     setFormOpen(true)
   }
@@ -87,36 +120,43 @@ export default function AdminJadwalPage() {
     setDeleteOpen(true)
   }
 
-  function handleSave() {
-    if (editingId) {
-      // TODO: Call PATCH /api/jadwal/:id
-      setData((prev) =>
-        prev.map((j) =>
-          j.id === editingId
-            ? { ...j, jenis: form.jenis, waktu: form.waktu, metode: form.metode, streamingUrl: form.streamingUrl || undefined, highlight: form.active }
-            : j
-        )
-      )
-    } else {
-      // TODO: Call POST /api/jadwal
-      const newItem: Jadwal = {
-        id: String(Date.now()),
-        jenis: form.jenis,
-        waktu: form.waktu,
-        metode: form.metode,
-        streamingUrl: form.streamingUrl || undefined,
-        highlight: form.active,
-      }
-      setData((prev) => [...prev, newItem])
+  const onSubmit = async (values: JadwalOutput) => {
+    setSaving(true)
+    try {
+      const url = editingId ? `/api/jadwal/${editingId}` : "/api/jadwal"
+      const method = editingId ? "PUT" : "POST"
+      const res = await fetch(url, {
+        method,
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify(values),
+      })
+      const json = await res.json()
+      if (!json.success) throw new Error(json.message)
+      toast.success(json.message)
+      setFormOpen(false)
+      fetchData()
+    } catch (err) {
+      toast.error(err instanceof Error ? err.message : "Gagal menyimpan jadwal")
+    } finally {
+      setSaving(false)
     }
-    setFormOpen(false)
   }
 
-  function handleDelete() {
+  async function handleDelete() {
     if (!deleteId) return
-    // TODO: Call DELETE /api/jadwal/:id
-    setData((prev) => prev.filter((j) => j.id !== deleteId))
-    setDeleteId(null)
+    setDeleting(true)
+    try {
+      const res = await fetch(`/api/jadwal/${deleteId}`, { method: "DELETE" })
+      const json = await res.json()
+      if (!json.success) throw new Error(json.message)
+      toast.success(json.message)
+      setDeleteId(null)
+      fetchData()
+    } catch (err) {
+      toast.error(err instanceof Error ? err.message : "Gagal menghapus jadwal")
+    } finally {
+      setDeleting(false)
+    }
   }
 
   return (
@@ -135,160 +175,141 @@ export default function AdminJadwalPage() {
         <Table>
           <TableHeader>
             <TableRow className="bg-muted/40">
-              <TableHead>Jenis Ibadah</TableHead>
-              <TableHead>Waktu</TableHead>
+              <TableHead>Nama Ibadah</TableHead>
+              <TableHead>Hari / Waktu</TableHead>
+              <TableHead>Lokasi</TableHead>
               <TableHead>Metode</TableHead>
-              <TableHead>Streaming</TableHead>
               <TableHead>Status</TableHead>
               <TableHead className="w-24">Aksi</TableHead>
             </TableRow>
           </TableHeader>
           <TableBody>
-            {data.map((jadwal) => (
-              <TableRow key={jadwal.id}>
-                <TableCell className="font-medium">{jadwal.jenis}</TableCell>
-                <TableCell>{jadwal.waktu}</TableCell>
-                <TableCell>
-                  <span
-                    className={`inline-flex items-center rounded-full px-2 py-0.5 text-xs font-medium ${
-                      jadwal.metode === "Daring"
-                        ? "bg-blue-100 text-blue-700"
-                        : "bg-gray-100 text-gray-700"
-                    }`}
-                  >
-                    {jadwal.metode}
-                  </span>
-                </TableCell>
-                <TableCell>
-                  {jadwal.streamingUrl ? (
-                    <a
-                      href={jadwal.streamingUrl}
-                      target="_blank"
-                      rel="noopener noreferrer"
-                      className="text-xs text-blue-600 hover:underline truncate max-w-[120px] block"
-                    >
-                      {jadwal.streamingUrl}
-                    </a>
-                  ) : (
-                    <span className="text-xs text-muted-foreground">—</span>
-                  )}
-                </TableCell>
-                <TableCell>
-                  <span className="inline-flex items-center rounded-full bg-green-100 px-2 py-0.5 text-xs font-medium text-green-700">
-                    Aktif
-                  </span>
-                </TableCell>
-                <TableCell>
-                  <div className="flex gap-2">
-                    <button
-                      className="text-xs text-blue-600 hover:underline"
-                      onClick={() => openEdit(jadwal)}
-                    >
-                      Edit
-                    </button>
-                    <button
-                      className="text-xs text-red-600 hover:underline"
-                      onClick={() => openDelete(jadwal.id)}
-                    >
-                      Hapus
-                    </button>
-                  </div>
-                </TableCell>
-              </TableRow>
-            ))}
-            {data.length === 0 && (
+            {loading ? (
+              Array.from({ length: 3 }).map((_, i) => (
+                <TableRow key={i}>
+                  {Array.from({ length: 6 }).map((_, j) => (
+                    <TableCell key={j}>
+                      <div className="h-4 w-full rounded bg-muted animate-pulse" />
+                    </TableCell>
+                  ))}
+                </TableRow>
+              ))
+            ) : data.length === 0 ? (
               <TableRow>
                 <TableCell colSpan={6} className="text-center text-muted-foreground py-8">
                   Belum ada jadwal.
                 </TableCell>
               </TableRow>
+            ) : (
+              data.map((jadwal) => (
+                <TableRow key={jadwal.id}>
+                  <TableCell className="font-medium">{jadwal.namaIbadah}</TableCell>
+                  <TableCell>{jadwal.hari}, {jadwal.waktu}</TableCell>
+                  <TableCell className="text-muted-foreground">{jadwal.lokasi}</TableCell>
+                  <TableCell>
+                    <span className={`inline-flex items-center rounded-full px-2 py-0.5 text-xs font-medium ${
+                      jadwal.metode === "online" ? "bg-blue-100 text-blue-700"
+                        : jadwal.metode === "hybrid" ? "bg-purple-100 text-purple-700"
+                        : "bg-gray-100 text-gray-700"
+                    }`}>
+                      {METODE_LABEL[jadwal.metode] ?? jadwal.metode}
+                    </span>
+                  </TableCell>
+                  <TableCell>
+                    <span className={`inline-flex items-center rounded-full px-2 py-0.5 text-xs font-medium ${
+                      jadwal.isActive ? "bg-green-100 text-green-700" : "bg-red-100 text-red-700"
+                    }`}>
+                      {jadwal.isActive ? "Aktif" : "Nonaktif"}
+                    </span>
+                  </TableCell>
+                  <TableCell>
+                    <div className="flex gap-2">
+                      <button className="text-xs text-blue-600 hover:underline" onClick={() => openEdit(jadwal)}>
+                        Edit
+                      </button>
+                      <button className="text-xs text-red-600 hover:underline" onClick={() => openDelete(jadwal.id)}>
+                        Hapus
+                      </button>
+                    </div>
+                  </TableCell>
+                </TableRow>
+              ))
             )}
           </TableBody>
         </Table>
       </div>
 
-      {/* Add / Edit Dialog */}
       <Dialog open={formOpen} onOpenChange={setFormOpen}>
         <DialogContent className="sm:max-w-md">
           <DialogHeader>
             <DialogTitle>{editingId ? "Edit Jadwal" : "Tambah Jadwal"}</DialogTitle>
           </DialogHeader>
-          <div className="space-y-4 py-2">
+          <form onSubmit={handleSubmit(onSubmit)} className="space-y-4 py-2">
             <div className="space-y-2">
-              <Label htmlFor="jenis">Jenis Ibadah</Label>
-              <Input
-                id="jenis"
-                value={form.jenis}
-                onChange={(e) => setForm((f) => ({ ...f, jenis: e.target.value }))}
-                placeholder="Ibadah Minggu I"
-              />
+              <Label htmlFor="namaIbadah">Nama Ibadah</Label>
+              <Input id="namaIbadah" {...register("namaIbadah")} placeholder="Ibadah Minggu Pagi" />
+              {errors.namaIbadah && <p className="text-xs text-red-500">{errors.namaIbadah.message}</p>}
+            </div>
+            <div className="grid grid-cols-2 gap-3">
+              <div className="space-y-2">
+                <Label htmlFor="hari">Hari</Label>
+                <Input id="hari" {...register("hari")} placeholder="Minggu" />
+                {errors.hari && <p className="text-xs text-red-500">{errors.hari.message}</p>}
+              </div>
+              <div className="space-y-2">
+                <Label htmlFor="waktu">Waktu</Label>
+                <Input id="waktu" {...register("waktu")} placeholder="09.00 WIB" />
+                {errors.waktu && <p className="text-xs text-red-500">{errors.waktu.message}</p>}
+              </div>
             </div>
             <div className="space-y-2">
-              <Label htmlFor="waktu">Waktu</Label>
-              <Input
-                id="waktu"
-                value={form.waktu}
-                onChange={(e) => setForm((f) => ({ ...f, waktu: e.target.value }))}
-                placeholder="09.00 WIB"
-              />
+              <Label htmlFor="lokasi">Lokasi</Label>
+              <Input id="lokasi" {...register("lokasi")} placeholder="Gedung Utama" />
+              {errors.lokasi && <p className="text-xs text-red-500">{errors.lokasi.message}</p>}
             </div>
             <div className="space-y-2">
-              <Label htmlFor="metode">Metode</Label>
-              <Select
-                value={form.metode}
-                onValueChange={(v) => setForm((f) => ({ ...f, metode: v as "Luring" | "Daring" }))}
-              >
-                <SelectTrigger id="metode">
+              <Label>Metode</Label>
+              <Select value={metode} onValueChange={(v) => setValue("metode", v as "offline" | "online" | "hybrid")}>
+                <SelectTrigger>
                   <SelectValue />
                 </SelectTrigger>
                 <SelectContent>
-                  <SelectItem value="Luring">Luring</SelectItem>
-                  <SelectItem value="Daring">Daring</SelectItem>
+                  <SelectItem value="offline">Luring</SelectItem>
+                  <SelectItem value="online">Daring</SelectItem>
+                  <SelectItem value="hybrid">Hybrid</SelectItem>
                 </SelectContent>
               </Select>
             </div>
-            {form.metode === "Daring" && (
+            {(metode === "online" || metode === "hybrid") && (
               <div className="space-y-2">
-                <Label htmlFor="streamingUrl">URL Streaming (opsional)</Label>
-                <Input
-                  id="streamingUrl"
-                  value={form.streamingUrl}
-                  onChange={(e) => setForm((f) => ({ ...f, streamingUrl: e.target.value }))}
-                  placeholder="https://youtube.com/..."
-                />
+                <Label htmlFor="linkStreaming">Link Streaming (opsional)</Label>
+                <Input id="linkStreaming" {...register("linkStreaming")} placeholder="https://youtube.com/..." />
+                {errors.linkStreaming && <p className="text-xs text-red-500">{errors.linkStreaming.message}</p>}
               </div>
             )}
             <div className="flex items-center justify-between">
-              <Label htmlFor="active">Aktif</Label>
-              <Switch
-                id="active"
-                checked={form.active}
-                onCheckedChange={(v) => setForm((f) => ({ ...f, active: v }))}
-              />
+              <Label htmlFor="isActive">Aktif</Label>
+              <Switch id="isActive" checked={isActive} onCheckedChange={(v) => setValue("isActive", v)} />
             </div>
-          </div>
-          <DialogFooter>
-            <Button variant="outline" onClick={() => setFormOpen(false)}>
-              Batal
-            </Button>
-            <Button
-              className="bg-navy text-white hover:bg-navy/90"
-              onClick={handleSave}
-              disabled={!form.jenis || !form.waktu}
-            >
-              Simpan
-            </Button>
-          </DialogFooter>
+            <DialogFooter>
+              <Button type="button" variant="outline" onClick={() => setFormOpen(false)}>
+                Batal
+              </Button>
+              <Button type="submit" className="bg-navy text-white hover:bg-navy/90" disabled={saving}>
+                {saving ? "Menyimpan..." : "Simpan"}
+              </Button>
+            </DialogFooter>
+          </form>
         </DialogContent>
       </Dialog>
 
-      {/* Delete confirmation */}
       <DeleteDialog
         open={deleteOpen}
         onOpenChange={setDeleteOpen}
         onConfirm={handleDelete}
         title="Hapus Jadwal?"
         description="Jadwal ini akan dihapus permanen. Tindakan ini tidak dapat dibatalkan."
+        loading={deleting}
       />
     </div>
   )

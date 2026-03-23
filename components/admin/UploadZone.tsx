@@ -70,8 +70,7 @@ export function UploadZone({
         </div>
         <div className="flex items-center gap-1 text-xs text-muted-foreground">
           <Camera className="w-3.5 h-3.5" />
-          {/* TODO: Connect to Supabase Storage upload in Phase 3 */}
-          <span>Upload foto ke Supabase Storage</span>
+          <span>Bisa pilih beberapa foto sekaligus</span>
         </div>
       </div>
     </div>

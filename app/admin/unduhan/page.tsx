@@ -1,7 +1,14 @@
 "use client"
 
-import { useState } from "react"
-import { unduhan } from "@/lib/data"
+import { useEffect, useRef, useState } from "react"
+import { useForm } from "react-hook-form"
+import { zodResolver } from "@hookform/resolvers/zod"
+import { z } from "zod"
+import { toast } from "sonner"
+import { unduhanSchema } from "@/lib/validations"
+
+type UnduhanInput = z.input<typeof unduhanSchema>
+type UnduhanOutput = z.output<typeof unduhanSchema>
 import { PageHeader } from "@/components/admin/PageHeader"
 import { DeleteDialog } from "@/components/admin/DeleteDialog"
 import { Button } from "@/components/ui/button"
@@ -34,36 +41,58 @@ import {
 
 type Unduhan = {
   id: string
-  tipe: "tata-ibadah" | "warta"
-  tanggal: string
   judul: string
-  url: string
-}
-
-type FormState = {
-  judul: string
-  tipe: "tata-ibadah" | "warta"
+  tipe: string
   tanggal: string
-}
-
-const emptyForm: FormState = {
-  judul: "",
-  tipe: "tata-ibadah",
-  tanggal: "",
+  fileUrl: string
+  fileSize: number | null
 }
 
 export default function AdminUnduhanPage() {
-  const [data, setData] = useState<Unduhan[]>(unduhan)
+  const [data, setData] = useState<Unduhan[]>([])
+  const [loading, setLoading] = useState(true)
   const [activeTab, setActiveTab] = useState("semua")
   const [uploadOpen, setUploadOpen] = useState(false)
   const [deleteOpen, setDeleteOpen] = useState(false)
   const [deleteId, setDeleteId] = useState<string | null>(null)
-  const [form, setForm] = useState<FormState>(emptyForm)
+  const [saving, setSaving] = useState(false)
+  const [deleting, setDeleting] = useState(false)
+  const [selectedFile, setSelectedFile] = useState<File | null>(null)
+  const fileInputRef = useRef<HTMLInputElement>(null)
+
+  const {
+    register,
+    handleSubmit,
+    reset,
+    watch,
+    setValue,
+    formState: { errors },
+  } = useForm<UnduhanInput, unknown, UnduhanOutput>({
+    resolver: zodResolver(unduhanSchema),
+    defaultValues: { tipe: "TAIB" },
+  })
+
+  const tipe = watch("tipe")
+
+  async function fetchData() {
+    setLoading(true)
+    try {
+      const res = await fetch("/api/unduhan")
+      const json = await res.json()
+      if (json.success) setData(json.data)
+    } catch {
+      toast.error("Gagal memuat data")
+    } finally {
+      setLoading(false)
+    }
+  }
+
+  useEffect(() => { fetchData() }, [])
 
   const filtered = data.filter((item) => {
     if (activeTab === "semua") return true
-    if (activeTab === "taib") return item.tipe === "tata-ibadah"
-    if (activeTab === "warta") return item.tipe === "warta"
+    if (activeTab === "taib") return item.tipe === "TAIB"
+    if (activeTab === "warta") return item.tipe === "WARTA"
     return true
   })
 
@@ -72,25 +101,72 @@ export default function AdminUnduhanPage() {
     setDeleteOpen(true)
   }
 
-  function handleUpload() {
-    // TODO: Upload file to Supabase Storage and save record to database
-    const newItem: Unduhan = {
-      id: String(Date.now()),
-      judul: form.judul,
-      tipe: form.tipe,
-      tanggal: form.tanggal,
-      url: "#",
-    }
-    setData((prev) => [newItem, ...prev])
-    setForm(emptyForm)
-    setUploadOpen(false)
+  function handleFileChange(e: React.ChangeEvent<HTMLInputElement>) {
+    const file = e.target.files?.[0] ?? null
+    setSelectedFile(file)
   }
 
-  function handleDelete() {
+  const onSubmit = async (values: UnduhanOutput) => {
+    if (!selectedFile) {
+      toast.error("Pilih file PDF terlebih dahulu")
+      return
+    }
+    setSaving(true)
+    try {
+      // 1. Upload file
+      const uploadForm = new FormData()
+      uploadForm.append("file", selectedFile)
+      uploadForm.append("bucket", "documents")
+      const uploadRes = await fetch("/api/upload", { method: "POST", body: uploadForm })
+      const uploadJson = await uploadRes.json()
+      if (!uploadJson.success) throw new Error(uploadJson.message)
+
+      // 2. Save record
+      const res = await fetch("/api/unduhan", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          judul: values.judul,
+          tipe: values.tipe,
+          tanggal: values.tanggal,
+          fileUrl: uploadJson.url,
+          fileSize: uploadJson.size,
+        }),
+      })
+      const json = await res.json()
+      if (!json.success) throw new Error(json.message)
+      toast.success(json.message)
+      setUploadOpen(false)
+      setSelectedFile(null)
+      reset({ tipe: "TAIB" })
+      fetchData()
+    } catch (err) {
+      toast.error(err instanceof Error ? err.message : "Gagal mengupload file")
+    } finally {
+      setSaving(false)
+    }
+  }
+
+  async function handleDelete() {
     if (!deleteId) return
-    // TODO: Call DELETE /api/unduhan/:id and remove from Supabase Storage
-    setData((prev) => prev.filter((u) => u.id !== deleteId))
-    setDeleteId(null)
+    setDeleting(true)
+    try {
+      const res = await fetch(`/api/unduhan/${deleteId}`, { method: "DELETE" })
+      const json = await res.json()
+      if (!json.success) throw new Error(json.message)
+      toast.success(json.message)
+      setDeleteOpen(false)
+      setDeleteId(null)
+      fetchData()
+    } catch (err) {
+      toast.error(err instanceof Error ? err.message : "Gagal menghapus unduhan")
+    } finally {
+      setDeleting(false)
+    }
+  }
+
+  function formatTanggal(dateStr: string) {
+    return new Date(dateStr).toLocaleDateString("id-ID", { day: "numeric", month: "long", year: "numeric" })
   }
 
   return (
@@ -99,23 +175,25 @@ export default function AdminUnduhanPage() {
         title="Unduhan"
         description="Kelola file Tata Ibadah dan Warta Jemaat"
         action={
-          <Button className="bg-navy text-white hover:bg-navy/90" onClick={() => setUploadOpen(true)}>
+          <Button
+            className="bg-navy text-white hover:bg-navy/90"
+            onClick={() => {
+              reset({ tipe: "TAIB" })
+              setSelectedFile(null)
+              setUploadOpen(true)
+            }}
+          >
             <Upload className="mr-2 h-4 w-4" />
             Upload File
           </Button>
         }
       />
 
-      {/* Filter tabs */}
       <Tabs value={activeTab} onValueChange={setActiveTab}>
         <TabsList>
           <TabsTrigger value="semua">Semua ({data.length})</TabsTrigger>
-          <TabsTrigger value="taib">
-            Tata Ibadah ({data.filter((u) => u.tipe === "tata-ibadah").length})
-          </TabsTrigger>
-          <TabsTrigger value="warta">
-            Warta Jemaat ({data.filter((u) => u.tipe === "warta").length})
-          </TabsTrigger>
+          <TabsTrigger value="taib">Tata Ibadah ({data.filter((u) => u.tipe === "TAIB").length})</TabsTrigger>
+          <TabsTrigger value="warta">Warta Jemaat ({data.filter((u) => u.tipe === "WARTA").length})</TabsTrigger>
         </TabsList>
       </Tabs>
 
@@ -130,129 +208,119 @@ export default function AdminUnduhanPage() {
             </TableRow>
           </TableHeader>
           <TableBody>
-            {filtered.map((item) => (
-              <TableRow key={item.id}>
-                <TableCell className="font-medium">{item.judul}</TableCell>
-                <TableCell>
-                  <span
-                    className={`inline-flex items-center rounded-full px-2 py-0.5 text-xs font-medium ${
-                      item.tipe === "tata-ibadah"
-                        ? "bg-blue-100 text-blue-700"
-                        : "bg-purple-100 text-purple-700"
-                    }`}
-                  >
-                    {item.tipe === "tata-ibadah" ? "Tata Ibadah" : "Warta"}
-                  </span>
-                </TableCell>
-                <TableCell className="text-muted-foreground">{item.tanggal}</TableCell>
-                <TableCell>
-                  <div className="flex gap-2">
-                    <a
-                      href={item.url}
-                      target="_blank"
-                      rel="noopener noreferrer"
-                      className="text-xs text-blue-600 hover:underline"
-                    >
-                      Unduh
-                    </a>
-                    <button
-                      className="text-xs text-red-600 hover:underline"
-                      onClick={() => openDelete(item.id)}
-                    >
-                      Hapus
-                    </button>
-                  </div>
-                </TableCell>
-              </TableRow>
-            ))}
-            {filtered.length === 0 && (
+            {loading ? (
+              Array.from({ length: 3 }).map((_, i) => (
+                <TableRow key={i}>
+                  {Array.from({ length: 4 }).map((_, j) => (
+                    <TableCell key={j}>
+                      <div className="h-4 w-full rounded bg-muted animate-pulse" />
+                    </TableCell>
+                  ))}
+                </TableRow>
+              ))
+            ) : filtered.length === 0 ? (
               <TableRow>
                 <TableCell colSpan={4} className="text-center text-muted-foreground py-8">
                   Tidak ada file ditemukan.
                 </TableCell>
               </TableRow>
+            ) : (
+              filtered.map((item) => (
+                <TableRow key={item.id}>
+                  <TableCell className="font-medium">{item.judul}</TableCell>
+                  <TableCell>
+                    <span className={`inline-flex items-center rounded-full px-2 py-0.5 text-xs font-medium ${
+                      item.tipe === "TAIB" ? "bg-blue-100 text-blue-700" : "bg-purple-100 text-purple-700"
+                    }`}>
+                      {item.tipe === "TAIB" ? "Tata Ibadah" : "Warta"}
+                    </span>
+                  </TableCell>
+                  <TableCell className="text-muted-foreground">{formatTanggal(item.tanggal)}</TableCell>
+                  <TableCell>
+                    <div className="flex gap-2">
+                      <a href={item.fileUrl} target="_blank" rel="noopener noreferrer" className="text-xs text-blue-600 hover:underline">
+                        Unduh
+                      </a>
+                      <button className="text-xs text-red-600 hover:underline" onClick={() => openDelete(item.id)}>
+                        Hapus
+                      </button>
+                    </div>
+                  </TableCell>
+                </TableRow>
+              ))
             )}
           </TableBody>
         </Table>
       </div>
 
-      {/* Upload Dialog */}
       <Dialog open={uploadOpen} onOpenChange={setUploadOpen}>
         <DialogContent className="sm:max-w-md">
           <DialogHeader>
             <DialogTitle>Upload File</DialogTitle>
           </DialogHeader>
-          <div className="space-y-4 py-2">
+          <form onSubmit={handleSubmit(onSubmit)} className="space-y-4 py-2">
             <div className="space-y-2">
               <Label htmlFor="judul">Judul</Label>
-              <Input
-                id="judul"
-                value={form.judul}
-                onChange={(e) => setForm((f) => ({ ...f, judul: e.target.value }))}
-                placeholder="Tata Ibadah Minggu..."
-              />
+              <Input id="judul" {...register("judul")} placeholder="Tata Ibadah Minggu..." />
+              {errors.judul && <p className="text-xs text-red-500">{errors.judul.message}</p>}
             </div>
             <div className="space-y-2">
-              <Label htmlFor="tipe">Tipe</Label>
-              <Select
-                value={form.tipe}
-                onValueChange={(v) =>
-                  setForm((f) => ({ ...f, tipe: v as "tata-ibadah" | "warta" }))
-                }
-              >
-                <SelectTrigger id="tipe">
+              <Label>Tipe</Label>
+              <Select value={tipe} onValueChange={(v) => setValue("tipe", v as "TAIB" | "WARTA")}>
+                <SelectTrigger>
                   <SelectValue />
                 </SelectTrigger>
                 <SelectContent>
-                  <SelectItem value="tata-ibadah">Tata Ibadah</SelectItem>
-                  <SelectItem value="warta">Warta Jemaat</SelectItem>
+                  <SelectItem value="TAIB">Tata Ibadah</SelectItem>
+                  <SelectItem value="WARTA">Warta Jemaat</SelectItem>
                 </SelectContent>
               </Select>
             </div>
             <div className="space-y-2">
               <Label htmlFor="tanggal">Tanggal</Label>
-              <Input
-                id="tanggal"
-                type="date"
-                value={form.tanggal}
-                onChange={(e) => setForm((f) => ({ ...f, tanggal: e.target.value }))}
-              />
+              <Input id="tanggal" type="date" {...register("tanggal")} />
+              {errors.tanggal && <p className="text-xs text-red-500">{errors.tanggal.message}</p>}
             </div>
-            {/* File upload zone */}
             <div className="space-y-2">
-              <Label>File</Label>
-              <div className="flex flex-col items-center justify-center rounded-lg border-2 border-dashed border-gray-line p-8 text-center">
-                <Upload className="h-8 w-8 text-muted-foreground mb-2" />
-                <p className="text-sm text-muted-foreground">
-                  Klik untuk memilih file atau seret ke sini
-                </p>
-                <p className="text-xs text-muted-foreground mt-1">PDF, DOC, DOCX (maks. 10MB)</p>
-                {/* TODO: Connect to Supabase Storage upload */}
+              <Label>File PDF</Label>
+              <div
+                className="flex flex-col items-center justify-center rounded-lg border-2 border-dashed border-gray-line p-6 text-center cursor-pointer hover:bg-muted/30 transition-colors"
+                onClick={() => fileInputRef.current?.click()}
+              >
+                <Upload className="h-7 w-7 text-muted-foreground mb-2" />
+                {selectedFile ? (
+                  <p className="text-sm font-medium text-navy">{selectedFile.name}</p>
+                ) : (
+                  <p className="text-sm text-muted-foreground">Klik untuk memilih file PDF (maks. 10MB)</p>
+                )}
+                <input
+                  ref={fileInputRef}
+                  type="file"
+                  accept=".pdf,application/pdf"
+                  className="hidden"
+                  onChange={handleFileChange}
+                />
               </div>
             </div>
-          </div>
-          <DialogFooter>
-            <Button variant="outline" onClick={() => setUploadOpen(false)}>
-              Batal
-            </Button>
-            <Button
-              className="bg-navy text-white hover:bg-navy/90"
-              onClick={handleUpload}
-              disabled={!form.judul || !form.tanggal}
-            >
-              Upload
-            </Button>
-          </DialogFooter>
+            <DialogFooter>
+              <Button type="button" variant="outline" onClick={() => setUploadOpen(false)} disabled={saving}>
+                Batal
+              </Button>
+              <Button type="submit" className="bg-navy text-white hover:bg-navy/90" disabled={saving}>
+                {saving ? "Mengupload..." : "Upload"}
+              </Button>
+            </DialogFooter>
+          </form>
         </DialogContent>
       </Dialog>
 
-      {/* Delete confirmation */}
       <DeleteDialog
         open={deleteOpen}
         onOpenChange={setDeleteOpen}
         onConfirm={handleDelete}
         title="Hapus File?"
         description="File ini akan dihapus permanen dari sistem. Tindakan ini tidak dapat dibatalkan."
+        loading={deleting}
       />
     </div>
   )

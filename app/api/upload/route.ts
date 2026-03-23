@@ -1,30 +1,46 @@
 import { NextRequest, NextResponse } from "next/server"
+import { uploadFile } from "@/lib/storage"
 
-// POST /api/upload — handle file upload to Supabase Storage
+const ALLOWED_IMAGE_TYPES = ["image/jpeg", "image/png", "image/webp"]
+const ALLOWED_DOC_TYPES = ["application/pdf"]
+const MAX_IMAGE_SIZE = 5 * 1024 * 1024  // 5MB
+const MAX_DOC_SIZE = 10 * 1024 * 1024   // 10MB
+
 export async function POST(request: NextRequest) {
   try {
     const formData = await request.formData()
     const file = formData.get("file") as File | null
-    const bucket = formData.get("bucket") as string | null ?? "uploads"
+    const bucket = (formData.get("bucket") as string | null) ?? "documents"
+    const folder = (formData.get("folder") as string | null) ?? ""
 
     if (!file) {
-      return NextResponse.json({ error: "File tidak ditemukan" }, { status: 400 })
+      return NextResponse.json({ success: false, message: "File tidak ditemukan" }, { status: 400 })
     }
 
-    // TODO: Implement Supabase Storage upload
-    // const { createServerSupabaseClient } = await import("@/lib/supabase")
-    // const supabase = createServerSupabaseClient()
-    // const fileBuffer = await file.arrayBuffer()
-    // const fileName = `${Date.now()}-${file.name}`
-    // const { data, error } = await supabase.storage.from(bucket).upload(fileName, fileBuffer, {
-    //   contentType: file.type,
-    // })
-    // if (error) throw error
-    // const { data: publicUrl } = supabase.storage.from(bucket).getPublicUrl(data.path)
-    // return NextResponse.json({ url: publicUrl.publicUrl, path: data.path })
+    if (bucket === "documents") {
+      if (!ALLOWED_DOC_TYPES.includes(file.type)) {
+        return NextResponse.json({ success: false, message: "Hanya file PDF yang diizinkan" }, { status: 400 })
+      }
+      if (file.size > MAX_DOC_SIZE) {
+        return NextResponse.json({ success: false, message: "Ukuran file maksimal 10MB" }, { status: 400 })
+      }
+    } else if (bucket === "images") {
+      if (!ALLOWED_IMAGE_TYPES.includes(file.type)) {
+        return NextResponse.json({ success: false, message: "Hanya file JPG, PNG, atau WebP yang diizinkan" }, { status: 400 })
+      }
+      if (file.size > MAX_IMAGE_SIZE) {
+        return NextResponse.json({ success: false, message: "Ukuran file maksimal 5MB" }, { status: 400 })
+      }
+    }
 
-    return NextResponse.json({ message: "Upload endpoint ready — TODO: connect Supabase Storage" }, { status: 200 })
-  } catch {
-    return NextResponse.json({ error: "Gagal mengupload file" }, { status: 500 })
+    const ext = file.name.split(".").pop()
+    const uniqueName = `${Date.now()}-${Math.random().toString(36).slice(2)}.${ext}`
+    const path = folder ? `${folder}/${uniqueName}` : uniqueName
+
+    const url = await uploadFile(bucket as "documents" | "images", path, file)
+    return NextResponse.json({ success: true, url, path, size: file.size })
+  } catch (err) {
+    console.error("Upload error:", err)
+    return NextResponse.json({ success: false, message: "Gagal mengupload file" }, { status: 500 })
   }
 }

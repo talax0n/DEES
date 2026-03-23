@@ -1,20 +1,26 @@
 import { NextRequest, NextResponse } from "next/server"
-import { jadwalIbadah } from "@/lib/data"
+import { db } from "@/lib/db"
+import { jadwalSchema } from "@/lib/validations"
 
-// GET /api/jadwal — return all jadwal ibadah
 export async function GET() {
-  // TODO: Replace with Prisma query: await db.jadwalIbadah.findMany({ where: { isActive: true } })
-  return NextResponse.json({ data: jadwalIbadah })
+  try {
+    const data = await db.jadwalIbadah.findMany({ orderBy: { createdAt: "asc" } })
+    return NextResponse.json({ success: true, data })
+  } catch {
+    return NextResponse.json({ success: false, message: "Gagal memuat data" }, { status: 500 })
+  }
 }
 
-// POST /api/jadwal — create new jadwal
 export async function POST(request: NextRequest) {
   try {
     const body = await request.json()
-    // TODO: Validate with jadwalSchema from lib/validations.ts
-    // TODO: await db.jadwalIbadah.create({ data: body })
-    return NextResponse.json({ data: body, message: "Jadwal berhasil ditambahkan" }, { status: 201 })
+    const parsed = jadwalSchema.safeParse(body)
+    if (!parsed.success) {
+      return NextResponse.json({ success: false, message: parsed.error.issues[0].message }, { status: 400 })
+    }
+    const data = await db.jadwalIbadah.create({ data: parsed.data })
+    return NextResponse.json({ success: true, data, message: "Jadwal berhasil ditambahkan" }, { status: 201 })
   } catch {
-    return NextResponse.json({ error: "Gagal menambahkan jadwal" }, { status: 500 })
+    return NextResponse.json({ success: false, message: "Gagal menambahkan jadwal" }, { status: 500 })
   }
 }

@@ -1,34 +1,88 @@
 import { NextRequest, NextResponse } from "next/server"
+import { db } from "@/lib/db"
+import { uploadFile } from "@/lib/storage"
 
-// GET /api/dokumentasi/:id/photos — return photos for event
-export async function GET(
-  _request: NextRequest,
-  { params }: { params: Promise<{ id: string }> }
-) {
-  const { id } = await params
-  // TODO: Replace with Prisma query in Phase 3
-  // const photos = await db.dokumentasiPhoto.findMany({ where: { eventId: id }, orderBy: { order: 'asc' } })
-  return NextResponse.json({ data: [], eventId: id })
+const ALLOWED_TYPES = ["image/jpeg", "image/png", "image/webp"]
+const MAX_SIZE = 5 * 1024 * 1024
+
+interface Params {
+  params: Promise<{ id: string }>
 }
 
-// POST /api/dokumentasi/:id/photos — upload photo
-export async function POST(
-  request: NextRequest,
-  { params }: { params: Promise<{ id: string }> }
+export async function GET(
+  _request: NextRequest,
+  { params }: Params
 ) {
   const { id } = await params
   try {
-    // TODO: In Phase 3 — upload file to Supabase Storage, then save record:
-    // const formData = await request.formData()
-    // const file = formData.get('file') as File
-    // const { data, error } = await supabase.storage.from('dokumentasi').upload(`${id}/${file.name}`, file)
-    // const photo = await db.dokumentasiPhoto.create({ data: { eventId: id, imageUrl: data.publicUrl, order: 0 } })
-    void request
-    return NextResponse.json(
-      { message: "Upload foto akan tersedia di Phase 3", eventId: id },
-      { status: 501 }
-    )
+    const photos = await db.dokumentasiPhoto.findMany({
+      where: { eventId: id },
+      orderBy: { order: "asc" },
+    })
+    return NextResponse.json({ success: true, data: photos })
   } catch {
-    return NextResponse.json({ error: "Gagal upload foto" }, { status: 500 })
+    return NextResponse.json({ success: false, message: "Gagal memuat foto" }, { status: 500 })
+  }
+}
+
+export async function POST(
+  request: NextRequest,
+  { params }: Params
+) {
+  const { id } = await params
+  try {
+    const event = await db.dokumentasiEvent.findUnique({ where: { id } })
+    if (!event) {
+      return NextResponse.json({ success: false, message: "Event tidak ditemukan" }, { status: 404 })
+    }
+
+    const formData = await request.formData()
+    const files = formData.getAll("files") as File[]
+    if (!files.length) {
+      return NextResponse.json({ success: false, message: "Tidak ada file dipilih" }, { status: 400 })
+    }
+
+    // Validate all files first
+    for (const file of files) {
+      if (!ALLOWED_TYPES.includes(file.type)) {
+        return NextResponse.json({ success: false, message: `File ${file.name}: hanya JPG, PNG, atau WebP` }, { status: 400 })
+      }
+      if (file.size > MAX_SIZE) {
+        return NextResponse.json({ success: false, message: `File ${file.name}: ukuran maksimal 5MB` }, { status: 400 })
+      }
+    }
+
+    const existingCount = await db.dokumentasiPhoto.count({ where: { eventId: id } })
+    const created = []
+
+    for (let i = 0; i < files.length; i++) {
+      const file = files[i]
+      const ext = file.name.split(".").pop()
+      const uniqueName = `${Date.now()}-${Math.random().toString(36).slice(2)}.${ext}`
+      const path = `kegiatan/${id}/${uniqueName}`
+
+      const imageUrl = await uploadFile("images", path, file)
+      const photo = await db.dokumentasiPhoto.create({
+        data: {
+          eventId: id,
+          imageUrl,
+          order: existingCount + i,
+        },
+      })
+      created.push(photo)
+    }
+
+    // Auto-set cover if event has none
+    if (!event.coverPhoto && created.length > 0) {
+      await db.dokumentasiEvent.update({
+        where: { id },
+        data: { coverPhoto: created[0].imageUrl },
+      })
+    }
+
+    return NextResponse.json({ success: true, data: created, message: `${created.length} foto berhasil diupload` }, { status: 201 })
+  } catch (err) {
+    console.error("Photo upload error:", err)
+    return NextResponse.json({ success: false, message: "Gagal mengupload foto" }, { status: 500 })
   }
 }

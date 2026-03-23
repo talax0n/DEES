@@ -16,6 +16,7 @@ interface DeleteDialogProps {
   onConfirm: () => void
   title?: string
   description?: string
+  loading?: boolean
 }
 
 export function DeleteDialog({
@@ -24,6 +25,7 @@ export function DeleteDialog({
   onConfirm,
   title = "Hapus item?",
   description = "Tindakan ini tidak dapat dibatalkan.",
+  loading = false,
 }: DeleteDialogProps) {
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
@@ -33,17 +35,15 @@ export function DeleteDialog({
           <DialogDescription>{description}</DialogDescription>
         </DialogHeader>
         <DialogFooter className="gap-2">
-          <Button variant="outline" onClick={() => onOpenChange(false)}>
+          <Button variant="outline" onClick={() => onOpenChange(false)} disabled={loading}>
             Batal
           </Button>
           <Button
             variant="destructive"
-            onClick={() => {
-              onConfirm()
-              onOpenChange(false)
-            }}
+            onClick={onConfirm}
+            disabled={loading}
           >
-            Hapus
+            {loading ? "Menghapus..." : "Hapus"}
           </Button>
         </DialogFooter>
       </DialogContent>

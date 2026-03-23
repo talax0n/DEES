@@ -2,6 +2,7 @@ import type { Metadata } from "next";
 import { Playfair_Display } from "next/font/google";
 import "./globals.css";
 import { TooltipProvider } from "@/components/ui/tooltip";
+import { Toaster } from "sonner";
 
 const playfairDisplay = Playfair_Display({
   subsets: ["latin"],
@@ -30,6 +31,7 @@ export default function RootLayout({
     <html lang="id" className={playfairDisplay.variable}>
       <body className="font-sans">
         <TooltipProvider>{children}</TooltipProvider>
+        <Toaster richColors position="top-right" />
       </body>
     </html>
   );
