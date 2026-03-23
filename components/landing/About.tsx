@@ -15,8 +15,8 @@ function AnimatedCounter({ target, suffix = "" }: { target: number; suffix?: str
   useEffect(() => {
     if (!inView) return
     if (shouldReduceMotion) {
-      setCount(target)
-      return
+      const frame = requestAnimationFrame(() => setCount(target))
+      return () => cancelAnimationFrame(frame)
     }
     const controls = animate(0, target, {
       duration: 2,

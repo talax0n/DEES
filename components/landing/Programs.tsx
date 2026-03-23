@@ -17,6 +17,8 @@ import {
 } from "lucide-react";
 import { jadwalIbadah, pelkat } from "@/lib/data";
 import { AnimatedSection } from "./AnimatedSection";
+import { Marquee } from "@/components/ui/marquee";
+import Image from "next/image";
 
 const iconMap: Record<string, React.ComponentType<{ className?: string }>> = {
   Baby,
@@ -124,82 +126,37 @@ export function Programs() {
 
         {/* BOTTOM HALF - Pelkat List */}
         <AnimatedSection className="border-t border-gray-line pt-12" delay={0.1}>
-          <h3 className="font-semibold text-navy text-lg mb-6">
-            Pelkat tahun ini
+          <h3 className="font-semibold text-navy text-lg mb-6 text-center lg:text-left">
+            Pelayanan Kategorial
           </h3>
 
-          <div className="space-y-2">
-            {pelkat.map((item) => {
-              const Icon = iconMap[item.icon] || Users;
-              const isExpanded = expandedPelkat === item.id;
-
-              return (
+          <div className="relative flex w-full flex-col items-center justify-center overflow-hidden py-10">
+            <Marquee pauseOnHover className="[--duration:30s]">
+              {pelkat.map((item) => (
                 <div
                   key={item.id}
-                  className={`group rounded-xl transition-all duration-300 ${
-                    isExpanded ? "bg-off-white" : "hover:bg-off-white"
-                  }`}
+                  className="relative flex w-48 h-48 sm:w-64 sm:h-64 cursor-pointer overflow-hidden rounded-3xl border border-gray-line bg-white hover:shadow-xl transition-all duration-300 items-center justify-center p-6 group"
                 >
-                  <button
-                    onClick={() => setExpandedPelkat(isExpanded ? "" : item.id)}
-                    className="w-full flex items-center justify-between p-4"
-                  >
-                    <div className="flex items-center gap-4">
-                      <span className="text-gold font-bold font-mono text-lg">
-                        {item.id.padStart(2, "0")}
-                      </span>
-                      <div className="flex items-center gap-3">
-                        <div className="w-8 h-8 rounded-full bg-navy/10 flex items-center justify-center">
-                          <Icon className="w-4 h-4 text-navy" />
-                        </div>
-                        <span className="font-medium text-navy">
-                          {item.nama}
-                        </span>
-                      </div>
-                    </div>
-                    <motion.div
-                      className={`w-8 h-8 rounded-full border border-gray-line flex items-center justify-center transition-colors group-hover:border-gold group-hover:bg-gold ${
-                        isExpanded ? "bg-gold border-gold" : ""
-                      }`}
-                      animate={{ rotate: isExpanded ? 90 : 0 }}
-                      transition={{ duration: shouldReduceMotion ? 0 : 0.2 }}
-                    >
-                      <ChevronRight className="w-4 h-4 text-navy" />
-                    </motion.div>
-                  </button>
-
-                  {/* Expanded content with AnimatePresence */}
-                  <AnimatePresence initial={false}>
-                    {isExpanded && (
-                      <motion.div
-                        key="content"
-                        initial={{ height: 0, opacity: 0 }}
-                        animate={{ height: "auto", opacity: 1 }}
-                        exit={{ height: 0, opacity: 0 }}
-                        transition={{
-                          height: { duration: shouldReduceMotion ? 0 : 0.3, ease: "easeOut" },
-                          opacity: { duration: shouldReduceMotion ? 0 : 0.2 },
-                        }}
-                        style={{ overflow: "hidden" }}
-                      >
-                        <div className="px-4 pb-4 pl-16">
-                          <div className="bg-white rounded-xl p-4 shadow-sm">
-                            <div className="flex items-center gap-2 mb-2">
-                              <Badge variant="secondary" className="text-xs">
-                                {item.targetGroup}
-                              </Badge>
-                            </div>
-                            <p className="text-gray-text text-sm leading-relaxed">
-                              {item.deskripsi}
-                            </p>
-                          </div>
-                        </div>
-                      </motion.div>
-                    )}
-                  </AnimatePresence>
+                  <div className="absolute inset-0 bg-gradient-to-br from-navy/5 to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-300" />
+                  <div className="relative w-full h-full transform group-hover:scale-105 transition-transform duration-300">
+                    <Image
+                      src={item.icon}
+                      alt={`Logo ${item.nama}`}
+                      fill
+                      sizes="(min-width: 640px) 256px, 192px"
+                      className="object-contain"
+                    />
+                  </div>
+                  <div className="absolute bottom-4 left-0 right-0 text-center opacity-0 group-hover:opacity-100 transition-opacity duration-300">
+                    <Badge variant="secondary" className="bg-navy text-white hover:bg-navy-mid border-none shadow-sm">
+                      Detail
+                    </Badge>
+                  </div>
                 </div>
-              );
-            })}
+              ))}
+            </Marquee>
+            <div className="pointer-events-none absolute inset-y-0 left-0 w-1/4 bg-gradient-to-r from-white dark:from-background"></div>
+            <div className="pointer-events-none absolute inset-y-0 right-0 w-1/4 bg-gradient-to-l from-white dark:from-background"></div>
           </div>
         </AnimatedSection>
       </div>
