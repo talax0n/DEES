@@ -35,7 +35,7 @@ type Jadwal = {
   id: string
   jenis: string
   waktu: string
-  metode: "Luring" | "Daring"
+  metode: "Luring" | "Daring" | "Luring & Live Streaming"
   highlight: boolean
   streamingUrl?: string
 }
@@ -43,7 +43,7 @@ type Jadwal = {
 type FormState = {
   jenis: string
   waktu: string
-  metode: "Luring" | "Daring"
+  metode: "Luring" | "Daring" | "Luring & Live Streaming"
   streamingUrl: string
   active: boolean
 }
