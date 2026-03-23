@@ -47,14 +47,6 @@ export interface Kegiatan {
   updatedAt: Date
 }
 
-export interface Testimonial {
-  id: string
-  nama: string
-  peran: string
-  isi: string
-  avatar?: string
-}
-
 export interface ApiResponse<T> {
   data: T
   message?: string
