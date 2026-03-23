@@ -3,9 +3,7 @@
 import { useState } from "react"
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
-
-// Note: metadata export doesn't work in client components
-// Move metadata to a separate server component if needed
+import { Label } from "@/components/ui/label"
 
 export default function AdminLoginPage() {
   const [email, setEmail] = useState("")
@@ -15,45 +13,58 @@ export default function AdminLoginPage() {
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault()
     setLoading(true)
-    // TODO: Implement authentication logic (Supabase Auth or NextAuth)
-    console.log("Login:", { email, password })
+    // TODO: Implement authentication (e.g. Supabase Auth signInWithPassword)
+    console.log("Login attempt:", { email })
     setLoading(false)
   }
 
   return (
-    <div className="flex min-h-screen items-center justify-center bg-background">
-      <div className="w-full max-w-sm space-y-6">
-        <div className="text-center">
-          <h1 className="text-2xl font-bold">Admin Login</h1>
+    <div className="flex min-h-screen items-center justify-center bg-off-white">
+      <div className="w-full max-w-sm">
+        {/* Church logo / branding */}
+        <div className="text-center mb-8">
+          <div className="inline-flex items-center justify-center w-16 h-16 rounded-full bg-navy mb-4">
+            <span className="text-2xl font-bold text-white font-serif">DS</span>
+          </div>
+          <h1 className="text-xl font-bold text-foreground">Masuk ke Admin</h1>
           <p className="text-sm text-muted-foreground mt-1">GPIB Damai Sejahtera</p>
         </div>
-        <form onSubmit={handleSubmit} className="space-y-4">
-          <div className="space-y-2">
-            <label htmlFor="email" className="text-sm font-medium">Email</label>
-            <Input
-              id="email"
-              type="email"
-              placeholder="admin@gpibdamaisejahtera.org"
-              value={email}
-              onChange={(e) => setEmail(e.target.value)}
-              required
-            />
-          </div>
-          <div className="space-y-2">
-            <label htmlFor="password" className="text-sm font-medium">Password</label>
-            <Input
-              id="password"
-              type="password"
-              placeholder="••••••••"
-              value={password}
-              onChange={(e) => setPassword(e.target.value)}
-              required
-            />
-          </div>
-          <Button type="submit" className="w-full" disabled={loading}>
-            {loading ? "Memproses..." : "Masuk"}
-          </Button>
-        </form>
+
+        <div className="bg-white rounded-xl border shadow-sm p-6 space-y-4">
+          <form onSubmit={handleSubmit} className="space-y-4">
+            <div className="space-y-2">
+              <Label htmlFor="email">Email</Label>
+              <Input
+                id="email"
+                type="email"
+                placeholder="admin@gpibdamaisejahtera.org"
+                value={email}
+                onChange={(e) => setEmail(e.target.value)}
+                required
+                autoComplete="email"
+              />
+            </div>
+            <div className="space-y-2">
+              <Label htmlFor="password">Password</Label>
+              <Input
+                id="password"
+                type="password"
+                placeholder="••••••••"
+                value={password}
+                onChange={(e) => setPassword(e.target.value)}
+                required
+                autoComplete="current-password"
+              />
+            </div>
+            <Button
+              type="submit"
+              className="w-full bg-navy text-white hover:bg-navy/90"
+              disabled={loading}
+            >
+              {loading ? "Memproses..." : "Masuk"}
+            </Button>
+          </form>
+        </div>
       </div>
     </div>
   )

@@ -1,40 +1,111 @@
-import type { Metadata } from "next"
-import { jadwalIbadah } from "@/lib/data"
-import { unduhan } from "@/lib/data"
-import { kegiatan } from "@/lib/data"
+import { jadwalIbadah, unduhan, kegiatan } from "@/lib/data"
+import { Clock, FileDown, CalendarDays } from "lucide-react"
+import { StatsCard } from "@/components/admin/StatsCard"
+import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
+import { Badge } from "@/components/ui/badge"
 
-export const metadata: Metadata = {
-  title: "Dashboard | Admin GPIB Damai Sejahtera",
+const kategoriColor: Record<string, string> = {
+  Ibadah: "bg-blue-100 text-blue-700",
+  Sosial: "bg-green-100 text-green-700",
+  Pelkat: "bg-purple-100 text-purple-700",
 }
 
 export default function AdminDashboardPage() {
-  const stats = [
-    { label: "Total Jadwal", value: jadwalIbadah.length, description: "Jadwal ibadah aktif" },
-    { label: "Total Unduhan", value: unduhan.length, description: "File TAIB & Warta" },
-    { label: "Total Kegiatan", value: kegiatan.length, description: "Kegiatan pelayanan" },
-  ]
+  const recentKegiatan = kegiatan.slice(0, 5)
+  const recentUnduhan = unduhan.slice(0, 5)
 
   return (
     <div className="space-y-6">
       <div>
         <h1 className="text-2xl font-bold">Dashboard</h1>
-        <p className="text-muted-foreground">Selamat datang di panel admin GPIB Damai Sejahtera</p>
+        <p className="text-muted-foreground text-sm mt-1">
+          Selamat datang di panel admin GPIB Damai Sejahtera
+        </p>
       </div>
 
+      {/* Stat cards */}
       <div className="grid gap-4 md:grid-cols-3">
-        {stats.map((stat) => (
-          <div key={stat.label} className="rounded-lg border bg-card p-6">
-            <p className="text-sm font-medium text-muted-foreground">{stat.label}</p>
-            <p className="mt-2 text-3xl font-bold">{stat.value}</p>
-            <p className="mt-1 text-xs text-muted-foreground">{stat.description}</p>
-          </div>
-        ))}
+        <StatsCard
+          icon={Clock}
+          value={jadwalIbadah.length}
+          label="Total Jadwal"
+          description="Jadwal ibadah aktif"
+        />
+        <StatsCard
+          icon={FileDown}
+          value={unduhan.length}
+          label="Total Unduhan"
+          description="File TAIB & Warta"
+        />
+        <StatsCard
+          icon={CalendarDays}
+          value={kegiatan.length}
+          label="Total Kegiatan"
+          description="Kegiatan pelayanan"
+        />
       </div>
 
-      <div className="rounded-lg border bg-card p-6">
-        <h2 className="text-lg font-semibold mb-4">Aktivitas Terbaru</h2>
-        {/* TODO: Real-time activity log from database */}
-        <p className="text-sm text-muted-foreground">Tidak ada aktivitas terbaru.</p>
+      {/* Recent sections */}
+      <div className="grid gap-4 md:grid-cols-2">
+        {/* Kegiatan Terbaru */}
+        <Card>
+          <CardHeader className="pb-3">
+            <CardTitle className="text-base">Kegiatan Terbaru</CardTitle>
+          </CardHeader>
+          <CardContent className="pt-0">
+            <div className="divide-y">
+              {recentKegiatan.map((item) => (
+                <div
+                  key={item.id}
+                  className="flex items-center justify-between py-3 first:pt-0 last:pb-0"
+                >
+                  <div className="min-w-0 flex-1">
+                    <p className="text-sm font-medium truncate">{item.judul}</p>
+                    <span
+                      className={`inline-flex items-center rounded-full px-2 py-0.5 text-xs font-medium mt-1 ${
+                        kategoriColor[item.kategori] ?? "bg-muted text-muted-foreground"
+                      }`}
+                    >
+                      {item.kategori}
+                    </span>
+                  </div>
+                  <span className="text-xs text-muted-foreground ml-4 shrink-0">{item.tanggal}</span>
+                </div>
+              ))}
+            </div>
+          </CardContent>
+        </Card>
+
+        {/* Unduhan Terbaru */}
+        <Card>
+          <CardHeader className="pb-3">
+            <CardTitle className="text-base">Unduhan Terbaru</CardTitle>
+          </CardHeader>
+          <CardContent className="pt-0">
+            <div className="divide-y">
+              {recentUnduhan.map((item) => (
+                <div
+                  key={item.id}
+                  className="flex items-center justify-between py-3 first:pt-0 last:pb-0"
+                >
+                  <div className="min-w-0 flex-1">
+                    <p className="text-sm font-medium truncate">{item.judul}</p>
+                    <span
+                      className={`inline-flex items-center rounded-full px-2 py-0.5 text-xs font-medium mt-1 ${
+                        item.tipe === "tata-ibadah"
+                          ? "bg-blue-100 text-blue-700"
+                          : "bg-purple-100 text-purple-700"
+                      }`}
+                    >
+                      {item.tipe === "tata-ibadah" ? "Tata Ibadah" : "Warta"}
+                    </span>
+                  </div>
+                  <span className="text-xs text-muted-foreground ml-4 shrink-0">{item.tanggal}</span>
+                </div>
+              ))}
+            </div>
+          </CardContent>
+        </Card>
       </div>
     </div>
   )
