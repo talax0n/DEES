@@ -1,8 +1,8 @@
 "use client"
 
-import { useState } from 'react'
+import { useState, useEffect } from 'react'
 import Image from 'next/image'
-import { motion, useReducedMotion } from 'framer-motion'
+import { motion, useReducedMotion, AnimatePresence } from 'framer-motion'
 import { useScrollY } from '@/hooks/useScrollY'
 import { Button } from '@/components/ui/button'
 import { Sheet, SheetContent, SheetTrigger } from '@/components/ui/sheet'
@@ -19,6 +19,10 @@ export function Navbar() {
   const [isOpen, setIsOpen] = useState(false)
   const isScrolled = scrollY > 50
   const shouldReduceMotion = useReducedMotion()
+
+  // Show title in navbar when user scrolls past a significant portion of the hero section
+  const threshold = typeof window !== 'undefined' ? window.innerHeight * 0.7 : 600
+  const showTitle = scrollY > threshold
 
   return (
     <header
@@ -47,11 +51,21 @@ export function Navbar() {
                 className="object-contain"
               />
             </div>
-            <span className={`font-serif font-semibold text-sm lg:text-base transition-colors ${
-              isScrolled ? 'text-navy' : 'text-white'
-            }`}>
-              GPIB Damai Sejahtera
-            </span>
+            <AnimatePresence>
+              {showTitle && (
+                <motion.span
+                  initial={{ opacity: 0, width: 0, marginLeft: 0 }}
+                  animate={{ opacity: 1, width: "auto", marginLeft: 8 }}
+                  exit={{ opacity: 0, width: 0, marginLeft: 0 }}
+                  transition={{ duration: 0.4, ease: [0.16, 1, 0.3, 1] }}
+                  className={`font-serif font-semibold text-sm lg:text-base transition-colors whitespace-nowrap overflow-hidden ${
+                    isScrolled ? 'text-navy' : 'text-white'
+                  }`}
+                >
+                  GPIB Damai Sejahtera
+                </motion.span>
+              )}
+            </AnimatePresence>
           </motion.a>
 
           {/* Desktop Navigation */}

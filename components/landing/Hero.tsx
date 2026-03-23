@@ -72,11 +72,9 @@ export function Hero() {
           className="absolute bottom-12 lg:bottom-16 left-4 sm:left-6 lg:left-8 xl:left-12 max-w-xl font-serif text-white text-4xl sm:text-5xl lg:text-6xl xl:text-7xl font-medium leading-[1.1] tracking-tight"
           {...fadeUp(0)}
         >
-          Selamat datang
+          GPIB
           <br />
-          di keluarga kami.
-          <br />
-          Semua disambut.
+          Damai Sejahtera
         </motion.h1>
 
         {/* Bottom-right scroll indicator */}
