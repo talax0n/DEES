@@ -13,7 +13,7 @@ export const NAV_LINKS = [
   { label: 'Beranda', href: '/' },
   { label: 'Jadwal', href: '/jadwal' },
   { label: 'Unduhan', href: '/unduhan' },
-  { label: 'Kegiatan', href: '/kegiatan' },
+  { label: 'Dokumentasi', href: '/dokumentasi' },
   { label: 'Kontak', href: '/kontak' },
 ]
 

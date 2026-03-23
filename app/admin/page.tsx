@@ -1,17 +1,18 @@
-import { jadwalIbadah, unduhan, kegiatan } from "@/lib/data"
-import { Clock, FileDown, CalendarDays } from "lucide-react"
+import { jadwalIbadah, unduhan, dokumentasi } from "@/lib/data"
+import { Clock, FileDown, Camera } from "lucide-react"
 import { StatsCard } from "@/components/admin/StatsCard"
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
-import { Badge } from "@/components/ui/badge"
 
-const kategoriColor: Record<string, string> = {
-  Ibadah: "bg-blue-100 text-blue-700",
-  Sosial: "bg-green-100 text-green-700",
-  Pelkat: "bg-purple-100 text-purple-700",
+function formatDate(dateStr: string) {
+  return new Date(dateStr).toLocaleDateString("id-ID", {
+    day: "numeric",
+    month: "short",
+    year: "numeric",
+  })
 }
 
 export default function AdminDashboardPage() {
-  const recentKegiatan = kegiatan.slice(0, 5)
+  const recentDokumentasi = dokumentasi.slice(0, 5)
   const recentUnduhan = unduhan.slice(0, 5)
 
   return (
@@ -38,38 +39,37 @@ export default function AdminDashboardPage() {
           description="File TAIB & Warta"
         />
         <StatsCard
-          icon={CalendarDays}
-          value={kegiatan.length}
-          label="Total Kegiatan"
-          description="Kegiatan pelayanan"
+          icon={Camera}
+          value={dokumentasi.length}
+          label="Total Event"
+          description="Album dokumentasi kegiatan"
         />
       </div>
 
       {/* Recent sections */}
       <div className="grid gap-4 md:grid-cols-2">
-        {/* Kegiatan Terbaru */}
+        {/* Dokumentasi Terbaru */}
         <Card>
           <CardHeader className="pb-3">
-            <CardTitle className="text-base">Kegiatan Terbaru</CardTitle>
+            <CardTitle className="text-base">Dokumentasi Terbaru</CardTitle>
           </CardHeader>
           <CardContent className="pt-0">
             <div className="divide-y">
-              {recentKegiatan.map((item) => (
+              {recentDokumentasi.map((item) => (
                 <div
                   key={item.id}
                   className="flex items-center justify-between py-3 first:pt-0 last:pb-0"
                 >
                   <div className="min-w-0 flex-1">
-                    <p className="text-sm font-medium truncate">{item.judul}</p>
-                    <span
-                      className={`inline-flex items-center rounded-full px-2 py-0.5 text-xs font-medium mt-1 ${
-                        kategoriColor[item.kategori] ?? "bg-muted text-muted-foreground"
-                      }`}
-                    >
-                      {item.kategori}
+                    <p className="text-sm font-medium truncate">{item.namaAcara}</p>
+                    <span className="inline-flex items-center gap-1 text-xs text-muted-foreground mt-1">
+                      <Camera className="w-3 h-3" />
+                      {item.totalFoto} foto
                     </span>
                   </div>
-                  <span className="text-xs text-muted-foreground ml-4 shrink-0">{item.tanggal}</span>
+                  <span className="text-xs text-muted-foreground ml-4 shrink-0">
+                    {formatDate(item.tanggal)}
+                  </span>
                 </div>
               ))}
             </div>

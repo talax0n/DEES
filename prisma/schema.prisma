@@ -48,29 +48,26 @@ model Unduhan {
   @@map("unduhan")
 }
 
-model Kegiatan {
-  id          String        @id @default(cuid())
-  judul       String
-  slug        String        @unique
-  deskripsi   String
-  tanggal     DateTime
-  lokasi      String?
-  coverImage  String?
-  isPublished Boolean       @default(false)
-  createdAt   DateTime      @default(now())
-  updatedAt   DateTime      @updatedAt
-  galeri      GaleriImage[]
+model DokumentasiEvent {
+  id         String              @id @default(cuid())
+  namaAcara  String
+  tanggal    DateTime
+  coverPhoto String?
+  createdAt  DateTime            @default(now())
+  updatedAt  DateTime            @updatedAt
+  photos     DokumentasiPhoto[]
 
-  @@map("kegiatan")
+  @@map("dokumentasi_event")
 }
 
-model GaleriImage {
-  id        String   @id @default(cuid())
-  url       String
+model DokumentasiPhoto {
+  id        String             @id @default(cuid())
+  eventId   String
+  event     DokumentasiEvent   @relation(fields: [eventId], references: [id], onDelete: Cascade)
+  imageUrl  String
   caption   String?
-  order     Int      @default(0)
-  kegiatan  Kegiatan @relation(fields: [kegiatanId], references: [id], onDelete: Cascade)
-  kegiatanId String
+  order     Int                @default(0)
+  createdAt DateTime           @default(now())
 
-  @@map("galeri_image")
+  @@map("dokumentasi_photo")
 }

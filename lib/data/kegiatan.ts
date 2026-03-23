@@ -1,7 +1,0 @@
-export const kegiatan = [
-  { id: "1", judul: "Ibadah Minggu Adven III",           tanggal: "2025-12-14", kategori: "Ibadah"  as const, deskripsi: "Ibadah Minggu dengan tema Adven III, dipenuhi pujian dan renungan firman.", featured: true,  imageUrl: null, galleryUrl: "#", slug: "adven-iii-2025" },
-  { id: "2", judul: "Bakti Sosial Natal 2025",           tanggal: "2025-12-10", kategori: "Sosial"  as const, deskripsi: "Kegiatan berbagi kasih kepada warga sekitar gereja menyambut Natal.",        featured: false, imageUrl: null, galleryUrl: "#", slug: "baksos-natal-2025" },
-  { id: "3", judul: "Retreat GP Markus",                 tanggal: "2025-12-05", kategori: "Pelkat"  as const, deskripsi: "Retreat tahunan Gerakan Pemuda untuk penguatan iman dan kebersamaan.",        featured: false, imageUrl: null, galleryUrl: "#", slug: "retreat-gp-2025" },
-  { id: "4", judul: "Ibadah Penutupan Tahun Pelayanan",  tanggal: "2025-12-03", kategori: "Ibadah"  as const, deskripsi: "Menutup tahun pelayanan dengan penuh syukur dan sukacita.",                   featured: false, imageUrl: null, galleryUrl: "#", slug: "penutupan-2025" },
-  { id: "5", judul: "Pertemuan PKP Bulanan",             tanggal: "2025-11-28", kategori: "Pelkat"  as const, deskripsi: "Persekutuan rutin Kaum Perempuan bulan November.",                            featured: false, imageUrl: null, galleryUrl: "#", slug: "pkp-nov-2025" },
-]

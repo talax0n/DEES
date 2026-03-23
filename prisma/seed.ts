@@ -1,4 +1,5 @@
 import { PrismaClient } from '@prisma/client'
+import { dokumentasi } from '../lib/data/dokumentasi'
 
 const prisma = new PrismaClient()
 
@@ -27,6 +28,20 @@ async function main() {
     ],
     skipDuplicates: true,
   })
+
+  // Seed DokumentasiEvent
+  for (const item of dokumentasi) {
+    await prisma.dokumentasiEvent.upsert({
+      where: { id: item.id },
+      update: {},
+      create: {
+        id: item.id,
+        namaAcara: item.namaAcara,
+        tanggal: new Date(item.tanggal),
+        coverPhoto: item.coverPhoto,
+      },
+    })
+  }
 
   console.log('Seeding complete!')
 }

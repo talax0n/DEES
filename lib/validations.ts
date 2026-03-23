@@ -16,13 +16,9 @@ export const unduhanSchema = z.object({
   tanggal: z.coerce.date(),
 })
 
-export const kegiatanSchema = z.object({
-  judul: z.string().min(1, 'Judul wajib diisi'),
-  slug: z.string().min(1, 'Slug wajib diisi').regex(/^[a-z0-9-]+$/, 'Slug hanya boleh berisi huruf kecil, angka, dan tanda hubung'),
-  deskripsi: z.string().min(1, 'Deskripsi wajib diisi'),
+export const dokumentasiEventSchema = z.object({
+  namaAcara: z.string().min(1, 'Nama acara wajib diisi'),
   tanggal: z.coerce.date(),
-  lokasi: z.string().optional(),
-  isPublished: z.boolean().default(false),
 })
 
 export const contactSchema = z.object({
@@ -34,5 +30,5 @@ export const contactSchema = z.object({
 
 export type JadwalFormValues = z.infer<typeof jadwalSchema>
 export type UnduhanFormValues = z.infer<typeof unduhanSchema>
-export type KegiatanFormValues = z.infer<typeof kegiatanSchema>
+export type DokumentasiEventFormValues = z.infer<typeof dokumentasiEventSchema>
 export type ContactFormValues = z.infer<typeof contactSchema>

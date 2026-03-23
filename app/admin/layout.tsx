@@ -7,7 +7,7 @@ import {
   LayoutDashboard,
   Clock,
   FileDown,
-  CalendarDays,
+  Camera,
   LogOut,
   Menu,
   Bell,
@@ -28,19 +28,19 @@ const navItems = [
   { label: "Dashboard", href: "/admin", icon: LayoutDashboard, exact: true },
   { label: "Jadwal Ibadah", href: "/admin/jadwal", icon: Clock, exact: false },
   { label: "Unduhan", href: "/admin/unduhan", icon: FileDown, exact: false },
-  { label: "Kegiatan", href: "/admin/kegiatan", icon: CalendarDays, exact: false },
+  { label: "Dokumentasi", href: "/admin/dokumentasi", icon: Camera, exact: false },
 ]
 
 const pageTitles: Record<string, string> = {
   "/admin": "Dashboard",
   "/admin/jadwal": "Jadwal Ibadah",
   "/admin/unduhan": "Unduhan",
-  "/admin/kegiatan": "Kegiatan",
+  "/admin/dokumentasi": "Dokumentasi Kegiatan",
 }
 
 function getPageTitle(pathname: string) {
   if (pageTitles[pathname]) return pageTitles[pathname]
-  if (pathname.startsWith("/admin/kegiatan/")) return "Edit Kegiatan"
+  if (pathname.startsWith("/admin/dokumentasi/")) return "Kelola Foto Event"
   return "Admin"
 }
 

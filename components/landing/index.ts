@@ -3,7 +3,7 @@ export { Hero } from "./Hero";
 export { About } from "./About";
 export { Programs } from "./Programs";
 export { Downloads } from "./Downloads";
-export { Activities } from "./Activities";
+export { Dokumentasi } from "./Dokumentasi";
 export { Contact } from "./Contact";
 export { Footer } from "./Footer";
 export { AnimatedSection } from "./AnimatedSection";

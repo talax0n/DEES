@@ -2,7 +2,7 @@ import { Hero } from "@/components/landing/Hero";
 import { About } from "@/components/landing/About";
 import { Programs } from "@/components/landing/Programs";
 import { Downloads } from "@/components/landing/Downloads";
-import { Activities } from "@/components/landing/Activities";
+import { Dokumentasi } from "@/components/landing/Dokumentasi";
 import { Contact } from "@/components/landing/Contact";
 
 export default function HomePage() {
@@ -13,7 +13,7 @@ export default function HomePage() {
         <About />
         <Programs />
         <Downloads />
-        <Activities />
+        <Dokumentasi />
         <Contact />
       </main>
     </div>

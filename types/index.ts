@@ -33,18 +33,24 @@ export interface Unduhan {
   updatedAt: Date
 }
 
-export interface Kegiatan {
+export interface DokumentasiEvent {
   id: string
-  judul: string
-  slug: string
-  deskripsi: string
+  namaAcara: string
   tanggal: Date
-  lokasi?: string
-  coverImage?: string
-  galeri: string[]
-  isPublished: boolean
-  createdAt: Date
-  updatedAt: Date
+  coverPhoto?: string | null
+  totalFoto?: number
+  photos?: DokumentasiPhoto[]
+  createdAt?: Date
+  updatedAt?: Date
+}
+
+export interface DokumentasiPhoto {
+  id: string
+  eventId: string
+  imageUrl: string
+  caption?: string | null
+  order: number
+  createdAt?: Date
 }
 
 export interface ApiResponse<T> {
