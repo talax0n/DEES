@@ -1,11 +1,12 @@
 "use client"
 
 import { useState } from 'react'
+import Image from 'next/image'
 import { motion, useReducedMotion } from 'framer-motion'
 import { useScrollY } from '@/hooks/useScrollY'
 import { Button } from '@/components/ui/button'
 import { Sheet, SheetContent, SheetTrigger } from '@/components/ui/sheet'
-import { Menu, ArrowUpRight, Cross } from 'lucide-react'
+import { Menu, ArrowUpRight } from 'lucide-react'
 
 const navLinks = [
   { label: 'Tentang Gereja', href: '#about' },
@@ -37,10 +38,14 @@ export function Navbar() {
             animate={{ opacity: 1, x: 0 }}
             transition={{ duration: shouldReduceMotion ? 0 : 0.5, ease: "easeOut" }}
           >
-            <div className={`w-8 h-8 rounded-full flex items-center justify-center transition-colors ${
-              isScrolled ? 'bg-navy' : 'bg-white/20'
-            }`}>
-              <Cross className={`w-4 h-4 ${isScrolled ? 'text-white' : 'text-white'}`} />
+            <div className="relative w-9 h-9 shrink-0">
+              <Image
+                src="/LOGO.png"
+                alt="Logo GPIB"
+                fill
+                sizes="36px"
+                className="object-contain"
+              />
             </div>
             <span className={`font-serif font-semibold text-sm lg:text-base transition-colors ${
               isScrolled ? 'text-navy' : 'text-white'
@@ -112,8 +117,14 @@ export function Navbar() {
             <SheetContent side="right" className="w-[300px] bg-white">
               <div className="flex flex-col gap-6 mt-8">
                 <a href="#" className="flex items-center gap-2">
-                  <div className="w-8 h-8 rounded-full bg-navy flex items-center justify-center">
-                    <Cross className="w-4 h-4 text-white" />
+                  <div className="relative w-8 h-8 shrink-0">
+                    <Image
+                      src="/LOGO.png"
+                      alt="Logo GPIB"
+                      fill
+                      sizes="32px"
+                      className="object-contain"
+                    />
                   </div>
                   <span className="font-serif font-semibold text-navy">
                     GPIB Damai Sejahtera
