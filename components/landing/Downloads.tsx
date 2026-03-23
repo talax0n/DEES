@@ -1,26 +1,18 @@
 "use client";
 
-import { useState } from "react";
-import { motion, AnimatePresence, useReducedMotion } from "framer-motion";
+import { motion, useReducedMotion } from "framer-motion";
 import { Badge } from "@/components/ui/badge";
-import { Tabs, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Button } from "@/components/ui/button";
-import { FileText, Download, ArrowUpRight } from "lucide-react";
+import { FileText, ArrowRight, BookOpen, Newspaper } from "lucide-react";
 import { unduhan } from "@/lib/data";
 import { AnimatedSection } from "./AnimatedSection";
+import Link from "next/link";
 
 export function Downloads() {
-  const [activeTab, setActiveTab] = useState<"tata-ibadah" | "warta-jemaat">("tata-ibadah");
   const shouldReduceMotion = useReducedMotion();
 
-  const tataIbadah = unduhan
-    .filter((u) => u.tipe === "tata-ibadah")
-    .slice(0, 4);
-  const wartaJemaat = unduhan.filter((u) => u.tipe === "warta").slice(0, 4);
-
-  const activeItems = activeTab === "tata-ibadah" ? tataIbadah : wartaJemaat;
-  const iconColor = activeTab === "tata-ibadah" ? "text-red-500" : "text-blue-500";
-  const iconBg = activeTab === "tata-ibadah" ? "bg-red-50" : "bg-blue-50";
+  const latestTataIbadah = unduhan.find((u) => u.tipe === "tata-ibadah");
+  const latestWartaJemaat = unduhan.find((u) => u.tipe === "warta");
 
   const formatDate = (dateStr: string) => {
     const date = new Date(dateStr);
@@ -34,116 +26,106 @@ export function Downloads() {
   return (
     <section id="downloads" className="w-full py-20 lg:py-32 bg-off-white">
       <div className="w-full px-4 sm:px-6 lg:px-8 xl:px-12">
-        <div className="grid grid-cols-1 lg:grid-cols-12 gap-8 lg:gap-12">
-          {/* Left column */}
-          <AnimatedSection className="lg:col-span-4 space-y-6">
-            {/* Section pill */}
+        <div className="grid grid-cols-1 lg:grid-cols-12 gap-8 lg:gap-12 mb-12">
+          <AnimatedSection className="lg:col-span-8 lg:col-start-3 text-center space-y-6">
             <Badge
               variant="default"
-              className="bg-navy text-white hover:bg-navy px-4 py-1.5 text-xs font-medium rounded-full"
+              className="bg-navy text-white hover:bg-navy px-4 py-1.5 text-xs font-medium rounded-full inline-flex items-center"
             >
               <span className="font-mono mr-2">03</span>
               Unduhan
             </Badge>
 
-            {/* Headline */}
             <h2 className="font-serif text-3xl sm:text-4xl lg:text-5xl font-medium text-navy leading-tight">
-              Dokumen & <span className="text-gold">Materi</span>
-              <br />
-              Pelayanan
+              Dokumen & <span className="text-gold">Materi</span> Pelayanan
             </h2>
 
-            {/* Description */}
-            <p className="text-gray-text text-base leading-relaxed">
+            <p className="text-gray-text text-base leading-relaxed max-w-2xl mx-auto">
               Akses tata ibadah, warta jemaat, dan dokumen pelayanan lainnya
               untuk mendukung perjalanan iman Anda.
             </p>
           </AnimatedSection>
-
-          {/* Right column - Tabs */}
-          <AnimatedSection className="lg:col-span-8" delay={0.15}>
-            <div className="w-full">
-              <Tabs value={activeTab} onValueChange={(v) => setActiveTab(v as typeof activeTab)}>
-              <TabsList className="bg-white border border-gray-line rounded-full p-1 mb-6">
-                <TabsTrigger
-                  value="tata-ibadah"
-                  className="rounded-full px-6 py-2 data-[state=active]:bg-navy data-[state=active]:text-white"
-                >
-                  Tata Ibadah
-                </TabsTrigger>
-                <TabsTrigger
-                  value="warta-jemaat"
-                  className="rounded-full px-6 py-2 data-[state=active]:bg-navy data-[state=active]:text-white"
-                >
-                  Warta Jemaat
-                </TabsTrigger>
-              </TabsList>
-              </Tabs>
-
-              <AnimatePresence mode="wait">
-                <motion.div
-                  key={activeTab}
-                  initial={{ opacity: 0, y: shouldReduceMotion ? 0 : 16 }}
-                  animate={{ opacity: 1, y: 0 }}
-                  exit={{ opacity: 0, y: shouldReduceMotion ? 0 : -8 }}
-                  transition={{ duration: shouldReduceMotion ? 0 : 0.25, ease: "easeOut" }}
-                  className="bg-white rounded-3xl shadow-sm overflow-hidden"
-                >
-                  {activeItems.map((item, index) => (
-                    <motion.div
-                      key={item.id}
-                      className={`flex items-center justify-between p-4 lg:p-5 hover:bg-off-white transition-all group ${
-                        index !== activeItems.length - 1
-                          ? "border-b border-gray-line"
-                          : ""
-                      }`}
-                      initial={{ opacity: 0, x: shouldReduceMotion ? 0 : -16 }}
-                      animate={{ opacity: 1, x: 0 }}
-                      transition={{
-                        duration: shouldReduceMotion ? 0 : 0.3,
-                        delay: shouldReduceMotion ? 0 : index * 0.07,
-                        ease: "easeOut",
-                      }}
-                    >
-                      <div className="flex items-center gap-4">
-                        <div className={`w-10 h-10 rounded-xl ${iconBg} flex items-center justify-center`}>
-                          <FileText className={`w-5 h-5 ${iconColor}`} />
-                        </div>
-                        <div>
-                          <p className="text-xs text-gray-text mb-0.5">
-                            {formatDate(item.tanggal)}
-                          </p>
-                          <p className="font-medium text-navy text-sm lg:text-base">
-                            {item.judul}
-                          </p>
-                        </div>
-                      </div>
-                      <Button
-                        variant="ghost"
-                        size="sm"
-                        className="rounded-full text-gold hover:text-gold hover:bg-gold/10 flex items-center gap-1"
-                      >
-                        <Download className="w-4 h-4" />
-                        <span className="hidden sm:inline">Unduh</span>
-                      </Button>
-                    </motion.div>
-                  ))}
-                </motion.div>
-              </AnimatePresence>
-
-              {/* View all link */}
-              <div className="mt-6 text-right">
-                <a
-                  href="#"
-                  className="inline-flex items-center gap-2 text-navy font-medium hover:text-gold transition-colors group text-sm"
-                >
-                  Lihat Semua
-                  <ArrowUpRight className="w-4 h-4 group-hover:translate-x-0.5 group-hover:-translate-y-0.5 transition-transform" />
-                </a>
-              </div>
-            </div>
-          </AnimatedSection>
         </div>
+
+        <AnimatedSection delay={0.15}>
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-6 lg:gap-8 max-w-5xl mx-auto">
+            {/* Tata Ibadah Card */}
+            <motion.div
+              initial={{ opacity: 0, y: shouldReduceMotion ? 0 : 20 }}
+              whileInView={{ opacity: 1, y: 0 }}
+              viewport={{ once: true }}
+              transition={{ duration: shouldReduceMotion ? 0 : 0.4 }}
+              className="bg-white rounded-3xl p-6 lg:p-8 shadow-sm border border-gray-line/50 flex flex-col h-full"
+            >
+              <div className="w-12 h-12 rounded-2xl bg-red-50 flex items-center justify-center mb-6">
+                <BookOpen className="w-6 h-6 text-red-500" />
+              </div>
+              <h3 className="font-serif text-2xl text-navy font-medium mb-2">Tata Ibadah</h3>
+              <p className="text-gray-text text-sm mb-6">
+                Panduan liturgi untuk ibadah Minggu dan hari raya gerejawi.
+              </p>
+              
+              {latestTataIbadah && (
+                <div className="bg-off-white rounded-2xl p-4 mb-8 border border-gray-line/50">
+                  <div className="flex items-start gap-3">
+                    <FileText className="w-5 h-5 text-red-500 mt-0.5 shrink-0" />
+                    <div>
+                      <p className="text-xs text-gray-text mb-1">Terbaru • {formatDate(latestTataIbadah.tanggal)}</p>
+                      <p className="font-medium text-navy text-sm line-clamp-2">{latestTataIbadah.judul}</p>
+                    </div>
+                  </div>
+                </div>
+              )}
+              
+              <div className="mt-auto pt-4">
+                <Link href="/unduhan" className="w-full block">
+                  <Button variant="outline" className="w-full rounded-full border-gray-line hover:border-navy hover:bg-navy hover:text-white transition-colors group">
+                    Lihat Semua Dokumen
+                    <ArrowRight className="w-4 h-4 ml-2 group-hover:translate-x-1 transition-transform" />
+                  </Button>
+                </Link>
+              </div>
+            </motion.div>
+
+            {/* Warta Jemaat Card */}
+            <motion.div
+              initial={{ opacity: 0, y: shouldReduceMotion ? 0 : 20 }}
+              whileInView={{ opacity: 1, y: 0 }}
+              viewport={{ once: true }}
+              transition={{ duration: shouldReduceMotion ? 0 : 0.4, delay: shouldReduceMotion ? 0 : 0.1 }}
+              className="bg-white rounded-3xl p-6 lg:p-8 shadow-sm border border-gray-line/50 flex flex-col h-full"
+            >
+              <div className="w-12 h-12 rounded-2xl bg-blue-50 flex items-center justify-center mb-6">
+                <Newspaper className="w-6 h-6 text-blue-500" />
+              </div>
+              <h3 className="font-serif text-2xl text-navy font-medium mb-2">Warta Jemaat</h3>
+              <p className="text-gray-text text-sm mb-6">
+                Informasi terkini seputar pelayanan, kegiatan, dan berita duka/sukacita.
+              </p>
+              
+              {latestWartaJemaat && (
+                <div className="bg-off-white rounded-2xl p-4 mb-8 border border-gray-line/50">
+                  <div className="flex items-start gap-3">
+                    <FileText className="w-5 h-5 text-blue-500 mt-0.5 shrink-0" />
+                    <div>
+                      <p className="text-xs text-gray-text mb-1">Terbaru • {formatDate(latestWartaJemaat.tanggal)}</p>
+                      <p className="font-medium text-navy text-sm line-clamp-2">{latestWartaJemaat.judul}</p>
+                    </div>
+                  </div>
+                </div>
+              )}
+              
+              <div className="mt-auto pt-4">
+                <Link href="/unduhan" className="w-full block">
+                  <Button variant="outline" className="w-full rounded-full border-gray-line hover:border-navy hover:bg-navy hover:text-white transition-colors group">
+                    Lihat Semua Dokumen
+                    <ArrowRight className="w-4 h-4 ml-2 group-hover:translate-x-1 transition-transform" />
+                  </Button>
+                </Link>
+              </div>
+            </motion.div>
+          </div>
+        </AnimatedSection>
       </div>
     </section>
   );

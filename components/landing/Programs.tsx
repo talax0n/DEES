@@ -117,9 +117,8 @@ export function Programs() {
 
             {/* Description */}
             <p className="text-gray-text text-sm leading-relaxed">
-              Pelayanan kami adalah ritme kehidupan rohani jemaat: ibadah
-              mingguan, persekutuan doa, pendalaman Alkitab, dan pertemuan
-              lintas usia.
+              Ibadah Hari Minggu dilaksanakan sebanyak 2 (dua) sesi, yakni pada pukul 06.00 WIB sesi pertama dan 09.00 WIB sesi kedua.<br/>
+              <strong>Khusus Ibadah Hari Minggu Sakramen Perjamuan (dan Jumat Agung)</strong> dilaksanakan sebanyak 3 (tiga) sesi, yakni pada pukul <strong>06.00 WIB; 10.00 WIB; 18.00 WIB</strong>
             </p>
           </AnimatedSection>
         </div>
