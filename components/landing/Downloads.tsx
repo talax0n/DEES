@@ -4,18 +4,33 @@ import { motion, useReducedMotion } from "framer-motion";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { FileText, ArrowRight, BookOpen, Newspaper } from "lucide-react";
-import { unduhan } from "@/lib/data";
+import { unduhan as fallbackUnduhan } from "@/lib/data";
 import { AnimatedSection } from "./AnimatedSection";
 import Link from "next/link";
 
-export function Downloads() {
+interface UnduhanItem {
+  id: string
+  judul: string
+  tipe: string
+  tanggal: string | Date
+  fileUrl?: string
+  url?: string
+}
+
+interface DownloadsProps {
+  unduhan?: UnduhanItem[]
+}
+
+export function Downloads({ unduhan }: DownloadsProps) {
   const shouldReduceMotion = useReducedMotion();
 
-  const latestTataIbadah = unduhan.find((u) => u.tipe === "tata-ibadah");
-  const latestWartaJemaat = unduhan.find((u) => u.tipe === "warta");
+  const data = unduhan && unduhan.length > 0 ? unduhan : fallbackUnduhan as UnduhanItem[]
 
-  const formatDate = (dateStr: string) => {
-    const date = new Date(dateStr);
+  const latestTataIbadah = data.find((u) => u.tipe === "TAIB" || u.tipe === "tata-ibadah")
+  const latestWartaJemaat = data.find((u) => u.tipe === "WARTA" || u.tipe === "warta")
+
+  const formatDate = (dateStr: string | Date) => {
+    const date = typeof dateStr === "string" ? new Date(dateStr) : dateStr;
     return date.toLocaleDateString("id-ID", {
       day: "numeric",
       month: "long",
@@ -64,7 +79,7 @@ export function Downloads() {
               <p className="text-gray-text text-sm mb-6">
                 Panduan liturgi untuk ibadah Minggu dan hari raya gerejawi.
               </p>
-              
+
               {latestTataIbadah && (
                 <div className="bg-off-white rounded-2xl p-4 mb-8 border border-gray-line/50">
                   <div className="flex items-start gap-3">
@@ -76,7 +91,7 @@ export function Downloads() {
                   </div>
                 </div>
               )}
-              
+
               <div className="mt-auto pt-4">
                 <Link href="/unduhan" className="w-full block">
                   <Button variant="outline" className="w-full rounded-full border-gray-line hover:border-navy hover:bg-navy hover:text-white transition-colors group">
@@ -102,7 +117,7 @@ export function Downloads() {
               <p className="text-gray-text text-sm mb-6">
                 Informasi terkini seputar pelayanan, kegiatan, dan berita duka/sukacita.
               </p>
-              
+
               {latestWartaJemaat && (
                 <div className="bg-off-white rounded-2xl p-4 mb-8 border border-gray-line/50">
                   <div className="flex items-start gap-3">
@@ -114,7 +129,7 @@ export function Downloads() {
                   </div>
                 </div>
               )}
-              
+
               <div className="mt-auto pt-4">
                 <Link href="/unduhan" className="w-full block">
                   <Button variant="outline" className="w-full rounded-full border-gray-line hover:border-navy hover:bg-navy hover:text-white transition-colors group">

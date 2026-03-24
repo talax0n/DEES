@@ -4,22 +4,53 @@ import Link from "next/link"
 import { motion, useReducedMotion } from "framer-motion"
 import { Badge } from "@/components/ui/badge"
 import { ArrowUpRight, Camera } from "lucide-react"
-import { dokumentasi } from "@/lib/data"
+import { dokumentasi as fallbackDokumentasi } from "@/lib/data"
 import { AnimatedSection } from "./AnimatedSection"
 
-export function Dokumentasi() {
+interface DokumentasiPhoto {
+  id: string
+  imageUrl: string
+  caption?: string | null
+  order?: number
+}
+
+interface DokumentasiEventItem {
+  id: string
+  namaAcara: string
+  tanggal: string | Date
+  coverPhoto?: string | null
+  totalFoto?: number
+  photos?: DokumentasiPhoto[] | string[]
+  _count?: { photos: number }
+}
+
+interface DokumentasiProps {
+  events?: DokumentasiEventItem[]
+}
+
+function resolveItem(item: DokumentasiEventItem) {
+  const coverPhoto = item.coverPhoto
+    ?? (item.photos && item.photos.length > 0
+      ? (typeof item.photos[0] === "string" ? item.photos[0] : (item.photos[0] as DokumentasiPhoto).imageUrl)
+      : null)
+  const totalFoto = item.totalFoto ?? item._count?.photos ?? 0
+  return { coverPhoto, totalFoto }
+}
+
+export function Dokumentasi({ events }: DokumentasiProps) {
   const shouldReduceMotion = useReducedMotion()
 
-  const formatDate = (dateStr: string) => {
-    const date = new Date(dateStr)
+  const rawData = events && events.length > 0 ? events : fallbackDokumentasi as DokumentasiEventItem[]
+  const displayed = rawData.slice(0, 6)
+
+  const formatDate = (dateStr: string | Date) => {
+    const date = typeof dateStr === "string" ? new Date(dateStr) : dateStr
     return date.toLocaleDateString("id-ID", {
       day: "numeric",
       month: "long",
       year: "numeric",
     })
   }
-
-  const displayed = dokumentasi.slice(0, 6)
 
   return (
     <section id="dokumentasi" className="w-full py-20 lg:py-32 bg-white">
@@ -51,54 +82,57 @@ export function Dokumentasi() {
 
         {/* Card grid */}
         <div className="grid grid-cols-2 md:grid-cols-3 gap-4 md:gap-6">
-          {displayed.map((item, index) => (
-            <motion.div
-              key={item.id}
-              className="group rounded-2xl overflow-hidden bg-white border border-gray-line cursor-pointer"
-              initial={{ opacity: 0, y: shouldReduceMotion ? 0 : 30 }}
-              whileInView={{ opacity: 1, y: 0 }}
-              viewport={{ once: true, margin: "-80px" }}
-              transition={{
-                duration: shouldReduceMotion ? 0 : 0.5,
-                delay: shouldReduceMotion ? 0 : index * 0.08,
-                ease: "easeOut",
-              }}
-              whileHover={{
-                y: shouldReduceMotion ? 0 : -4,
-                boxShadow: "0 20px 40px rgba(0,0,0,0.12)",
-              }}
-            >
-              {/* Cover photo area */}
-              <div className="relative aspect-[4/3] overflow-hidden bg-gradient-to-br from-navy/15 to-navy/5 flex items-center justify-center">
-                {item.coverPhoto ? (
-                  // eslint-disable-next-line @next/next/no-img-element
-                  <img
-                    src={item.coverPhoto}
-                    alt={item.namaAcara}
-                    className="w-full h-full object-cover transition-transform duration-500 group-hover:scale-105"
-                  />
-                ) : (
-                  <Camera className="w-10 h-10 text-navy/20 transition-transform duration-500 group-hover:scale-110" />
-                )}
+          {displayed.map((item, index) => {
+            const { coverPhoto, totalFoto } = resolveItem(item)
+            return (
+              <motion.div
+                key={item.id}
+                className="group rounded-2xl overflow-hidden bg-white border border-gray-line cursor-pointer"
+                initial={{ opacity: 0, y: shouldReduceMotion ? 0 : 30 }}
+                whileInView={{ opacity: 1, y: 0 }}
+                viewport={{ once: true, margin: "-80px" }}
+                transition={{
+                  duration: shouldReduceMotion ? 0 : 0.5,
+                  delay: shouldReduceMotion ? 0 : index * 0.08,
+                  ease: "easeOut",
+                }}
+                whileHover={{
+                  y: shouldReduceMotion ? 0 : -4,
+                  boxShadow: "0 20px 40px rgba(0,0,0,0.12)",
+                }}
+              >
+                {/* Cover photo area */}
+                <div className="relative aspect-[4/3] overflow-hidden bg-gradient-to-br from-navy/15 to-navy/5 flex items-center justify-center">
+                  {coverPhoto ? (
+                    // eslint-disable-next-line @next/next/no-img-element
+                    <img
+                      src={coverPhoto}
+                      alt={item.namaAcara}
+                      className="w-full h-full object-cover transition-transform duration-500 group-hover:scale-105"
+                    />
+                  ) : (
+                    <Camera className="w-10 h-10 text-navy/20 transition-transform duration-500 group-hover:scale-110" />
+                  )}
 
-                {/* Photo count badge */}
-                <div className="absolute top-3 right-3">
-                  <span className="inline-flex items-center gap-1 bg-black/50 backdrop-blur-sm text-white text-xs font-medium rounded-full px-2.5 py-1">
-                    <Camera className="w-3 h-3" />
-                    {item.totalFoto} foto
-                  </span>
-                </div>
+                  {/* Photo count badge */}
+                  <div className="absolute top-3 right-3">
+                    <span className="inline-flex items-center gap-1 bg-black/50 backdrop-blur-sm text-white text-xs font-medium rounded-full px-2.5 py-1">
+                      <Camera className="w-3 h-3" />
+                      {totalFoto} foto
+                    </span>
+                  </div>
 
-                {/* Bottom overlay */}
-                <div className="absolute inset-x-0 bottom-0 bg-gradient-to-t from-black/70 via-black/20 to-transparent p-4">
-                  <p className="text-white font-semibold text-sm leading-snug line-clamp-2">
-                    {item.namaAcara}
-                  </p>
-                  <p className="text-white/70 text-xs mt-1">{formatDate(item.tanggal)}</p>
+                  {/* Bottom overlay */}
+                  <div className="absolute inset-x-0 bottom-0 bg-gradient-to-t from-black/70 via-black/20 to-transparent p-4">
+                    <p className="text-white font-semibold text-sm leading-snug line-clamp-2">
+                      {item.namaAcara}
+                    </p>
+                    <p className="text-white/70 text-xs mt-1">{formatDate(item.tanggal)}</p>
+                  </div>
                 </div>
-              </div>
-            </motion.div>
-          ))}
+              </motion.div>
+            )
+          })}
         </div>
       </div>
     </section>

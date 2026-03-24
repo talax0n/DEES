@@ -15,10 +15,10 @@ import {
   Star,
   Play,
 } from "lucide-react";
-import { jadwalIbadah, pelkat } from "@/lib/data";
 import { AnimatedSection } from "./AnimatedSection";
 import { Marquee } from "@/components/ui/marquee";
 import Image from "next/image";
+import { jadwalIbadah as fallbackJadwal, pelkat as fallbackPelkat } from "@/lib/data";
 
 const iconMap: Record<string, React.ComponentType<{ className?: string }>> = {
   Baby,
@@ -29,9 +29,35 @@ const iconMap: Record<string, React.ComponentType<{ className?: string }>> = {
   Star,
 };
 
-export function Programs() {
+interface JadwalItem {
+  id: string
+  namaIbadah?: string
+  jenis?: string
+  waktu: string
+  metode?: string
+  linkStreaming?: string | null
+  highlight?: boolean
+}
+
+interface PelkatItem {
+  id: string
+  nama: string
+  singkatan?: string
+  icon?: string | null
+  iconUrl?: string | null
+}
+
+interface ProgramsProps {
+  jadwal?: JadwalItem[]
+  pelkat?: PelkatItem[]
+}
+
+export function Programs({ jadwal, pelkat }: ProgramsProps) {
   const [expandedPelkat, setExpandedPelkat] = useState<string>("1");
   const shouldReduceMotion = useReducedMotion();
+
+  const jadwalData = jadwal && jadwal.length > 0 ? jadwal : fallbackJadwal as JadwalItem[]
+  const pelkatData = pelkat && pelkat.length > 0 ? pelkat : fallbackPelkat as PelkatItem[]
 
   return (
     <section id="programs" className="w-full py-20 lg:py-32 bg-white">
@@ -73,7 +99,7 @@ export function Programs() {
 
             {/* Service times grid */}
             <div className="grid grid-cols-2 gap-4">
-              {jadwalIbadah.map((jadwal, i) => (
+              {jadwalData.map((jadwal, i) => (
                 <motion.div
                   key={jadwal.id}
                   className="relative rounded-2xl border border-gray-line p-4 hover:shadow-md transition-shadow bg-white"
@@ -90,12 +116,12 @@ export function Programs() {
                     <ArrowUpRight className="w-4 h-4 text-gray-text" />
                   </div>
                   <p className="font-semibold text-navy text-sm mb-1 pr-5">
-                    {jadwal.jenis}
+                    {jadwal.namaIbadah ?? jadwal.jenis}
                   </p>
                   <p className="text-gold font-medium text-sm">
                     {jadwal.waktu}
                   </p>
-                  {jadwal.highlight && (
+                  {(jadwal.highlight || jadwal.linkStreaming) && (
                     <div className="mt-2 flex items-center gap-1">
                       <Play className="w-3 h-3 text-red-500" />
                       <span className="text-xs text-red-500">Live</span>
@@ -131,20 +157,26 @@ export function Programs() {
 
           <div className="relative flex w-full flex-col items-center justify-center overflow-hidden py-10">
             <Marquee pauseOnHover className="[--duration:30s]">
-              {pelkat.map((item) => (
+              {pelkatData.map((item) => (
                 <div
                   key={item.id}
                   className="group/card relative flex w-48 h-48 sm:w-64 sm:h-64 cursor-pointer overflow-hidden rounded-3xl border border-gray-line bg-white hover:shadow-xl transition-all duration-300 items-center justify-center p-6"
                 >
                   <div className="absolute inset-0 bg-gradient-to-br from-navy/5 to-transparent opacity-0 group-hover/card:opacity-100 transition-opacity duration-300" />
                   <div className="relative w-full h-full transform group-hover/card:scale-105 transition-transform duration-300">
-                    <Image
-                      src={item.icon}
-                      alt={`Logo ${item.nama}`}
-                      fill
-                      sizes="(min-width: 640px) 256px, 192px"
-                      className="object-contain"
-                    />
+                    {(item.icon ?? item.iconUrl) ? (
+                      <Image
+                        src={(item.icon ?? item.iconUrl)!}
+                        alt={`Logo ${item.nama}`}
+                        fill
+                        sizes="(min-width: 640px) 256px, 192px"
+                        className="object-contain"
+                      />
+                    ) : (
+                      <div className="w-full h-full flex items-center justify-center">
+                        <span className="text-4xl font-bold text-navy/20">{item.singkatan ?? item.nama.slice(0, 2)}</span>
+                      </div>
+                    )}
                   </div>
                   <div className="absolute bottom-4 left-0 right-0 text-center opacity-0 group-hover/card:opacity-100 transition-opacity duration-300">
                     <Badge variant="secondary" className="bg-navy text-white hover:bg-navy-mid border-none shadow-sm">
