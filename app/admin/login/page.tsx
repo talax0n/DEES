@@ -1,27 +1,49 @@
 "use client"
 
-import { useState } from "react"
+import { useEffect, useState } from "react"
+import { useRouter, useSearchParams } from "next/navigation"
+import { toast } from "sonner"
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
 import { Label } from "@/components/ui/label"
+import { createSupabaseBrowserClient } from "@/lib/supabase-browser"
 
 export default function AdminLoginPage() {
+  const router = useRouter()
+  const searchParams = useSearchParams()
   const [email, setEmail] = useState("")
   const [password, setPassword] = useState("")
   const [loading, setLoading] = useState(false)
+  const supabase = createSupabaseBrowserClient()
+
+  // If already logged in, redirect away
+  useEffect(() => {
+    supabase.auth.getSession().then(({ data: { session } }) => {
+      if (session) {
+        const redirect = searchParams.get("redirect") ?? "/admin"
+        router.replace(redirect)
+      }
+    })
+  }, [supabase, router, searchParams])
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault()
     setLoading(true)
-    // TODO: Implement authentication (e.g. Supabase Auth signInWithPassword)
-    console.log("Login attempt:", { email })
-    setLoading(false)
+    try {
+      const { error } = await supabase.auth.signInWithPassword({ email, password })
+      if (error) throw error
+      const redirect = searchParams.get("redirect") ?? "/admin"
+      router.replace(redirect)
+    } catch (err) {
+      toast.error(err instanceof Error ? err.message : "Login gagal")
+    } finally {
+      setLoading(false)
+    }
   }
 
   return (
     <div className="flex min-h-screen items-center justify-center bg-off-white">
       <div className="w-full max-w-sm">
-        {/* Church logo / branding */}
         <div className="text-center mb-8">
           <div className="inline-flex items-center justify-center w-16 h-16 rounded-full bg-navy mb-4">
             <span className="text-2xl font-bold text-white font-serif">DS</span>

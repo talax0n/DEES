@@ -9,6 +9,7 @@ import { jadwalSchema } from "@/lib/validations"
 
 type JadwalInput = z.input<typeof jadwalSchema>
 type JadwalOutput = z.output<typeof jadwalSchema>
+import { useAuth } from "@/components/providers/AuthProvider"
 import { PageHeader } from "@/components/admin/PageHeader"
 import { DeleteDialog } from "@/components/admin/DeleteDialog"
 import { Button } from "@/components/ui/button"
@@ -56,6 +57,8 @@ const METODE_LABEL: Record<string, string> = {
 }
 
 export default function AdminJadwalPage() {
+  const { role } = useAuth()
+  const canDelete = role === "ADMIN"
   const [data, setData] = useState<Jadwal[]>([])
   const [loading, setLoading] = useState(true)
   const [formOpen, setFormOpen] = useState(false)
@@ -227,9 +230,11 @@ export default function AdminJadwalPage() {
                       <button className="text-xs text-blue-600 hover:underline" onClick={() => openEdit(jadwal)}>
                         Edit
                       </button>
-                      <button className="text-xs text-red-600 hover:underline" onClick={() => openDelete(jadwal.id)}>
-                        Hapus
-                      </button>
+                      {canDelete && (
+                        <button className="text-xs text-red-600 hover:underline" onClick={() => openDelete(jadwal.id)}>
+                          Hapus
+                        </button>
+                      )}
                     </div>
                   </TableCell>
                 </TableRow>

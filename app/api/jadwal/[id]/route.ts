@@ -1,12 +1,15 @@
 import { NextRequest, NextResponse } from "next/server"
 import { db } from "@/lib/db"
 import { jadwalSchema } from "@/lib/validations"
+import { requireAdmin, requireAuth } from "@/lib/auth"
 
 interface Params {
   params: Promise<{ id: string }>
 }
 
 export async function PUT(request: NextRequest, { params }: Params) {
+  const { response: authResponse } = await requireAuth()
+  if (authResponse) return authResponse
   const { id } = await params
   try {
     const body = await request.json()
@@ -22,6 +25,8 @@ export async function PUT(request: NextRequest, { params }: Params) {
 }
 
 export async function DELETE(_request: NextRequest, { params }: Params) {
+  const { response: authResponse } = await requireAdmin()
+  if (authResponse) return authResponse
   const { id } = await params
   try {
     await db.jadwalIbadah.delete({ where: { id } })

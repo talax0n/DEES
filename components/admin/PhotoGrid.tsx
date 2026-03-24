@@ -15,9 +15,10 @@ interface PhotoGridProps {
   coverPhotoId?: string | null
   onDelete: (photoId: string) => void
   onSetCover: (photoId: string) => void
+  canDelete?: boolean
 }
 
-export function PhotoGrid({ photos, coverPhotoId, onDelete, onSetCover }: PhotoGridProps) {
+export function PhotoGrid({ photos, coverPhotoId, onDelete, onSetCover, canDelete = true }: PhotoGridProps) {
   if (photos.length === 0) {
     return (
       <div className="flex flex-col items-center justify-center rounded-xl border border-dashed border-gray-line py-12 text-center text-muted-foreground">
@@ -61,14 +62,16 @@ export function PhotoGrid({ photos, coverPhotoId, onDelete, onSetCover }: PhotoG
               >
                 <Star className="w-4 h-4" />
               </button>
-              <button
-                type="button"
-                title="Hapus foto"
-                onClick={() => onDelete(photo.id)}
-                className="rounded-full p-1.5 bg-white/20 text-white hover:bg-destructive transition-colors"
-              >
-                <Trash2 className="w-4 h-4" />
-              </button>
+              {canDelete && (
+                <button
+                  type="button"
+                  title="Hapus foto"
+                  onClick={() => onDelete(photo.id)}
+                  className="rounded-full p-1.5 bg-white/20 text-white hover:bg-destructive transition-colors"
+                >
+                  <Trash2 className="w-4 h-4" />
+                </button>
+              )}
             </div>
 
             {/* Cover badge */}

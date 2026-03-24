@@ -1,12 +1,15 @@
 import { NextRequest, NextResponse } from "next/server"
 import { db } from "@/lib/db"
 import { deleteFile, getPathFromUrl } from "@/lib/storage"
+import { requireAdmin, requireAuth } from "@/lib/auth"
 
 interface Params {
   params: Promise<{ id: string; photoId: string }>
 }
 
 export async function DELETE(_request: NextRequest, { params }: Params) {
+  const { response } = await requireAdmin()
+  if (response) return response
   const { id, photoId } = await params
   try {
     const photo = await db.dokumentasiPhoto.findUnique({ where: { id: photoId } })
@@ -42,6 +45,8 @@ export async function DELETE(_request: NextRequest, { params }: Params) {
 }
 
 export async function PATCH(request: NextRequest, { params }: Params) {
+  const { response } = await requireAuth()
+  if (response) return response
   const { id, photoId } = await params
   try {
     const body = await request.json()

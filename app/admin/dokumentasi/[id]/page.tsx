@@ -5,6 +5,7 @@ import Link from "next/link"
 import { useRouter } from "next/navigation"
 import { toast } from "sonner"
 import { DeleteDialog } from "@/components/admin/DeleteDialog"
+import { useAuth } from "@/components/providers/AuthProvider"
 import { UploadZone } from "@/components/admin/UploadZone"
 import { PhotoGrid } from "@/components/admin/PhotoGrid"
 import { Button } from "@/components/ui/button"
@@ -32,6 +33,8 @@ export default function DokumentasiEventPage({
 }) {
   const { id } = use(params)
   const router = useRouter()
+  const { role } = useAuth()
+  const canDelete = role === "ADMIN"
 
   const [event, setEvent] = useState<EventDetail | null>(null)
   const [loading, setLoading] = useState(true)
@@ -182,14 +185,16 @@ export default function DokumentasiEventPage({
             <p className="text-xs text-muted-foreground">{formatDate(event.tanggal)}</p>
           </div>
         </div>
-        <Button
-          variant="outline"
-          className="text-destructive border-destructive hover:bg-destructive hover:text-white"
-          onClick={() => setDeleteEventOpen(true)}
-        >
-          <Trash2 className="mr-2 h-4 w-4" />
-          Hapus Event
-        </Button>
+        {canDelete && (
+          <Button
+            variant="outline"
+            className="text-destructive border-destructive hover:bg-destructive hover:text-white"
+            onClick={() => setDeleteEventOpen(true)}
+          >
+            <Trash2 className="mr-2 h-4 w-4" />
+            Hapus Event
+          </Button>
+        )}
       </div>
 
       <div className="space-y-2">
@@ -208,6 +213,7 @@ export default function DokumentasiEventPage({
         coverPhotoId={coverPhotoId}
         onDelete={openDeletePhoto}
         onSetCover={handleSetCover}
+        canDelete={canDelete}
       />
 
       <DeleteDialog

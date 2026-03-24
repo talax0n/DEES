@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from "next/server"
 import { db } from "@/lib/db"
 import { unduhanSchema } from "@/lib/validations"
+import { requireAuth } from "@/lib/auth"
 
 export async function GET(request: NextRequest) {
   try {
@@ -17,6 +18,8 @@ export async function GET(request: NextRequest) {
 }
 
 export async function POST(request: NextRequest) {
+  const { response } = await requireAuth()
+  if (response) return response
   try {
     const body = await request.json()
     const parsed = unduhanSchema.safeParse(body)

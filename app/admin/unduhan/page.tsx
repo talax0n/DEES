@@ -9,6 +9,7 @@ import { unduhanSchema } from "@/lib/validations"
 
 type UnduhanInput = z.input<typeof unduhanSchema>
 type UnduhanOutput = z.output<typeof unduhanSchema>
+import { useAuth } from "@/components/providers/AuthProvider"
 import { PageHeader } from "@/components/admin/PageHeader"
 import { DeleteDialog } from "@/components/admin/DeleteDialog"
 import { Button } from "@/components/ui/button"
@@ -49,6 +50,8 @@ type Unduhan = {
 }
 
 export default function AdminUnduhanPage() {
+  const { role } = useAuth()
+  const canDelete = role === "ADMIN"
   const [data, setData] = useState<Unduhan[]>([])
   const [loading, setLoading] = useState(true)
   const [activeTab, setActiveTab] = useState("semua")
@@ -241,9 +244,11 @@ export default function AdminUnduhanPage() {
                       <a href={item.fileUrl} target="_blank" rel="noopener noreferrer" className="text-xs text-blue-600 hover:underline">
                         Unduh
                       </a>
-                      <button className="text-xs text-red-600 hover:underline" onClick={() => openDelete(item.id)}>
-                        Hapus
-                      </button>
+                      {canDelete && (
+                        <button className="text-xs text-red-600 hover:underline" onClick={() => openDelete(item.id)}>
+                          Hapus
+                        </button>
+                      )}
                     </div>
                   </TableCell>
                 </TableRow>

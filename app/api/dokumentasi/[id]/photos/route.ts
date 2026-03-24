@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from "next/server"
 import { db } from "@/lib/db"
 import { uploadFile } from "@/lib/storage"
+import { requireAuth } from "@/lib/auth"
 
 const ALLOWED_TYPES = ["image/jpeg", "image/png", "image/webp"]
 const MAX_SIZE = 5 * 1024 * 1024
@@ -29,6 +30,8 @@ export async function POST(
   request: NextRequest,
   { params }: Params
 ) {
+  const { response } = await requireAuth()
+  if (response) return response
   const { id } = await params
   try {
     const event = await db.dokumentasiEvent.findUnique({ where: { id } })

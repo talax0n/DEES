@@ -16,6 +16,7 @@ import {
   DialogFooter,
 } from "@/components/ui/dialog"
 import { Camera, Trash2 } from "lucide-react"
+import { useAuth } from "@/components/providers/AuthProvider"
 
 type EventSummary = {
   id: string
@@ -27,6 +28,8 @@ type EventSummary = {
 
 export default function AdminDokumentasiPage() {
   const router = useRouter()
+  const { role } = useAuth()
+  const canDelete = role === "ADMIN"
   const [data, setData] = useState<EventSummary[]>([])
   const [loading, setLoading] = useState(true)
   const [createOpen, setCreateOpen] = useState(false)
@@ -163,14 +166,16 @@ export default function AdminDokumentasiPage() {
                     {item.totalFoto}
                   </span>
                 </div>
-                <button
-                  type="button"
-                  className="absolute top-2 left-2 rounded-full p-1.5 bg-destructive text-white opacity-0 group-hover:opacity-100 transition-opacity"
-                  onClick={(e) => openDelete(item.id, e)}
-                  title="Hapus event"
-                >
-                  <Trash2 className="w-3.5 h-3.5" />
-                </button>
+                {canDelete && (
+                  <button
+                    type="button"
+                    className="absolute top-2 left-2 rounded-full p-1.5 bg-destructive text-white opacity-0 group-hover:opacity-100 transition-opacity"
+                    onClick={(e) => openDelete(item.id, e)}
+                    title="Hapus event"
+                  >
+                    <Trash2 className="w-3.5 h-3.5" />
+                  </button>
+                )}
               </div>
               <div className="p-3">
                 <p className="text-sm font-semibold text-navy line-clamp-1">{item.namaAcara}</p>

@@ -23,6 +23,7 @@ import {
   DropdownMenuSeparator,
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu"
+import { AuthProvider, useAuth } from "@/components/providers/AuthProvider"
 
 const navItems = [
   { label: "Dashboard", href: "/admin", icon: LayoutDashboard, exact: true },
@@ -44,7 +45,18 @@ function getPageTitle(pathname: string) {
   return "Admin"
 }
 
+function getInitials(name: string | null | undefined, email: string | null | undefined) {
+  if (name) return name.slice(0, 2).toUpperCase()
+  if (email) return email.slice(0, 2).toUpperCase()
+  return "AD"
+}
+
 function SidebarContent({ pathname }: { pathname: string }) {
+  const { user, role, signOut } = useAuth()
+  const initials = getInitials(user?.name, user?.email)
+  const displayName = user?.name ?? user?.email ?? "Administrator"
+  const displayEmail = user?.email ?? ""
+
   return (
     <div className="flex flex-col h-full bg-navy">
       {/* Logo area */}
@@ -83,20 +95,27 @@ function SidebarContent({ pathname }: { pathname: string }) {
         <div className="flex items-center gap-3 px-3 py-2 mb-1">
           <Avatar className="h-8 w-8 shrink-0">
             <AvatarFallback className="bg-white/20 text-white text-xs font-semibold">
-              AD
+              {initials}
             </AvatarFallback>
           </Avatar>
           <div className="min-w-0">
-            <p className="text-xs font-medium text-white truncate">Administrator</p>
-            <p className="text-xs text-white/50 truncate">admin@gpib.org</p>
+            <div className="flex items-center gap-1.5">
+              <p className="text-xs font-medium text-white truncate">{displayName}</p>
+              {role && (
+                <span className={cn(
+                  "shrink-0 inline-flex items-center rounded-full px-1.5 py-0.5 text-[10px] font-semibold",
+                  role === "ADMIN" ? "bg-gold/20 text-gold" : "bg-white/10 text-white/60"
+                )}>
+                  {role === "ADMIN" ? "Admin" : "Editor"}
+                </span>
+              )}
+            </div>
+            <p className="text-xs text-white/50 truncate">{displayEmail}</p>
           </div>
         </div>
         <button
           className="flex items-center gap-3 w-full rounded-lg px-3 py-2 text-sm font-medium text-white/60 hover:bg-white/5 hover:text-white transition-colors"
-          onClick={() => {
-            // TODO: Implement logout (e.g. Supabase Auth signOut or NextAuth signOut)
-            console.log("Logout")
-          }}
+          onClick={signOut}
         >
           <LogOut className="h-4 w-4 shrink-0" />
           Keluar
@@ -106,15 +125,13 @@ function SidebarContent({ pathname }: { pathname: string }) {
   )
 }
 
-export default function AdminLayout({ children }: { children: React.ReactNode }) {
+function AdminShell({ children }: { children: React.ReactNode }) {
   const pathname = usePathname()
-
-  // Login page renders as a standalone page without the dashboard shell
-  if (pathname === "/admin/login") {
-    return <>{children}</>
-  }
-
+  const { user, role, signOut } = useAuth()
   const pageTitle = getPageTitle(pathname)
+  const initials = getInitials(user?.name, user?.email)
+  const displayName = user?.name ?? user?.email ?? "Administrator"
+  const displayEmail = user?.email ?? ""
 
   return (
     <div className="flex min-h-screen bg-off-white">
@@ -147,10 +164,8 @@ export default function AdminLayout({ children }: { children: React.ReactNode })
 
           {/* Right actions */}
           <div className="flex items-center gap-1">
-            {/* Notification bell — placeholder */}
             <Button variant="ghost" size="icon" className="relative">
               <Bell className="h-4 w-4" />
-              {/* TODO: Show badge when there are unread notifications */}
             </Button>
 
             {/* User dropdown */}
@@ -159,7 +174,7 @@ export default function AdminLayout({ children }: { children: React.ReactNode })
                 <Button variant="ghost" className="flex items-center gap-2 px-2 h-9">
                   <Avatar className="h-7 w-7">
                     <AvatarFallback className="bg-navy text-white text-xs font-semibold">
-                      AD
+                      {initials}
                     </AvatarFallback>
                   </Avatar>
                   <ChevronDown className="h-3 w-3 text-muted-foreground" />
@@ -167,15 +182,21 @@ export default function AdminLayout({ children }: { children: React.ReactNode })
               </DropdownMenuTrigger>
               <DropdownMenuContent align="end" className="w-48">
                 <div className="px-3 py-2">
-                  <p className="text-sm font-medium">Administrator</p>
-                  <p className="text-xs text-muted-foreground">admin@gpib.org</p>
+                  <p className="text-sm font-medium">{displayName}</p>
+                  <p className="text-xs text-muted-foreground">{displayEmail}</p>
+                  {role && (
+                    <span className={cn(
+                      "mt-1 inline-flex items-center rounded-full px-2 py-0.5 text-xs font-semibold",
+                      role === "ADMIN" ? "bg-amber-100 text-amber-700" : "bg-gray-100 text-gray-600"
+                    )}>
+                      {role === "ADMIN" ? "Admin" : "Editor"}
+                    </span>
+                  )}
                 </div>
                 <DropdownMenuSeparator />
                 <DropdownMenuItem
                   className="text-destructive focus:text-destructive"
-                  onClick={() => {
-                    // TODO: Implement logout
-                  }}
+                  onClick={signOut}
                 >
                   <LogOut className="mr-2 h-4 w-4" />
                   Keluar
@@ -189,5 +210,19 @@ export default function AdminLayout({ children }: { children: React.ReactNode })
         <main className="flex-1 p-4 md:p-6">{children}</main>
       </div>
     </div>
+  )
+}
+
+export default function AdminLayout({ children }: { children: React.ReactNode }) {
+  const pathname = usePathname()
+
+  if (pathname === "/admin/login") {
+    return <>{children}</>
+  }
+
+  return (
+    <AuthProvider>
+      <AdminShell>{children}</AdminShell>
+    </AuthProvider>
   )
 }

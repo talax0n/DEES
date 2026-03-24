@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from "next/server"
 import { db } from "@/lib/db"
 import { jadwalSchema } from "@/lib/validations"
+import { requireAuth } from "@/lib/auth"
 
 export async function GET() {
   try {
@@ -12,6 +13,8 @@ export async function GET() {
 }
 
 export async function POST(request: NextRequest) {
+  const { response } = await requireAuth()
+  if (response) return response
   try {
     const body = await request.json()
     const parsed = jadwalSchema.safeParse(body)
