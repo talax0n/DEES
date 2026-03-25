@@ -11,15 +11,19 @@ export async function GET() {
       return NextResponse.json({ error: "Unauthorized" }, { status: 401 })
     }
 
-    let dbUser = await db.user.findUnique({ where: { id: user.id } })
+    let dbUser = await db.user.findUnique({
+      where: { id: user.id },
+      include: { multimediaMember: { select: { id: true } } },
+    })
 
     if (!dbUser) {
       dbUser = await db.user.create({
         data: {
           id: user.id,
           email: user.email!,
-          role: "EDITOR",
+          roles: ['EDITOR'],
         },
+        include: { multimediaMember: { select: { id: true } } },
       })
     }
 
@@ -28,7 +32,8 @@ export async function GET() {
         id: dbUser.id,
         email: dbUser.email,
         name: dbUser.name,
-        role: dbUser.role,
+        roles: dbUser.roles,
+        multimediaMemberId: dbUser.multimediaMember?.id ?? null,
       },
     })
   } catch {

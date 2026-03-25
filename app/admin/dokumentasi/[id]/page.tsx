@@ -33,8 +33,7 @@ export default function DokumentasiEventPage({
 }) {
   const { id } = use(params)
   const router = useRouter()
-  const { role } = useAuth()
-  const canDelete = role === "ADMIN"
+  const { canDeleteCms: canDelete } = useAuth()
 
   const [event, setEvent] = useState<EventDetail | null>(null)
   const [loading, setLoading] = useState(true)

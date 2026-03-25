@@ -1,5 +1,6 @@
 "use client"
 
+import Link from 'next/link'
 import { motion, useReducedMotion } from 'framer-motion'
 import { Cross, Youtube, Instagram } from 'lucide-react'
 
@@ -16,6 +17,7 @@ const serviceLinks = [
   { label: 'Pelkat', href: '#programs' },
   { label: 'Tata Ibadah', href: '#downloads' },
   { label: 'Warta Jemaat', href: '#downloads' },
+  { label: 'Jadwal Tim Multimedia', href: '/jadwal-multimedia' },
 ]
 
 const socialLinks = [
@@ -72,12 +74,21 @@ export function Footer() {
             <ul className="space-y-2">
               {serviceLinks.map((link) => (
                 <li key={link.label}>
-                  <a
-                    href={link.href}
-                    className="text-white/60 text-sm hover:text-gold transition-colors"
-                  >
-                    {link.label}
-                  </a>
+                  {link.href.startsWith('/') ? (
+                    <Link
+                      href={link.href}
+                      className="text-white/60 text-sm hover:text-gold transition-colors"
+                    >
+                      {link.label}
+                    </Link>
+                  ) : (
+                    <a
+                      href={link.href}
+                      className="text-white/60 text-sm hover:text-gold transition-colors"
+                    >
+                      {link.label}
+                    </a>
+                  )}
                 </li>
               ))}
             </ul>
