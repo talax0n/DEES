@@ -1,6 +1,17 @@
 
 
-export const pelkat = [
+export interface PelkatItem {
+  id: string;
+  singkatan: string;
+  nama: string;
+  targetGroup: string;
+  deskripsi: string;
+  icon?: string;
+  jadwal?: string;
+  kontakPerson?: string;
+}
+
+export const pelkat: PelkatItem[] = [
   { id: "1", singkatan: "PA",   nama: "Pelayanan Anak",               targetGroup: "0–12 tahun",    deskripsi: "Pelayanan bagi anak-anak jemaat melalui cerita Alkitab, lagu rohani, dan kegiatan kreatif.",   icon: "/PK/PA.png" },
   { id: "2", singkatan: "PT",   nama: "Persekutuan Teruna",           targetGroup: "12–17 tahun",   deskripsi: "Persekutuan remaja gereja untuk pembentukan karakter dan iman di masa pertumbuhan.",             icon: "/PK/PT.png" },
   { id: "3", singkatan: "GP",   nama: "Gerakan Pemuda",               targetGroup: "17–35 tahun",   deskripsi: "Komunitas pemuda aktif yang melayani, bertumbuh bersama, dan menjadi garam dan terang dunia.",  icon: "/PK/GP.png" },

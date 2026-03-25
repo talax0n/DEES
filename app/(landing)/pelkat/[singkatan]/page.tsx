@@ -10,9 +10,7 @@ type Props = {
 };
 
 export async function generateStaticParams() {
-  return ["PA", "PT", "GP", "PKP", "PKB", "PKLU"].map((singkatan) => ({
-    singkatan,
-  }));
+  return pelkat.map(({ singkatan }) => ({ singkatan }));
 }
 
 export async function generateMetadata({ params }: Props): Promise<Metadata> {
@@ -125,14 +123,14 @@ export default async function PelkatDetailPage({ params }: Props) {
             {/* Jadwal / Ibadah section */}
             <section>
               <h2 className="font-serif text-2xl font-medium text-navy mb-4">
-                {(item as any).jadwal
-                  ? (item as any).jadwal
+                {item.jadwal
+                  ? item.jadwal
                   : `Ibadah Hari Minggu ${item.nama}`}
               </h2>
               <div className="rounded-2xl border border-gray-line bg-off-white p-6 max-w-lg">
                 <p className="text-gray-text text-sm leading-relaxed">
-                  {(item as any).jadwal ? (
-                    (item as any).jadwal
+                  {item.jadwal ? (
+                    item.jadwal
                   ) : (
                     <>
                       Ibadah Hari Minggu{" "}
@@ -218,11 +216,11 @@ export default async function PelkatDetailPage({ params }: Props) {
               <p className="text-gray-text text-base leading-relaxed max-w-2xl">
                 {item.deskripsi}
               </p>
-              {(item as any).kontakPerson && (
+              {item.kontakPerson && (
                 <p className="text-gray-text text-sm mt-4">
                   Kontak:{" "}
                   <span className="font-medium text-navy">
-                    {(item as any).kontakPerson}
+                    {item.kontakPerson}
                   </span>
                 </p>
               )}

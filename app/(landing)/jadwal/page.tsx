@@ -151,11 +151,11 @@ export default async function JadwalPage() {
                   {item.deskripsi && (
                     <p className="text-gray-text text-xs mt-1 line-clamp-3">{item.deskripsi}</p>
                   )}
-                  {(item as any).jadwal && (
-                    <p className="text-gold text-xs mt-2 font-medium">{(item as any).jadwal}</p>
+                  {item.jadwal && (
+                    <p className="text-gold text-xs mt-2 font-medium">{item.jadwal}</p>
                   )}
-                  {(item as any).kontakPerson && (
-                    <p className="text-gray-text text-xs mt-1">Kontak: {(item as any).kontakPerson}</p>
+                  {item.kontakPerson && (
+                    <p className="text-gray-text text-xs mt-1">Kontak: {item.kontakPerson}</p>
                   )}
                 </div>
               </Link>
