@@ -14,6 +14,7 @@ import {
   Bell,
   ChevronDown,
   Search,
+  BarChart2,
 } from "lucide-react"
 import { Button } from "@/components/ui/button"
 import { Sheet, SheetContent, SheetTrigger } from "@/components/ui/sheet"
@@ -30,6 +31,7 @@ import { ThemeToggle } from "@/components/theme-toggle"
 
 const navItems = [
   { label: "Dashboard", href: "/admin", icon: LayoutDashboard, exact: true },
+  { label: "Analytics", href: "/admin/analytics", icon: BarChart2, exact: false },
   { label: "Jadwal Ibadah", href: "/admin/jadwal", icon: Clock, exact: false },
   { label: "Unduhan", href: "/admin/unduhan", icon: FileDown, exact: false },
   { label: "Dokumentasi", href: "/admin/dokumentasi", icon: Camera, exact: false },
@@ -40,6 +42,7 @@ const pageTitles: Record<string, string> = {
   "/admin/jadwal": "Jadwal Ibadah",
   "/admin/unduhan": "Unduhan",
   "/admin/dokumentasi": "Dokumentasi Kegiatan",
+  "/admin/analytics": "Analytics",
 }
 
 function getPageTitle(pathname: string) {

@@ -3,6 +3,7 @@ import { Playfair_Display } from "next/font/google";
 import "./globals.css";
 import { TooltipProvider } from "@/components/ui/tooltip";
 import { Toaster } from "sonner";
+import { GoogleAnalytics } from "@next/third-parties/google";
 
 import { ThemeProvider } from "@/components/theme-provider";
 
@@ -65,6 +66,9 @@ export default function RootLayout({
           <Toaster richColors position="top-right" />
         </ThemeProvider>
       </body>
+      {process.env.NEXT_PUBLIC_GA_MEASUREMENT_ID && (
+        <GoogleAnalytics gaId={process.env.NEXT_PUBLIC_GA_MEASUREMENT_ID} />
+      )}
     </html>
   );
 }
