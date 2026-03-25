@@ -15,6 +15,7 @@ import {
   ChevronDown,
   Search,
   BarChart2,
+  CalendarClock,
 } from "lucide-react"
 import { Button } from "@/components/ui/button"
 import { Sheet, SheetContent, SheetTrigger } from "@/components/ui/sheet"
@@ -35,6 +36,7 @@ const navItems = [
   { label: "Jadwal Ibadah", href: "/admin/jadwal", icon: Clock, exact: false },
   { label: "Unduhan", href: "/admin/unduhan", icon: FileDown, exact: false },
   { label: "Dokumentasi", href: "/admin/dokumentasi", icon: Camera, exact: false },
+  { label: "Jadwal Multimedia", href: "/admin/scheduler", icon: CalendarClock, exact: false },
 ]
 
 const pageTitles: Record<string, string> = {
@@ -43,11 +45,13 @@ const pageTitles: Record<string, string> = {
   "/admin/unduhan": "Unduhan",
   "/admin/dokumentasi": "Dokumentasi Kegiatan",
   "/admin/analytics": "Analytics",
+  "/admin/scheduler": "Jadwal Tim Multimedia",
 }
 
 function getPageTitle(pathname: string) {
   if (pageTitles[pathname]) return pageTitles[pathname]
   if (pathname.startsWith("/admin/dokumentasi/")) return "Kelola Foto Event"
+  if (pathname.startsWith("/admin/scheduler/")) return "Jadwal Tim Multimedia"
   return "Admin"
 }
 
