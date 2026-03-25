@@ -1,6 +1,6 @@
 "use client"
 
-import { useEffect } from "react"
+import { useEffect, useRef } from "react"
 import { motion, AnimatePresence, useReducedMotion } from "framer-motion"
 import { X, Download } from "lucide-react"
 
@@ -13,6 +13,11 @@ interface PdfPreviewModalProps {
 
 export function PdfPreviewModal({ isOpen, onClose, fileUrl, title }: PdfPreviewModalProps) {
   const shouldReduce = useReducedMotion()
+
+  const lastFileUrl = useRef(fileUrl)
+  useEffect(() => {
+    if (fileUrl) lastFileUrl.current = fileUrl
+  }, [fileUrl])
 
   // ESC key handler
   useEffect(() => {
@@ -82,7 +87,7 @@ export function PdfPreviewModal({ isOpen, onClose, fileUrl, title }: PdfPreviewM
             {/* PDF iframe */}
             <div className="flex-1 min-h-0">
               <iframe
-                src={fileUrl}
+                src={lastFileUrl.current}
                 className="w-full h-full border-0"
                 title={title}
               />

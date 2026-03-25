@@ -238,7 +238,7 @@ export function UnduhanClient({ unduhan }: { unduhan: UnduhanItem[] }) {
 
       <PdfPreviewModal
         isOpen={!!previewUrl}
-        onClose={() => setPreviewUrl(null)}
+        onClose={() => { setPreviewUrl(null); setPreviewTitle("") }}
         fileUrl={previewUrl ?? ""}
         title={previewTitle}
       />
