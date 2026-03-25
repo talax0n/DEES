@@ -97,9 +97,11 @@ export function Dokumentasi({ events = [] }: DokumentasiProps) {
           {displayed.map((item, index) => {
             const { coverPhoto, totalFoto } = resolveItem(item)
             return (
-              <motion.div
+              <motion.button
                 key={item.id}
-                className="group rounded-2xl overflow-hidden bg-white border border-gray-line cursor-pointer"
+                aria-label={`Buka galeri foto: ${item.namaAcara}`}
+                className="group rounded-2xl overflow-hidden bg-white border border-gray-line cursor-pointer text-left w-full block"
+                onClick={() => { if (totalFoto > 0) { setSelectedEvent(item); setLightboxIndex(0) } }}
                 initial={{ opacity: 0, y: shouldReduceMotion ? 0 : 30 }}
                 whileInView={{ opacity: 1, y: 0 }}
                 viewport={{ once: true, margin: "-80px" }}
@@ -111,12 +113,6 @@ export function Dokumentasi({ events = [] }: DokumentasiProps) {
                 whileHover={{
                   y: shouldReduceMotion ? 0 : -4,
                   boxShadow: "0 20px 40px rgba(0,0,0,0.12)",
-                }}
-                onClick={() => {
-                  if (totalFoto > 0) {
-                    setSelectedEvent(item)
-                    setLightboxIndex(0)
-                  }
                 }}
               >
                 {/* Cover photo area */}
@@ -158,7 +154,7 @@ export function Dokumentasi({ events = [] }: DokumentasiProps) {
                     <p className="text-white/70 text-xs mt-1">{formatDate(item.tanggal)}</p>
                   </div>
                 </div>
-              </motion.div>
+              </motion.button>
             )
           })}
         </div>

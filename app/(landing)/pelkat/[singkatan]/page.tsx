@@ -129,31 +129,11 @@ export default async function PelkatDetailPage({ params }: Props) {
             <AnimatedSection delay={0.1}>
               <section>
                 <h2 className="font-serif text-2xl font-medium text-navy mb-4">
-                  {item.jadwal
-                    ? item.jadwal
-                    : `Ibadah Hari Minggu ${item.nama}`}
+                  Jadwal Ibadah
                 </h2>
                 <div className="rounded-2xl border border-gray-line bg-off-white p-6 max-w-lg">
-                  <p className="text-gray-text text-sm leading-relaxed">
-                    {item.jadwal ? (
-                      item.jadwal
-                    ) : (
-                      <>
-                        Ibadah Hari Minggu{" "}
-                        <span className="font-semibold text-navy">
-                          {item.nama}
-                        </span>{" "}
-                        diselenggarakan bersama ibadah umum setiap hari Minggu.
-                        Silakan lihat jadwal lengkap di halaman{" "}
-                        <Link
-                          href="/jadwal"
-                          className="text-gold hover:underline font-medium"
-                        >
-                          Jadwal Pelayanan
-                        </Link>
-                        .
-                      </>
-                    )}
+                  <p className="text-gray-text text-sm">
+                    {item.jadwal ?? `Jadwal ibadah ${item.nama} akan diinformasikan segera.`}
                   </p>
                 </div>
               </section>
