@@ -1,9 +1,10 @@
 "use client"
 
+import type { ReactNode } from "react"
 import { motion, useReducedMotion } from "framer-motion"
 
 interface AnimatedSectionProps {
-  children: React.ReactNode
+  children: ReactNode
   className?: string
   delay?: number
 }

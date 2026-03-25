@@ -1,8 +1,9 @@
 "use client"
 
+import type { ReactNode } from "react"
 import { motion, useReducedMotion } from "framer-motion"
 
-export function PageTransition({ children }: { children: React.ReactNode }) {
+export function PageTransition({ children }: { children: ReactNode }) {
   const shouldReduceMotion = useReducedMotion()
 
   return (

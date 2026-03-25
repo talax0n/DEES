@@ -44,7 +44,7 @@ export function ContactForm() {
     <motion.div
       initial={{ opacity: 0, y: shouldReduce ? 0 : 30 }}
       whileInView={{ opacity: 1, y: 0 }}
-      viewport={{ once: true }}
+      viewport={{ once: true, margin: "-80px" }}
       transition={{ duration: shouldReduce ? 0 : 0.5 }}
       className="bg-white rounded-3xl border border-gray-line shadow-sm p-6 lg:p-8"
     >
