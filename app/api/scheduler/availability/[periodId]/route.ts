@@ -1,11 +1,11 @@
-import { NextResponse } from "next/server"
+import { NextRequest, NextResponse } from "next/server"
 import { db } from "@/lib/db"
 
 interface Params {
   params: Promise<{ periodId: string }>
 }
 
-export async function GET(_request: Request, { params }: Params) {
+export async function GET(_request: NextRequest, { params }: Params) {
   const { periodId } = await params
   try {
     const data = await db.memberAvailability.findMany({
