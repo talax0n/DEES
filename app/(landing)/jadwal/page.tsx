@@ -51,9 +51,6 @@ function MetodeBadge({ metode }: { metode: string }) {
 
 export default async function JadwalPage() {
   const { jadwal } = await getData();
-  const sepekan = jadwalSepekan;
-  const styles = dayStyles;
-
   return (
     <div className="min-h-screen bg-white pt-20">
       <div className="w-full px-4 sm:px-6 lg:px-8 xl:px-12 py-12">
@@ -126,8 +123,8 @@ export default async function JadwalPage() {
             Kegiatan rutin pelayanan jemaat selama satu minggu
           </p>
           <div className="space-y-3">
-            {sepekan.map(({ hari, kegiatan }) => {
-              const style = styles[hari] ?? { pill: "bg-gray-100", text: "text-gray-700" };
+            {jadwalSepekan.map(({ hari, kegiatan }) => {
+              const style = dayStyles[hari] ?? { pill: "bg-gray-100", text: "text-gray-700" };
               return (
                 <div key={hari} className="flex items-start gap-4">
                   <div className={`shrink-0 w-24 rounded-full px-3 py-1.5 text-center text-xs font-semibold ${style.pill} ${style.text}`}>
