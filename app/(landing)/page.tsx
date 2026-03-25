@@ -6,13 +6,13 @@ import { Dokumentasi } from "@/components/landing/Dokumentasi";
 import { Contact } from "@/components/landing/Contact";
 import { db } from "@/lib/db";
 
+// Force cache invalidation to fix hydration mismatch
 export const revalidate = 60;
 
 async function getData() {
   try {
-    const [jadwal, pelkatData, unduhanData, dokuData] = await Promise.all([
+    const [jadwal, unduhanData, dokuData] = await Promise.all([
       db.jadwalIbadah.findMany({ where: { isActive: true }, orderBy: { waktu: "asc" } }),
-      db.pelayananKategorial.findMany({ orderBy: { order: "asc" } }),
       db.unduhan.findMany({ orderBy: { tanggal: "desc" }, take: 8 }),
       db.dokumentasiEvent.findMany({
         orderBy: { tanggal: "desc" },
@@ -23,10 +23,10 @@ async function getData() {
         },
       }),
     ]);
-    return { jadwal, pelkat: pelkatData, unduhan: unduhanData, dokumentasi: dokuData };
+    return { jadwal, unduhan: unduhanData, dokumentasi: dokuData };
   } catch (error) {
     console.error("DB fetch failed:", error);
-    return { jadwal: [], pelkat: [], unduhan: [], dokumentasi: [] };
+    return { jadwal: [], unduhan: [], dokumentasi: [] };
   }
 }
 
@@ -38,7 +38,7 @@ export default async function HomePage() {
       <main>
         <Hero />
         <About />
-        <Programs jadwal={data.jadwal as Parameters<typeof Programs>[0]["jadwal"]} pelkat={data.pelkat as Parameters<typeof Programs>[0]["pelkat"]} />
+        <Programs jadwal={data.jadwal as Parameters<typeof Programs>[0]["jadwal"]} />
         <Downloads unduhan={data.unduhan as Parameters<typeof Downloads>[0]["unduhan"]} />
         <Dokumentasi events={data.dokumentasi as Parameters<typeof Dokumentasi>[0]["events"]} />
         <Contact />

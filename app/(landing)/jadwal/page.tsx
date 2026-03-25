@@ -3,6 +3,7 @@ import { db } from "@/lib/db";
 import { Badge } from "@/components/ui/badge";
 import { MapPin, Clock, Wifi, WifiOff, ExternalLink } from "lucide-react";
 import Image from "next/image";
+import { pelkat } from "@/lib/data/pelkat";
 
 export const revalidate = 60;
 
@@ -13,14 +14,11 @@ export const metadata: Metadata = {
 
 async function getData() {
   try {
-    const [jadwal, pelkat] = await Promise.all([
-      db.jadwalIbadah.findMany({ where: { isActive: true }, orderBy: { waktu: "asc" } }),
-      db.pelayananKategorial.findMany({ orderBy: { order: "asc" } }),
-    ]);
-    return { jadwal, pelkat };
+    const jadwal = await db.jadwalIbadah.findMany({ where: { isActive: true }, orderBy: { waktu: "asc" } });
+    return { jadwal };
   } catch (error) {
     console.error("DB fetch failed:", error);
-    return { jadwal: [], pelkat: [] };
+    return { jadwal: [] };
   }
 }
 
@@ -50,7 +48,7 @@ function MetodeBadge({ metode }: { metode: string }) {
 }
 
 export default async function JadwalPage() {
-  const { jadwal, pelkat } = await getData();
+  const { jadwal } = await getData();
 
   return (
     <div className="min-h-screen bg-white pt-20">
@@ -123,18 +121,15 @@ export default async function JadwalPage() {
             Persekutuan pelayanan berdasarkan usia dan kategori jemaat.
           </p>
           <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
-            {(pelkat as Array<{
-              id: string; nama: string; singkatan?: string; deskripsi?: string;
-              jadwal?: string; kontakPerson?: string | null; iconUrl?: string | null; icon?: string;
-            }>).map((item) => (
+            {pelkat.map((item) => (
               <div
                 key={item.id}
                 className="rounded-2xl border border-gray-line bg-white p-5 flex gap-4 hover:shadow-md transition-shadow"
               >
-                {(item.iconUrl ?? item.icon) ? (
+                {item.icon ? (
                   <div className="relative w-16 h-16 shrink-0">
                     <Image
-                      src={(item.iconUrl ?? item.icon)!}
+                      src={item.icon}
                       alt={`Logo ${item.nama}`}
                       fill
                       sizes="64px"
@@ -151,11 +146,11 @@ export default async function JadwalPage() {
                   {item.deskripsi && (
                     <p className="text-gray-text text-xs mt-1 line-clamp-3">{item.deskripsi}</p>
                   )}
-                  {item.jadwal && (
-                    <p className="text-gold text-xs mt-2 font-medium">{item.jadwal}</p>
+                  {(item as any).jadwal && (
+                    <p className="text-gold text-xs mt-2 font-medium">{(item as any).jadwal}</p>
                   )}
-                  {item.kontakPerson && (
-                    <p className="text-gray-text text-xs mt-1">Kontak: {item.kontakPerson}</p>
+                  {(item as any).kontakPerson && (
+                    <p className="text-gray-text text-xs mt-1">Kontak: {(item as any).kontakPerson}</p>
                   )}
                 </div>
               </div>

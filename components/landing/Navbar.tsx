@@ -2,6 +2,7 @@
 
 import { useState } from 'react'
 import Image from 'next/image'
+import Link from 'next/link'
 import { motion, useReducedMotion, AnimatePresence } from 'framer-motion'
 import { useScrollY } from '@/hooks/useScrollY'
 import { Button } from '@/components/ui/button'
@@ -97,11 +98,10 @@ export function Navbar() {
           >
             <motion.div whileHover={{ scale: shouldReduceMotion ? 1 : 1.02 }}>
               <Button
-                variant="outline"
-                className={`rounded-full px-5 py-2 text-sm font-medium transition-all ${
+                className={`rounded-full px-5 py-2 text-sm font-medium transition-all bg-transparent border ${
                   isScrolled
-                    ? 'border-navy text-navy hover:bg-navy hover:text-white'
-                    : 'border-white text-white hover:bg-white hover:text-navy'
+                    ? 'border-navy text-navy hover:bg-navy/5 hover:text-navy dark:border-navy dark:text-navy dark:hover:bg-navy/5'
+                    : 'border-white text-white hover:bg-white/10 hover:text-white dark:border-white dark:text-white dark:hover:bg-white/10'
                 }`}
               >
                 Hubungi Kami
@@ -109,10 +109,13 @@ export function Navbar() {
             </motion.div>
             <motion.div whileHover={{ scale: shouldReduceMotion ? 1 : 1.02 }}>
               <Button
-                className="rounded-full px-5 py-2 text-sm font-medium bg-navy text-white hover:bg-navy-mid flex items-center gap-1"
+                asChild
+                className="rounded-full px-5 py-2 text-sm font-medium bg-navy text-white hover:bg-navy-mid flex items-center gap-1 dark:bg-navy dark:text-white dark:hover:bg-navy-mid border-none"
               >
-                Masuk
-                <ArrowUpRight className="w-4 h-4" />
+                <Link href="/login">
+                  Masuk
+                  <ArrowUpRight className="w-4 h-4" />
+                </Link>
               </Button>
             </motion.div>
           </motion.div>
@@ -158,14 +161,15 @@ export function Navbar() {
                 </div>
                 <div className="flex flex-col gap-3 mt-4">
                   <Button
-                    variant="outline"
-                    className="rounded-full border-navy text-navy w-full"
+                    className="rounded-full border border-navy text-navy w-full bg-transparent hover:bg-navy/5 hover:text-navy dark:border-navy dark:text-navy dark:bg-transparent dark:hover:bg-navy/5"
                   >
                     Hubungi Kami
                   </Button>
-                  <Button className="rounded-full bg-navy text-white w-full flex items-center justify-center gap-1">
-                    Masuk
-                    <ArrowUpRight className="w-4 h-4" />
+                  <Button asChild className="rounded-full bg-navy text-white w-full flex items-center justify-center gap-1 dark:bg-navy dark:text-white dark:hover:bg-navy-mid border-none">
+                    <Link href="/login" onClick={() => setIsOpen(false)}>
+                      Masuk
+                      <ArrowUpRight className="w-4 h-4" />
+                    </Link>
                   </Button>
                 </div>
               </div>

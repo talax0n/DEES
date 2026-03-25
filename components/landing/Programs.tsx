@@ -8,10 +8,20 @@ import {
   ChevronLeft,
   Play,
   Users,
+  Youtube,
 } from "lucide-react";
 import { AnimatedSection } from "./AnimatedSection";
 import { Marquee } from "@/components/ui/marquee";
 import Image from "next/image";
+import { pelkat } from "@/lib/data/pelkat";
+import { CHURCH_INFO } from "@/lib/constants";
+
+const getYouTubeVideoId = (url: string | null | undefined) => {
+  if (!url) return null;
+  const regExp = /^.*(youtu.be\/|v\/|u\/\w\/|embed\/|watch\?v=|&v=|live\/)([^#&?]*).*/;
+  const match = url.match(regExp);
+  return match && match[2].length === 11 ? match[2] : null;
+};
 
 interface JadwalItem {
   id: string
@@ -23,21 +33,15 @@ interface JadwalItem {
   highlight?: boolean
 }
 
-interface PelkatItem {
-  id: string
-  nama: string
-  singkatan?: string
-  icon?: string | null
-  iconUrl?: string | null
-}
-
 interface ProgramsProps {
   jadwal?: JadwalItem[]
-  pelkat?: PelkatItem[]
 }
 
-export function Programs({ jadwal = [], pelkat = [] }: ProgramsProps) {
+export function Programs({ jadwal = [] }: ProgramsProps) {
   const shouldReduceMotion = useReducedMotion();
+
+  const liveStreamUrl = jadwal.find((j) => j.linkStreaming)?.linkStreaming;
+  const videoId = getYouTubeVideoId(liveStreamUrl);
 
   return (
     <section id="programs" className="w-full py-20 lg:py-32 bg-white">
@@ -46,19 +50,40 @@ export function Programs({ jadwal = [], pelkat = [] }: ProgramsProps) {
         <div className="grid grid-cols-1 lg:grid-cols-2 gap-8 lg:gap-12 mb-16">
           {/* Left - Large photo card */}
           <AnimatedSection>
-            <div className="rounded-3xl overflow-hidden aspect-[4/3] bg-gradient-to-br from-navy to-navy-mid relative">
-              {/* Placeholder for congregation image */}
-              <div className="absolute inset-0 flex items-center justify-center">
-                <Users className="w-24 h-24 text-white/20" />
+            {videoId ? (
+              <div className="rounded-3xl overflow-hidden aspect-[4/3] bg-navy relative shadow-lg">
+                <iframe
+                  src={`https://www.youtube.com/embed/${videoId}?autoplay=0&rel=0`}
+                  title="YouTube video player"
+                  allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share"
+                  allowFullScreen
+                  className="absolute inset-0 w-full h-full border-0"
+                />
+                <div className="absolute top-4 left-4 pointer-events-none">
+                  <Badge className="bg-red-500 text-white px-3 py-1 rounded-full flex items-center gap-1.5 shadow-sm border-none">
+                    <span className="w-2 h-2 bg-white rounded-full animate-pulse" />
+                    Live Preview
+                  </Badge>
+                </div>
               </div>
-              {/* Live badge */}
-              <div className="absolute top-4 left-4">
-                <Badge className="bg-red-500 text-white hover:bg-red-600 px-3 py-1 rounded-full flex items-center gap-1.5">
-                  <span className="w-2 h-2 bg-white rounded-full animate-pulse" />
-                  Live on YouTube
-                </Badge>
-              </div>
-            </div>
+            ) : (
+              <a
+                href={CHURCH_INFO.youtube}
+                target="_blank"
+                rel="noopener noreferrer"
+                className="group block rounded-3xl overflow-hidden aspect-[4/3] bg-gradient-to-br from-navy to-navy-mid relative transition-transform hover:scale-[1.02] shadow-lg"
+              >
+                <div className="absolute inset-0 flex flex-col items-center justify-center text-white p-6 text-center">
+                  <div className="w-20 h-20 bg-white/10 rounded-full flex items-center justify-center mb-6 group-hover:scale-110 transition-transform duration-500">
+                    <Youtube className="w-10 h-10 text-red-500" />
+                  </div>
+                  <h3 className="text-2xl font-serif font-medium mb-3">Kanal YouTube Kami</h3>
+                  <p className="text-white/80 max-w-sm text-sm leading-relaxed">
+                    Ikuti ibadah secara live streaming dan tonton kembali rekaman ibadah sebelumnya.
+                  </p>
+                </div>
+              </a>
+            )}
           </AnimatedSection>
 
           {/* Right - Content */}
@@ -82,7 +107,9 @@ export function Programs({ jadwal = [], pelkat = [] }: ProgramsProps) {
               {jadwal.map((jadwalItem, i) => (
                 <motion.div
                   key={jadwalItem.id}
-                  className="relative rounded-2xl border border-gray-line p-4 hover:shadow-md transition-shadow bg-white"
+                  className={`relative rounded-2xl border border-gray-line p-4 transition-shadow bg-white ${
+                    jadwalItem.linkStreaming ? 'hover:shadow-md hover:border-navy/30 cursor-pointer' : 'hover:shadow-sm'
+                  }`}
                   initial={{ opacity: 0, y: shouldReduceMotion ? 0 : 20 }}
                   whileInView={{ opacity: 1, y: 0 }}
                   viewport={{ once: true, margin: "-100px" }}
@@ -92,17 +119,28 @@ export function Programs({ jadwal = [], pelkat = [] }: ProgramsProps) {
                     ease: "easeOut",
                   }}
                 >
+                  {jadwalItem.linkStreaming && (
+                    <a
+                      href={jadwalItem.linkStreaming}
+                      target="_blank"
+                      rel="noopener noreferrer"
+                      className="absolute inset-0 z-10 rounded-2xl"
+                      aria-label={`Tonton live streaming ${jadwalItem.namaIbadah ?? jadwalItem.jenis}`}
+                    >
+                      <span className="sr-only">Tonton Live Streaming</span>
+                    </a>
+                  )}
                   <div className="absolute top-3 right-3">
-                    <ArrowUpRight className="w-4 h-4 text-gray-text" />
+                    <ArrowUpRight className={`w-4 h-4 ${jadwalItem.linkStreaming ? 'text-navy' : 'text-gray-text'}`} />
                   </div>
-                  <p className="font-semibold text-navy text-sm mb-1 pr-5">
+                  <p className="font-semibold text-navy text-sm mb-1 pr-5 relative z-0">
                     {jadwalItem.namaIbadah ?? jadwalItem.jenis}
                   </p>
-                  <p className="text-gold font-medium text-sm">
+                  <p className="text-gold font-medium text-sm relative z-0">
                     {jadwalItem.waktu}
                   </p>
                   {(jadwalItem.highlight || jadwalItem.linkStreaming) && (
-                    <div className="mt-2 flex items-center gap-1">
+                    <div className="mt-2 flex items-center gap-1 relative z-0">
                       <Play className="w-3 h-3 text-red-500" />
                       <span className="text-xs text-red-500">Live</span>
                     </div>
@@ -140,13 +178,13 @@ export function Programs({ jadwal = [], pelkat = [] }: ProgramsProps) {
               {pelkat.map((item) => (
                 <div
                   key={item.id}
-                  className="group/card relative flex w-48 h-48 sm:w-64 sm:h-64 cursor-pointer overflow-hidden rounded-3xl border border-gray-line bg-white hover:shadow-xl transition-all duration-300 items-center justify-center p-6"
+                  className="group/card relative flex w-48 h-48 sm:w-64 sm:h-64 cursor-pointer overflow-hidden rounded-3xl border border-gray-line bg-white hover:shadow-[0_8px_30px_rgb(0,0,0,0.08)] transition-all duration-300 items-center justify-center p-6"
                 >
                   <div className="absolute inset-0 bg-gradient-to-br from-navy/5 to-transparent opacity-0 group-hover/card:opacity-100 transition-opacity duration-300" />
                   <div className="relative w-full h-full transform group-hover/card:scale-105 transition-transform duration-300">
-                    {(item.icon ?? item.iconUrl) ? (
+                    {item.icon ? (
                       <Image
-                        src={(item.icon ?? item.iconUrl)!}
+                        src={item.icon}
                         alt={`Logo ${item.nama}`}
                         fill
                         sizes="(min-width: 640px) 256px, 192px"
@@ -166,8 +204,8 @@ export function Programs({ jadwal = [], pelkat = [] }: ProgramsProps) {
                 </div>
               ))}
             </Marquee>
-            <div className="pointer-events-none absolute inset-y-0 left-0 w-1/4 bg-gradient-to-r from-white dark:from-background"></div>
-            <div className="pointer-events-none absolute inset-y-0 right-0 w-1/4 bg-gradient-to-l from-white dark:from-background"></div>
+            <div className="pointer-events-none absolute inset-y-0 left-0 w-1/4 bg-gradient-to-r from-white to-transparent"></div>
+            <div className="pointer-events-none absolute inset-y-0 right-0 w-1/4 bg-gradient-to-l from-white to-transparent"></div>
           </div>
         </AnimatedSection>
       </div>
