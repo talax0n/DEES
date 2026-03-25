@@ -1,9 +1,10 @@
 "use client"
 import React from "react"
+import type { ReactNode } from "react"
 import { motion, useReducedMotion } from "framer-motion"
 
 interface AnimatedGridProps {
-  children: React.ReactNode
+  children: ReactNode
   className?: string
   staggerDelay?: number
 }
