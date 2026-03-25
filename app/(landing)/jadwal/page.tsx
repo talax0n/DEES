@@ -5,6 +5,7 @@ import { MapPin, Clock, Wifi, WifiOff, ExternalLink, ArrowUpRight } from "lucide
 import Image from "next/image";
 import Link from "next/link";
 import { pelkat } from "@/lib/data/pelkat";
+import { jadwalSepekan, dayStyles } from "@/lib/data/jadwal-sepekan";
 
 export const revalidate = 60;
 
@@ -50,6 +51,8 @@ function MetodeBadge({ metode }: { metode: string }) {
 
 export default async function JadwalPage() {
   const { jadwal } = await getData();
+  const sepekan = jadwalSepekan;
+  const styles = dayStyles;
 
   return (
     <div className="min-h-screen bg-white pt-20">
@@ -115,77 +118,47 @@ export default async function JadwalPage() {
 
         {/* Jadwal Kegiatan Sepekan */}
         {/* TODO: Connect to database/admin CRUD in future phase */}
-        {(() => {
-          const jadwalSepekan = [
-            { hari: "Senin", kegiatan: [] as { nama: string; waktu: string; lokasi?: string }[] },
-            { hari: "Selasa", kegiatan: [] as { nama: string; waktu: string; lokasi?: string }[] },
-            { hari: "Rabu", kegiatan: [{ nama: "Ibadah Keluarga Sektoral", waktu: "19.30 WIB", lokasi: "Gedung Gereja" }] },
-            { hari: "Kamis", kegiatan: [] as { nama: string; waktu: string; lokasi?: string }[] },
-            { hari: "Jumat", kegiatan: [{ nama: "Pendalaman Alkitab", waktu: "18.00 WIB" }] },
-            { hari: "Sabtu", kegiatan: [
-              { nama: "Pelayanan Anak / Persekutuan Teruna", waktu: "15.00 WIB" },
-              { nama: "Gerakan Pemuda", waktu: "17.00 WIB" },
-            ]},
-            { hari: "Minggu", kegiatan: [
-              { nama: "Ibadah Pagi Sesi I", waktu: "06.00 WIB", lokasi: "Gedung Gereja" },
-              { nama: "Ibadah Pagi Sesi II", waktu: "09.00 WIB", lokasi: "Gedung Gereja" },
-            ]},
-          ];
-
-          const dayStyles: Record<string, { pill: string; text: string }> = {
-            Senin:  { pill: "bg-blue-50",   text: "text-blue-700" },
-            Selasa: { pill: "bg-purple-50", text: "text-purple-700" },
-            Rabu:   { pill: "bg-green-50",  text: "text-green-700" },
-            Kamis:  { pill: "bg-orange-50", text: "text-orange-700" },
-            Jumat:  { pill: "bg-red-50",    text: "text-red-700" },
-            Sabtu:  { pill: "bg-yellow-50", text: "text-yellow-700" },
-            Minggu: { pill: "bg-navy",      text: "text-white" },
-          };
-
-          return (
-            <div className="border-t border-gray-line pt-12 mb-12">
-              <h2 className="font-serif text-2xl sm:text-3xl font-medium text-navy mb-2">
-                Jadwal Kegiatan Sepekan
-              </h2>
-              <p className="text-gray-text text-sm mb-8">
-                Kegiatan rutin pelayanan jemaat selama satu minggu
-              </p>
-              <div className="space-y-3">
-                {jadwalSepekan.map(({ hari, kegiatan }) => {
-                  const style = dayStyles[hari] ?? { pill: "bg-gray-100", text: "text-gray-700" };
-                  return (
-                    <div key={hari} className="flex items-start gap-4">
-                      <div className={`shrink-0 w-24 rounded-full px-3 py-1.5 text-center text-xs font-semibold ${style.pill} ${style.text}`}>
-                        {hari}
-                      </div>
-                      {kegiatan.length === 0 ? (
-                        <span className="text-gray-text text-sm self-center">—</span>
-                      ) : (
-                        <div className="flex flex-wrap gap-2">
-                          {kegiatan.map((k, idx) => (
-                            <div
-                              key={idx}
-                              className="rounded-xl border border-gray-line bg-white px-4 py-2 text-sm flex flex-col gap-0.5"
-                            >
-                              <span className="text-gold font-medium text-xs">{k.waktu}</span>
-                              <span className="text-navy font-medium leading-tight">{k.nama}</span>
-                              {k.lokasi && (
-                                <span className="flex items-center gap-1 text-gray-text text-xs mt-0.5">
-                                  <MapPin className="w-3 h-3 shrink-0" />
-                                  {k.lokasi}
-                                </span>
-                              )}
-                            </div>
-                          ))}
+        <div className="border-t border-gray-line pt-12 mb-12">
+          <h2 className="font-serif text-2xl sm:text-3xl font-medium text-navy mb-2">
+            Jadwal Kegiatan Sepekan
+          </h2>
+          <p className="text-gray-text text-sm mb-8">
+            Kegiatan rutin pelayanan jemaat selama satu minggu
+          </p>
+          <div className="space-y-3">
+            {sepekan.map(({ hari, kegiatan }) => {
+              const style = styles[hari] ?? { pill: "bg-gray-100", text: "text-gray-700" };
+              return (
+                <div key={hari} className="flex items-start gap-4">
+                  <div className={`shrink-0 w-24 rounded-full px-3 py-1.5 text-center text-xs font-semibold ${style.pill} ${style.text}`}>
+                    {hari}
+                  </div>
+                  {kegiatan.length === 0 ? (
+                    <span className="text-gray-text text-sm self-center">—</span>
+                  ) : (
+                    <div className="flex flex-wrap gap-2">
+                      {kegiatan.map((k) => (
+                        <div
+                          key={`${hari}-${k.waktu}-${k.nama}`}
+                          className="rounded-xl border border-gray-line bg-white px-4 py-2 text-sm flex flex-col gap-0.5"
+                        >
+                          <span className="text-gold font-medium text-xs">{k.waktu}</span>
+                          <span className="text-navy font-medium leading-tight">{k.nama}</span>
+                          {k.lokasi && (
+                            <span className="flex items-center gap-1 text-gray-text text-xs mt-0.5">
+                              <MapPin className="w-3 h-3 shrink-0" />
+                              {k.lokasi}
+                            </span>
+                          )}
                         </div>
-                      )}
+                      ))}
                     </div>
-                  );
-                })}
-              </div>
-            </div>
-          );
-        })()}
+                  )}
+                </div>
+              );
+            })}
+          </div>
+        </div>
 
         {/* Pelkat section */}
         <div className="border-t border-gray-line pt-12">
