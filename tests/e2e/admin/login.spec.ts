@@ -1,12 +1,12 @@
 import { test, expect } from '@playwright/test'
 
-test.describe('Admin Login (/admin/login)', () => {
+test.describe('Admin Login (/login)', () => {
   test.beforeEach(async ({ page }) => {
-    await page.goto('/admin/login')
+    await page.goto('/login')
   })
 
   test('login page loads successfully', async ({ page }) => {
-    const response = await page.request.get('/admin/login')
+    const response = await page.request.get('/login')
     expect(response.status()).toBe(200)
   })
 
@@ -38,12 +38,12 @@ test.describe('Admin Login (/admin/login)', () => {
 })
 
 test.describe('Admin Access Protection', () => {
-  test('/admin redirects to /admin/login or loads when not authenticated', async ({ page }) => {
+  test('/admin redirects to /login or loads when not authenticated', async ({ page }) => {
     const response = await page.goto('/admin')
     const finalUrl = page.url()
     // Either redirects to login, or serves the page if no auth middleware active
     expect([200, 302, 307, 308]).toContain(response?.status() ?? 200)
-    if (finalUrl.includes('/admin/login')) {
+    if (finalUrl.includes('/login')) {
       await expect(page.locator('input[type="email"]')).toBeVisible()
     }
   })
@@ -52,7 +52,7 @@ test.describe('Admin Access Protection', () => {
     const response = await page.goto('/admin/jadwal')
     const finalUrl = page.url()
     expect([200, 302, 307, 308]).toContain(response?.status() ?? 200)
-    if (finalUrl.includes('/admin/login')) {
+    if (finalUrl.includes('/login')) {
       await expect(page.locator('input[type="email"]')).toBeVisible()
     }
   })

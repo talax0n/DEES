@@ -11,18 +11,18 @@ test.describe('Admin Jadwal CRUD (/admin/jadwal)', () => {
   })
 
   test('page has Jadwal heading', async ({ page }) => {
-    if (page.url().includes('/admin/login')) return
+    if (page.url().includes('/login')) return
     await expect(page.getByText(/Jadwal/i).first()).toBeVisible()
   })
 
   test('"Tambah Jadwal" button is visible', async ({ page }) => {
-    if (page.url().includes('/admin/login')) return
+    if (page.url().includes('/login')) return
     const addBtn = page.getByRole('button', { name: /tambah jadwal/i })
     await expect(addBtn.first()).toBeVisible()
   })
 
   test('clicking "Tambah Jadwal" opens a dialog or form', async ({ page }) => {
-    if (page.url().includes('/admin/login')) return
+    if (page.url().includes('/login')) return
     const addBtn = page.getByRole('button', { name: /tambah jadwal/i }).first()
     await addBtn.click()
     // A dialog/modal should appear
@@ -33,7 +33,7 @@ test.describe('Admin Jadwal CRUD (/admin/jadwal)', () => {
   })
 
   test('dialog has Jenis Ibadah field', async ({ page }) => {
-    if (page.url().includes('/admin/login')) return
+    if (page.url().includes('/login')) return
     await page.getByRole('button', { name: /tambah jadwal/i }).first().click()
     const field = page.getByLabel(/jenis ibadah|nama ibadah/i)
       .or(page.getByPlaceholder(/jenis ibadah|nama ibadah/i))
@@ -41,7 +41,7 @@ test.describe('Admin Jadwal CRUD (/admin/jadwal)', () => {
   })
 
   test('dialog has Metode select', async ({ page }) => {
-    if (page.url().includes('/admin/login')) return
+    if (page.url().includes('/login')) return
     await page.getByRole('button', { name: /tambah jadwal/i }).first().click()
     // Metode can be a select, combobox, or radio group
     const metodeField = page.getByLabel(/metode/i)
@@ -51,7 +51,7 @@ test.describe('Admin Jadwal CRUD (/admin/jadwal)', () => {
   })
 
   test('"Batal" button in dialog closes it', async ({ page }) => {
-    if (page.url().includes('/admin/login')) return
+    if (page.url().includes('/login')) return
     await page.getByRole('button', { name: /tambah jadwal/i }).first().click()
     const dialog = page.getByRole('dialog').first()
     await expect(dialog).toBeVisible()
@@ -63,7 +63,7 @@ test.describe('Admin Jadwal CRUD (/admin/jadwal)', () => {
   })
 
   test('table shows existing data columns', async ({ page }) => {
-    if (page.url().includes('/admin/login')) return
+    if (page.url().includes('/login')) return
     // Check for table or data display
     const table = page.locator('table, [role="table"]')
     if (await table.count() > 0) {

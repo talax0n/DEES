@@ -246,12 +246,6 @@ function AdminShell({ children }: { children: React.ReactNode }) {
 }
 
 export default function AdminLayout({ children }: { children: React.ReactNode }) {
-  const pathname = usePathname()
-
-  if (pathname === "/admin/login") {
-    return <>{children}</>
-  }
-
   return (
     <AuthProvider>
       <AdminShell>{children}</AdminShell>

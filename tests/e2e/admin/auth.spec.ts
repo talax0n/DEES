@@ -12,7 +12,7 @@ test.describe.skip('Auth — enable after Phase 5 (Supabase Auth + RBAC)', () =>
   const EDITOR_PASSWORD = process.env.TEST_EDITOR_PASSWORD ?? 'password'
 
   async function loginAs(page: any, email: string, password: string) {
-    await page.goto('/admin/login')
+    await page.goto('/login')
     await page.getByLabel(/email/i).fill(email)
     await page.locator('input[type="password"]').fill(password)
     await page.getByRole('button', { name: /masuk/i }).click()
@@ -20,18 +20,18 @@ test.describe.skip('Auth — enable after Phase 5 (Supabase Auth + RBAC)', () =>
   }
 
   test.describe('Authentication Flow', () => {
-    test('/admin redirects to /admin/login when not logged in', async ({ page }) => {
+    test('/admin redirects to /login when not logged in', async ({ page }) => {
       await page.goto('/admin')
       await expect(page).toHaveURL(/\/admin\/login/)
     })
 
-    test('/admin/jadwal redirects to /admin/login when not logged in', async ({ page }) => {
+    test('/admin/jadwal redirects to /login when not logged in', async ({ page }) => {
       await page.goto('/admin/jadwal')
       await expect(page).toHaveURL(/\/admin\/login/)
     })
 
     test('login with wrong credentials shows error', async ({ page }) => {
-      await page.goto('/admin/login')
+      await page.goto('/login')
       await page.getByLabel(/email/i).fill('wrong@wrong.com')
       await page.locator('input[type="password"]').fill('wrongpassword')
       await page.getByRole('button', { name: /masuk/i }).click()
@@ -40,7 +40,7 @@ test.describe.skip('Auth — enable after Phase 5 (Supabase Auth + RBAC)', () =>
     })
 
     test('login page has NO registration link or button', async ({ page }) => {
-      await page.goto('/admin/login')
+      await page.goto('/login')
       const signupEls = page.getByRole('link', { name: /daftar|register|sign up/i })
         .or(page.getByRole('button', { name: /daftar|register/i }))
       expect(await signupEls.count()).toBe(0)
@@ -56,7 +56,7 @@ test.describe.skip('Auth — enable after Phase 5 (Supabase Auth + RBAC)', () =>
       await expect(page.getByText(ADMIN_EMAIL)).toBeVisible()
     })
 
-    test('logout redirects to /admin/login', async ({ page }) => {
+    test('logout redirects to /login', async ({ page }) => {
       await loginAs(page, ADMIN_EMAIL, ADMIN_PASSWORD)
       const logoutBtn = page.getByRole('button', { name: /keluar|logout|sign out/i })
       await logoutBtn.click()

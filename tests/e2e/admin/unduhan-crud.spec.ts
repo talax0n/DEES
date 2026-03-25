@@ -11,12 +11,12 @@ test.describe('Admin Unduhan CRUD (/admin/unduhan)', () => {
   })
 
   test('page has Unduhan heading', async ({ page }) => {
-    if (page.url().includes('/admin/login')) return
+    if (page.url().includes('/login')) return
     await expect(page.getByText(/Unduhan/i).first()).toBeVisible()
   })
 
   test('has tab filters (Semua / Tata Ibadah / Warta)', async ({ page }) => {
-    if (page.url().includes('/admin/login')) return
+    if (page.url().includes('/login')) return
     // Tabs or filter buttons
     const smuaTab = page.getByRole('tab', { name: /Semua/i })
       .or(page.getByRole('button', { name: /Semua/i }))
@@ -25,13 +25,13 @@ test.describe('Admin Unduhan CRUD (/admin/unduhan)', () => {
   })
 
   test('"Upload File" button is visible', async ({ page }) => {
-    if (page.url().includes('/admin/login')) return
+    if (page.url().includes('/login')) return
     const uploadBtn = page.getByRole('button', { name: /upload file|tambah/i })
     await expect(uploadBtn.first()).toBeVisible()
   })
 
   test('clicking "Upload File" opens dialog', async ({ page }) => {
-    if (page.url().includes('/admin/login')) return
+    if (page.url().includes('/login')) return
     await page.getByRole('button', { name: /upload file|tambah/i }).first().click()
     const dialog = page.getByRole('dialog')
       .or(page.locator('[role="dialog"]'))
@@ -39,7 +39,7 @@ test.describe('Admin Unduhan CRUD (/admin/unduhan)', () => {
   })
 
   test('dialog has Judul field', async ({ page }) => {
-    if (page.url().includes('/admin/login')) return
+    if (page.url().includes('/login')) return
     await page.getByRole('button', { name: /upload file|tambah/i }).first().click()
     const field = page.getByLabel(/judul/i)
       .or(page.getByPlaceholder(/judul/i))
@@ -47,7 +47,7 @@ test.describe('Admin Unduhan CRUD (/admin/unduhan)', () => {
   })
 
   test('dialog has Tipe select', async ({ page }) => {
-    if (page.url().includes('/admin/login')) return
+    if (page.url().includes('/login')) return
     await page.getByRole('button', { name: /upload file|tambah/i }).first().click()
     const field = page.getByLabel(/tipe/i)
       .or(page.getByRole('combobox', { name: /tipe/i }))
@@ -56,7 +56,7 @@ test.describe('Admin Unduhan CRUD (/admin/unduhan)', () => {
   })
 
   test('data table is visible', async ({ page }) => {
-    if (page.url().includes('/admin/login')) return
+    if (page.url().includes('/login')) return
     const table = page.locator('table, [role="table"]')
     if (await table.count() > 0) {
       await expect(table.first()).toBeVisible()

@@ -11,18 +11,18 @@ test.describe('Admin Dokumentasi (/admin/dokumentasi)', () => {
   })
 
   test('page has Dokumentasi heading', async ({ page }) => {
-    if (page.url().includes('/admin/login')) return
+    if (page.url().includes('/login')) return
     await expect(page.getByText(/Dokumentasi/i).first()).toBeVisible()
   })
 
   test('"Buat Event" button is visible', async ({ page }) => {
-    if (page.url().includes('/admin/login')) return
+    if (page.url().includes('/login')) return
     const createBtn = page.getByRole('button', { name: /buat event|tambah event|new event/i })
     await expect(createBtn.first()).toBeVisible()
   })
 
   test('clicking "Buat Event" opens dialog with Nama Acara and Tanggal fields', async ({ page }) => {
-    if (page.url().includes('/admin/login')) return
+    if (page.url().includes('/login')) return
     await page.getByRole('button', { name: /buat event|tambah event/i }).first().click()
     const dialog = page.getByRole('dialog').first()
     await expect(dialog).toBeVisible()
@@ -40,7 +40,7 @@ test.describe('Admin Dokumentasi (/admin/dokumentasi)', () => {
   })
 
   test('dialog does NOT have description or slug fields', async ({ page }) => {
-    if (page.url().includes('/admin/login')) return
+    if (page.url().includes('/login')) return
     await page.getByRole('button', { name: /buat event|tambah event/i }).first().click()
     const dialog = page.getByRole('dialog').first()
     await expect(dialog).toBeVisible()
@@ -50,7 +50,7 @@ test.describe('Admin Dokumentasi (/admin/dokumentasi)', () => {
   })
 
   test('page shows card grid (not a table)', async ({ page }) => {
-    if (page.url().includes('/admin/login')) return
+    if (page.url().includes('/login')) return
     // Should NOT have a table — instead a card grid
     const table = page.locator('table')
     const cards = page.locator('[class*="card"], [class*="Card"], article')
@@ -65,7 +65,7 @@ test.describe('Admin Dokumentasi Photo Manager (/admin/dokumentasi/[id])', () =>
   test.skip('Photo manager tests require an existing event ID — enable after creating test data', async ({ page }) => {
     // To enable: create a test event first, then navigate to /admin/dokumentasi/[id]
     await page.goto('/admin/dokumentasi/test-event-id')
-    if (page.url().includes('/admin/login')) return
+    if (page.url().includes('/login')) return
 
     test('page loads with event name in header', async ({ page }) => {
       await expect(page.locator('h1, h2').first()).toBeVisible()
