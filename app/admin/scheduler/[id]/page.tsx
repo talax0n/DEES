@@ -197,7 +197,14 @@ export default function SchedulerPeriodPage({ params }: { params: Promise<{ id: 
     }
   }
 
-  useEffect(() => { fetchPeriod() }, [id])
+  useEffect(() => {
+    fetchPeriod()
+    // Fetch members on mount so assignment dialog works without visiting Availability tab first
+    fetch("/api/scheduler/members")
+      .then(r => r.json())
+      .then(j => { if (j.success) setMembers(j.data) })
+      .catch(() => {})
+  }, [id])
 
   // Status actions
   async function patchStatus(status: SchedulePeriodStatus, extra?: Record<string, unknown>) {
