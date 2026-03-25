@@ -19,7 +19,7 @@ async function getData() {
         take: 6,
         include: {
           _count: { select: { photos: true } },
-          photos: { take: 1, orderBy: { order: "asc" } },
+          photos: { orderBy: { order: "asc" } },
         },
       }),
     ]);

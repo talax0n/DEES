@@ -1,10 +1,12 @@
 "use client"
 
+import { useState } from "react"
 import Link from "next/link"
 import { motion, useReducedMotion } from "framer-motion"
 import { Badge } from "@/components/ui/badge"
 import { ArrowUpRight, Camera } from "lucide-react"
 import { AnimatedSection } from "./AnimatedSection"
+import { PhotoLightbox } from "./PhotoLightbox"
 
 interface DokumentasiPhoto {
   id: string
@@ -36,8 +38,22 @@ function resolveItem(item: DokumentasiEventItem) {
   return { coverPhoto, totalFoto }
 }
 
+function getEventPhotos(event: DokumentasiEventItem): { id: string; imageUrl: string; caption: string | null }[] {
+  if (!event.photos || event.photos.length === 0) return []
+  return event.photos.map((p, i) => {
+    if (typeof p === 'string') return { id: String(i), imageUrl: p, caption: null }
+    return {
+      id: (p as { id: string; imageUrl: string; caption?: string | null }).id,
+      imageUrl: (p as { id: string; imageUrl: string; caption?: string | null }).imageUrl,
+      caption: (p as { id: string; imageUrl: string; caption?: string | null }).caption ?? null,
+    }
+  })
+}
+
 export function Dokumentasi({ events = [] }: DokumentasiProps) {
   const shouldReduceMotion = useReducedMotion()
+  const [selectedEvent, setSelectedEvent] = useState<DokumentasiEventItem | null>(null)
+  const [lightboxIndex, setLightboxIndex] = useState(0)
 
   const rawData = events
   const displayed = rawData.slice(0, 6)
@@ -99,6 +115,13 @@ export function Dokumentasi({ events = [] }: DokumentasiProps) {
                   y: shouldReduceMotion ? 0 : -4,
                   boxShadow: "0 20px 40px rgba(0,0,0,0.12)",
                 }}
+                onClick={() => {
+                  const photos = getEventPhotos(item)
+                  if (photos.length > 0) {
+                    setSelectedEvent(item)
+                    setLightboxIndex(0)
+                  }
+                }}
               >
                 {/* Cover photo area */}
                 <div className="relative aspect-[4/3] overflow-hidden bg-gradient-to-br from-navy/15 to-navy/5 flex items-center justify-center">
@@ -121,6 +144,16 @@ export function Dokumentasi({ events = [] }: DokumentasiProps) {
                     </span>
                   </div>
 
+                  {/* Hover overlay hint */}
+                  {totalFoto > 0 && (
+                    <div className="absolute inset-0 bg-black/20 opacity-0 group-hover:opacity-100 transition-opacity duration-300 flex items-center justify-center">
+                      <div className="bg-white/90 rounded-full px-3 py-1.5 flex items-center gap-1.5">
+                        <Camera className="w-3.5 h-3.5 text-navy" />
+                        <span className="text-navy text-xs font-medium">Lihat Foto</span>
+                      </div>
+                    </div>
+                  )}
+
                   {/* Bottom overlay */}
                   <div className="absolute inset-x-0 bottom-0 bg-gradient-to-t from-black/70 via-black/20 to-transparent p-4">
                     <p className="text-white font-semibold text-sm leading-snug line-clamp-2">
@@ -134,6 +167,18 @@ export function Dokumentasi({ events = [] }: DokumentasiProps) {
           })}
         </div>
       </div>
+
+      {selectedEvent && (
+        <PhotoLightbox
+          isOpen={!!selectedEvent}
+          onClose={() => setSelectedEvent(null)}
+          eventName={selectedEvent.namaAcara}
+          photos={getEventPhotos(selectedEvent)}
+          initialIndex={0}
+          currentIndex={lightboxIndex}
+          onIndexChange={setLightboxIndex}
+        />
+      )}
     </section>
   )
 }
