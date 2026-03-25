@@ -32,3 +32,33 @@ export type JadwalFormValues = z.infer<typeof jadwalSchema>
 export type UnduhanFormValues = z.infer<typeof unduhanSchema>
 export type DokumentasiEventFormValues = z.infer<typeof dokumentasiEventSchema>
 export type ContactFormValues = z.infer<typeof contactSchema>
+
+export const schedulePeriodSchema = z.object({
+  nama: z.string().min(1, 'Nama jadwal wajib diisi'),
+  bulan: z.number().min(1).max(12),
+  tahun: z.number().min(2024).max(2100),
+  deadlineAvailability: z.coerce.date().optional(),
+  notes: z.string().optional(),
+})
+
+export const scheduleEventSchema = z.object({
+  namaEvent: z.string().min(1, 'Nama event wajib diisi'),
+  tanggal: z.coerce.date(),
+  waktu: z.string().min(1, 'Waktu wajib diisi'),
+  kategori: z.string().min(1),
+  keterangan: z.string().optional(),
+  isLive: z.boolean().default(false),
+  requiredRoles: z.array(z.enum(['SLD', 'SND', 'STR', 'CAM'])).min(1, 'Minimal 1 role diperlukan'),
+})
+
+export const multimediaMemberSchema = z.object({
+  nama: z.string().min(1, 'Nama wajib diisi'),
+  phone: z.string().optional(),
+  roles: z.array(z.enum(['SLD', 'SND', 'STR', 'CAM'])).min(1, 'Minimal 1 kemampuan role'),
+})
+
+export const availabilitySchema = z.object({
+  eventId: z.string().min(1),
+  status: z.enum(['AVAILABLE', 'UNAVAILABLE', 'MAYBE']),
+  note: z.string().optional(),
+})

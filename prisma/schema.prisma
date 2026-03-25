@@ -87,3 +87,105 @@ model DokumentasiPhoto {
 
   @@map("dokumentasi_photo")
 }
+
+// --- Multimedia Team Scheduler ---
+
+enum ScheduleStatus {
+  DRAFT
+  COLLECTING
+  GENERATING
+  REVIEW
+  PUBLISHED
+}
+
+enum MultimediaRole {
+  SLD
+  SND
+  STR
+  CAM
+}
+
+enum AvailabilityStatus {
+  AVAILABLE
+  UNAVAILABLE
+  MAYBE
+}
+
+model MultimediaMember {
+  id             String              @id @default(cuid())
+  userId         String?             @unique
+  nama           String
+  phone          String?
+  roles          MultimediaRole[]
+  isActive       Boolean             @default(true)
+  createdAt      DateTime            @default(now())
+  updatedAt      DateTime            @updatedAt
+  availability   MemberAvailability[]
+  assignments    ScheduleAssignment[]
+
+  @@map("multimedia_members")
+}
+
+model SchedulePeriod {
+  id                   String            @id @default(cuid())
+  nama                 String
+  bulan                Int
+  tahun                Int
+  status               ScheduleStatus    @default(DRAFT)
+  deadlineAvailability DateTime?
+  publishedAt          DateTime?
+  createdAt            DateTime          @default(now())
+  updatedAt            DateTime          @updatedAt
+  events               ScheduleEvent[]
+  notes                String?
+
+  @@unique([bulan, tahun])
+  @@map("schedule_periods")
+}
+
+model ScheduleEvent {
+  id             String              @id @default(cuid())
+  periodId       String
+  period         SchedulePeriod      @relation(fields: [periodId], references: [id], onDelete: Cascade)
+  namaEvent      String
+  tanggal        DateTime
+  waktu          String
+  kategori       String
+  keterangan     String?
+  isLive         Boolean             @default(false)
+  requiredRoles  MultimediaRole[]
+  assignments    ScheduleAssignment[]
+  availability   MemberAvailability[]
+  order          Int                 @default(0)
+
+  @@map("schedule_events")
+}
+
+model MemberAvailability {
+  id         String              @id @default(cuid())
+  memberId   String
+  member     MultimediaMember    @relation(fields: [memberId], references: [id], onDelete: Cascade)
+  eventId    String
+  event      ScheduleEvent       @relation(fields: [eventId], references: [id], onDelete: Cascade)
+  status     AvailabilityStatus  @default(AVAILABLE)
+  note       String?
+  createdAt  DateTime            @default(now())
+  updatedAt  DateTime            @updatedAt
+
+  @@unique([memberId, eventId])
+  @@map("member_availability")
+}
+
+model ScheduleAssignment {
+  id         String              @id @default(cuid())
+  eventId    String
+  event      ScheduleEvent       @relation(fields: [eventId], references: [id], onDelete: Cascade)
+  memberId   String
+  member     MultimediaMember    @relation(fields: [memberId], references: [id], onDelete: Cascade)
+  role       MultimediaRole
+  isManual   Boolean             @default(false)
+  createdAt  DateTime            @default(now())
+
+  @@unique([eventId, memberId])
+  @@map("schedule_assignments")
+}
