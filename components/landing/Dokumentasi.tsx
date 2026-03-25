@@ -42,11 +42,8 @@ function getEventPhotos(event: DokumentasiEventItem): { id: string; imageUrl: st
   if (!event.photos || event.photos.length === 0) return []
   return event.photos.map((p, i) => {
     if (typeof p === 'string') return { id: String(i), imageUrl: p, caption: null }
-    return {
-      id: (p as { id: string; imageUrl: string; caption?: string | null }).id,
-      imageUrl: (p as { id: string; imageUrl: string; caption?: string | null }).imageUrl,
-      caption: (p as { id: string; imageUrl: string; caption?: string | null }).caption ?? null,
-    }
+    const photo = p as DokumentasiPhoto
+    return { id: photo.id, imageUrl: photo.imageUrl, caption: photo.caption ?? null }
   })
 }
 
@@ -116,8 +113,7 @@ export function Dokumentasi({ events = [] }: DokumentasiProps) {
                   boxShadow: "0 20px 40px rgba(0,0,0,0.12)",
                 }}
                 onClick={() => {
-                  const photos = getEventPhotos(item)
-                  if (photos.length > 0) {
+                  if (totalFoto > 0) {
                     setSelectedEvent(item)
                     setLightboxIndex(0)
                   }
@@ -168,17 +164,15 @@ export function Dokumentasi({ events = [] }: DokumentasiProps) {
         </div>
       </div>
 
-      {selectedEvent && (
-        <PhotoLightbox
-          isOpen={!!selectedEvent}
-          onClose={() => setSelectedEvent(null)}
-          eventName={selectedEvent.namaAcara}
-          photos={getEventPhotos(selectedEvent)}
-          initialIndex={0}
-          currentIndex={lightboxIndex}
-          onIndexChange={setLightboxIndex}
-        />
-      )}
+      <PhotoLightbox
+        isOpen={!!selectedEvent}
+        onClose={() => { setSelectedEvent(null); setLightboxIndex(0) }}
+        eventName={selectedEvent?.namaAcara ?? ""}
+        photos={selectedEvent ? getEventPhotos(selectedEvent) : []}
+        initialIndex={0}
+        currentIndex={lightboxIndex}
+        onIndexChange={setLightboxIndex}
+      />
     </section>
   )
 }
