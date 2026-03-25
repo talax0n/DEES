@@ -1,4 +1,5 @@
 import { NextRequest, NextResponse } from "next/server"
+import { Prisma } from "@prisma/client"
 import { db } from "@/lib/db"
 import { schedulePeriodSchema } from "@/lib/validations"
 import { requireAuth } from "@/lib/auth"
@@ -40,7 +41,10 @@ export async function POST(request: NextRequest) {
       data: { nama: resolvedNama, bulan, tahun, deadlineAvailability, notes },
     })
     return NextResponse.json({ success: true, data, message: "Periode berhasil ditambahkan" }, { status: 201 })
-  } catch {
+  } catch (error) {
+    if (error instanceof Prisma.PrismaClientKnownRequestError && error.code === 'P2002') {
+      return NextResponse.json({ success: false, message: "Jadwal untuk bulan dan tahun ini sudah ada" }, { status: 409 })
+    }
     return NextResponse.json({ success: false, message: "Gagal menambahkan periode" }, { status: 500 })
   }
 }
