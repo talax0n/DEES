@@ -1,14 +1,14 @@
 import { NextRequest, NextResponse } from "next/server"
 import { db } from "@/lib/db"
 import { multimediaMemberSchema } from "@/lib/validations"
-import { requireAuth } from "@/lib/auth"
+import { requireMultimediaAdmin } from "@/lib/auth"
 
 interface Params {
   params: Promise<{ id: string }>
 }
 
 export async function PATCH(request: NextRequest, { params }: Params) {
-  const { response } = await requireAuth()
+  const { response } = await requireMultimediaAdmin()
   if (response) return response
   const { id } = await params
   try {
@@ -25,7 +25,7 @@ export async function PATCH(request: NextRequest, { params }: Params) {
 }
 
 export async function DELETE(_request: NextRequest, { params }: Params) {
-  const { response } = await requireAuth()
+  const { response } = await requireMultimediaAdmin()
   if (response) return response
   const { id } = await params
   try {

@@ -1,14 +1,14 @@
 import { NextRequest, NextResponse } from "next/server"
 import { db } from "@/lib/db"
 import { jadwalSchema } from "@/lib/validations"
-import { requireAdmin, requireAuth } from "@/lib/auth"
+import { requireCmsAdmin, requireCmsAccess } from "@/lib/auth"
 
 interface Params {
   params: Promise<{ id: string }>
 }
 
 export async function PUT(request: NextRequest, { params }: Params) {
-  const { response: authResponse } = await requireAuth()
+  const { response: authResponse } = await requireCmsAccess()
   if (authResponse) return authResponse
   const { id } = await params
   try {
@@ -25,7 +25,7 @@ export async function PUT(request: NextRequest, { params }: Params) {
 }
 
 export async function DELETE(_request: NextRequest, { params }: Params) {
-  const { response: authResponse } = await requireAdmin()
+  const { response: authResponse } = await requireCmsAdmin()
   if (authResponse) return authResponse
   const { id } = await params
   try {

@@ -1,7 +1,7 @@
 import { NextRequest, NextResponse } from "next/server"
 import { z } from "zod"
 import { db } from "@/lib/db"
-import { requireAuth } from "@/lib/auth"
+import { requireMultimediaAdmin, requireMultimediaAccess } from "@/lib/auth"
 
 const assignmentItemSchema = z.object({
   eventId: z.string().min(1),
@@ -14,8 +14,25 @@ const batchSchema = z.object({
   assignments: z.array(assignmentItemSchema).min(1),
 })
 
+export async function GET() {
+  const { response } = await requireMultimediaAccess()
+  if (response) return response
+  try {
+    const data = await db.scheduleAssignment.findMany({
+      include: {
+        member: true,
+        event: { select: { id: true, namaEvent: true, tanggal: true, waktu: true, periodId: true } },
+      },
+      orderBy: { event: { tanggal: 'asc' } },
+    })
+    return NextResponse.json({ success: true, data })
+  } catch {
+    return NextResponse.json({ success: false, message: "Gagal memuat data assignment" }, { status: 500 })
+  }
+}
+
 export async function POST(request: NextRequest) {
-  const { response } = await requireAuth()
+  const { response } = await requireMultimediaAdmin()
   if (response) return response
   try {
     const body = await request.json()

@@ -1,14 +1,14 @@
 import { NextRequest, NextResponse } from "next/server"
 import { db } from "@/lib/db"
 import { deleteFile, getPathFromUrl } from "@/lib/storage"
-import { requireAdmin } from "@/lib/auth"
+import { requireCmsAdmin } from "@/lib/auth"
 
 interface Params {
   params: Promise<{ id: string }>
 }
 
 export async function DELETE(_request: NextRequest, { params }: Params) {
-  const { response } = await requireAdmin()
+  const { response } = await requireCmsAdmin()
   if (response) return response
   const { id } = await params
   try {

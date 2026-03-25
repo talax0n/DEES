@@ -65,8 +65,7 @@ const METODE_LABEL: Record<string, string> = {
 }
 
 export default function AdminJadwalPage() {
-  const { role } = useAuth()
-  const canDelete = role === "ADMIN"
+  const { canDeleteCms: canDelete } = useAuth()
   const [data, setData] = useState<Jadwal[]>([])
   const [loading, setLoading] = useState(true)
   const [formOpen, setFormOpen] = useState(false)

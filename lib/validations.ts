@@ -55,6 +55,7 @@ export const multimediaMemberSchema = z.object({
   nama: z.string().min(1, 'Nama wajib diisi'),
   phone: z.string().optional(),
   roles: z.array(z.enum(['SLD', 'SND', 'STR', 'CAM'])).min(1, 'Minimal 1 kemampuan role'),
+  userId: z.string().optional().nullable(),
 })
 
 export const availabilitySchema = z.object({

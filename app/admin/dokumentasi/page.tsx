@@ -28,8 +28,7 @@ type EventSummary = {
 
 export default function AdminDokumentasiPage() {
   const router = useRouter()
-  const { role } = useAuth()
-  const canDelete = role === "ADMIN"
+  const { canDeleteCms: canDelete } = useAuth()
   const [data, setData] = useState<EventSummary[]>([])
   const [loading, setLoading] = useState(true)
   const [createOpen, setCreateOpen] = useState(false)

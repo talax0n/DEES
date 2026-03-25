@@ -1,5 +1,6 @@
 import { NextRequest, NextResponse } from "next/server"
 import { db } from "@/lib/db"
+import { requireMultimediaAccess } from "@/lib/auth"
 import { renderToBuffer } from "@react-pdf/renderer"
 import { createElement, type ReactElement } from "react"
 import type { DocumentProps } from "@react-pdf/renderer"
@@ -9,6 +10,8 @@ export async function GET(
   _request: NextRequest,
   { params }: { params: Promise<{ id: string }> }
 ) {
+  const { response } = await requireMultimediaAccess()
+  if (response) return response
   const { id } = await params
 
   try {

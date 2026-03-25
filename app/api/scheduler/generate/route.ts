@@ -1,10 +1,10 @@
 import { NextRequest, NextResponse } from "next/server"
 import { MultimediaRole } from "@prisma/client"
 import { db } from "@/lib/db"
-import { requireAuth } from "@/lib/auth"
+import { requireMultimediaAdmin } from "@/lib/auth"
 
 export async function POST(request: NextRequest) {
-  const { response } = await requireAuth()
+  const { response } = await requireMultimediaAdmin()
   if (response) return response
 
   let periodId: string | undefined

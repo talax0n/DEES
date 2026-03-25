@@ -2,7 +2,7 @@
 
 import { useState } from "react"
 import Link from "next/link"
-import { usePathname } from "next/navigation"
+import { usePathname, useRouter } from "next/navigation"
 import { cn } from "@/lib/utils"
 import {
   LayoutDashboard,
@@ -14,9 +14,11 @@ import {
   Bell,
   ChevronDown,
   Search,
-  BarChart2,
   CalendarClock,
   Users,
+  ClipboardCheck,
+  Monitor,
+  Video,
 } from "lucide-react"
 import { Button } from "@/components/ui/button"
 import { Sheet, SheetContent, SheetTrigger } from "@/components/ui/sheet"
@@ -31,30 +33,23 @@ import {
 import { AuthProvider, useAuth } from "@/components/providers/AuthProvider"
 import { ThemeToggle } from "@/components/theme-toggle"
 
-const navItems = [
-  { label: "Dashboard", href: "/admin", icon: LayoutDashboard, exact: true },
-  { label: "Analytics", href: "/admin/analytics", icon: BarChart2, exact: false },
-  { label: "Jadwal Ibadah", href: "/admin/jadwal", icon: Clock, exact: false },
-  { label: "Unduhan", href: "/admin/unduhan", icon: FileDown, exact: false },
-  { label: "Dokumentasi", href: "/admin/dokumentasi", icon: Camera, exact: false },
-  { label: "Jadwal Multimedia", href: "/admin/scheduler", icon: CalendarClock, exact: true },
-  { label: "Anggota Multimedia", href: "/admin/scheduler/members", icon: Users, exact: false },
-]
-
 const pageTitles: Record<string, string> = {
   "/admin": "Dashboard",
   "/admin/jadwal": "Jadwal Ibadah",
   "/admin/unduhan": "Unduhan",
   "/admin/dokumentasi": "Dokumentasi Kegiatan",
-  "/admin/analytics": "Analytics",
-  "/admin/scheduler": "Jadwal Tim Multimedia",
-  "/admin/scheduler/members": "Anggota Tim Multimedia",
+  "/admin/users": "Pengguna",
+  "/admin/multimedia": "Multimedia Dashboard",
+  "/admin/multimedia/schedules": "Jadwal Pelayanan",
+  "/admin/multimedia/members": "Anggota Tim",
+  "/admin/multimedia/availability": "Ketersediaan",
+  "/admin/multimedia/my-schedule": "Jadwal Saya",
 }
 
 function getPageTitle(pathname: string) {
   if (pageTitles[pathname]) return pageTitles[pathname]
   if (pathname.startsWith("/admin/dokumentasi/")) return "Kelola Foto Event"
-  if (pathname.startsWith("/admin/scheduler/")) return "Jadwal Tim Multimedia"
+  if (pathname.startsWith("/admin/multimedia/schedules/")) return "Detail Jadwal"
   return "Admin"
 }
 
@@ -64,16 +59,58 @@ function getInitials(name: string | null | undefined, email: string | null | und
   return "AD"
 }
 
+const roleColors: Record<string, string> = {
+  ADMIN: "bg-primary/20 text-primary",
+  EDITOR: "bg-blue-100 text-blue-700 dark:bg-blue-900/20 dark:text-blue-400",
+  MULTIMEDIA_ADMIN: "bg-purple-100 text-purple-700 dark:bg-purple-900/20 dark:text-purple-400",
+  MULTIMEDIA_MEMBER: "bg-green-100 text-green-700 dark:bg-green-900/20 dark:text-green-400",
+}
+const roleLabels: Record<string, string> = {
+  ADMIN: "Admin",
+  EDITOR: "Editor",
+  MULTIMEDIA_ADMIN: "MM Admin",
+  MULTIMEDIA_MEMBER: "MM Member",
+}
+
 function SidebarContent({ pathname }: { pathname: string }) {
-  const { user, role, signOut } = useAuth()
+  const { user, roles, signOut, canDeleteCms, activeDashboard, isMultimediaAdmin } = useAuth()
   const [query, setQuery] = useState("")
   const initials = getInitials(user?.name, user?.email)
   const displayName = user?.name ?? user?.email ?? "Administrator"
   const displayEmail = user?.email ?? ""
 
+  const cmsNav = [
+    { label: "Dashboard", href: "/admin", icon: LayoutDashboard, exact: true },
+    { label: "Jadwal Ibadah", href: "/admin/jadwal", icon: Clock, exact: false },
+    { label: "Unduhan", href: "/admin/unduhan", icon: FileDown, exact: false },
+    { label: "Dokumentasi", href: "/admin/dokumentasi", icon: Camera, exact: false },
+    ...(canDeleteCms ? [{ label: "Pengguna", href: "/admin/users", icon: Users, exact: false }] : []),
+  ]
+
+  const mmAdminNav = [
+    { label: "Dashboard", href: "/admin/multimedia", icon: LayoutDashboard, exact: true },
+    { label: "Jadwal Pelayanan", href: "/admin/multimedia/schedules", icon: CalendarClock, exact: false },
+    { label: "Anggota Tim", href: "/admin/multimedia/members", icon: Users, exact: false },
+  ]
+
+  const mmMemberNav = [
+    { label: "Jadwal Saya", href: "/admin/multimedia", icon: CalendarClock, exact: true },
+    { label: "Ketersediaan", href: "/admin/multimedia/availability", icon: ClipboardCheck, exact: false },
+  ]
+
+  const navItems =
+    activeDashboard === "cms"
+      ? cmsNav
+      : isMultimediaAdmin
+      ? mmAdminNav
+      : mmMemberNav
+
   const filteredNav = navItems.filter((item) =>
     item.label.toLowerCase().includes(query.toLowerCase())
   )
+
+  const firstRole = roles[0]
+  const extraRolesCount = roles.length - 1
 
   return (
     <div className="flex flex-col h-full bg-background/95 backdrop-blur-xl border-r border-border/40 text-foreground">
@@ -135,13 +172,20 @@ function SidebarContent({ pathname }: { pathname: string }) {
           <div className="min-w-0 flex-1">
             <div className="flex items-center justify-between gap-1.5">
               <p className="text-xs font-medium truncate">{displayName}</p>
-              {role && (
-                <span className={cn(
-                  "shrink-0 inline-flex items-center rounded-full px-1.5 py-0.5 text-[9px] font-semibold uppercase tracking-wider",
-                  role === "ADMIN" ? "bg-primary/20 text-primary" : "bg-muted text-muted-foreground"
-                )}>
-                  {role === "ADMIN" ? "Admin" : "Editor"}
-                </span>
+              {firstRole && (
+                <div className="flex items-center gap-0.5 shrink-0">
+                  <span className={cn(
+                    "inline-flex items-center rounded-full px-1.5 py-0.5 text-[9px] font-semibold uppercase tracking-wider",
+                    roleColors[firstRole] ?? "bg-muted text-muted-foreground"
+                  )}>
+                    {roleLabels[firstRole] ?? firstRole}
+                  </span>
+                  {extraRolesCount > 0 && (
+                    <span className="inline-flex items-center rounded-full px-1 py-0.5 text-[9px] font-semibold bg-muted text-muted-foreground">
+                      +{extraRolesCount}
+                    </span>
+                  )}
+                </div>
               )}
             </div>
             <p className="text-[10px] text-muted-foreground truncate">{displayEmail}</p>
@@ -161,11 +205,15 @@ function SidebarContent({ pathname }: { pathname: string }) {
 
 function AdminShell({ children }: { children: React.ReactNode }) {
   const pathname = usePathname()
-  const { user, role, signOut } = useAuth()
+  const router = useRouter()
+  const { user, roles, signOut, canSwitchDashboard, activeDashboard, setActiveDashboard } = useAuth()
   const pageTitle = getPageTitle(pathname)
   const initials = getInitials(user?.name, user?.email)
   const displayName = user?.name ?? user?.email ?? "Administrator"
   const displayEmail = user?.email ?? ""
+
+  const firstRole = roles[0]
+  const extraRolesCount = roles.length - 1
 
   return (
     <div className="flex min-h-screen bg-muted/30 dark:bg-background">
@@ -196,6 +244,36 @@ function AdminShell({ children }: { children: React.ReactNode }) {
             <h1 className="text-lg font-semibold text-foreground tracking-tight truncate">{pageTitle}</h1>
           </div>
 
+          {/* Dashboard switcher */}
+          {canSwitchDashboard && (
+            <div className="flex items-center gap-1 rounded-lg border border-border/40 bg-muted/30 p-1">
+              <button
+                onClick={() => { setActiveDashboard("cms"); router.push("/admin") }}
+                className={cn(
+                  "flex items-center gap-1.5 rounded-md px-3 py-1.5 text-xs font-medium transition-all",
+                  activeDashboard === "cms"
+                    ? "bg-primary text-primary-foreground shadow-sm"
+                    : "text-muted-foreground hover:text-foreground"
+                )}
+              >
+                <Monitor className="h-3 w-3" />
+                CMS
+              </button>
+              <button
+                onClick={() => { setActiveDashboard("multimedia"); router.push("/admin/multimedia") }}
+                className={cn(
+                  "flex items-center gap-1.5 rounded-md px-3 py-1.5 text-xs font-medium transition-all",
+                  activeDashboard === "multimedia"
+                    ? "bg-primary text-primary-foreground shadow-sm"
+                    : "text-muted-foreground hover:text-foreground"
+                )}
+              >
+                <Video className="h-3 w-3" />
+                Multimedia
+              </button>
+            </div>
+          )}
+
           {/* Right actions */}
           <div className="flex items-center gap-2">
             <ThemeToggle />
@@ -222,13 +300,20 @@ function AdminShell({ children }: { children: React.ReactNode }) {
                 <div className="px-3 py-2.5 mb-1 rounded-lg bg-muted/30">
                   <p className="text-sm font-semibold truncate">{displayName}</p>
                   <p className="text-xs text-muted-foreground truncate">{displayEmail}</p>
-                  {role && (
-                    <span className={cn(
-                      "mt-2 inline-flex items-center rounded-md px-2 py-0.5 text-[10px] font-bold uppercase tracking-wider",
-                      role === "ADMIN" ? "bg-primary/20 text-primary" : "bg-muted text-muted-foreground"
-                    )}>
-                      {role === "ADMIN" ? "Admin" : "Editor"}
-                    </span>
+                  {firstRole && (
+                    <div className="flex items-center gap-1 mt-2">
+                      <span className={cn(
+                        "inline-flex items-center rounded-md px-2 py-0.5 text-[10px] font-bold uppercase tracking-wider",
+                        roleColors[firstRole] ?? "bg-muted text-muted-foreground"
+                      )}>
+                        {roleLabels[firstRole] ?? firstRole}
+                      </span>
+                      {extraRolesCount > 0 && (
+                        <span className="inline-flex items-center rounded-md px-1.5 py-0.5 text-[10px] font-bold bg-muted text-muted-foreground">
+                          +{extraRolesCount}
+                        </span>
+                      )}
+                    </div>
                   )}
                 </div>
                 <DropdownMenuSeparator className="bg-border/40" />

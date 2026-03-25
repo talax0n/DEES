@@ -1,9 +1,11 @@
 import { NextRequest, NextResponse } from "next/server"
 import { db } from "@/lib/db"
 import { multimediaMemberSchema } from "@/lib/validations"
-import { requireAuth } from "@/lib/auth"
+import { requireMultimediaAdmin } from "@/lib/auth"
 
 export async function GET() {
+  const { response } = await requireMultimediaAdmin()
+  if (response) return response
   try {
     const data = await db.multimediaMember.findMany({
       where: { isActive: true },
@@ -16,7 +18,7 @@ export async function GET() {
 }
 
 export async function POST(request: NextRequest) {
-  const { response } = await requireAuth()
+  const { response } = await requireMultimediaAdmin()
   if (response) return response
   try {
     const body = await request.json()

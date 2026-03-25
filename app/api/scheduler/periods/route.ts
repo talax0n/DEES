@@ -2,7 +2,7 @@ import { NextRequest, NextResponse } from "next/server"
 import { Prisma } from "@prisma/client"
 import { db } from "@/lib/db"
 import { schedulePeriodSchema } from "@/lib/validations"
-import { requireAuth } from "@/lib/auth"
+import { requireMultimediaAccess, requireMultimediaAdmin } from "@/lib/auth"
 import { z } from "zod"
 
 const INDONESIAN_MONTHS = [
@@ -11,6 +11,8 @@ const INDONESIAN_MONTHS = [
 ]
 
 export async function GET() {
+  const { response } = await requireMultimediaAccess()
+  if (response) return response
   try {
     const data = await db.schedulePeriod.findMany({
       orderBy: [{ tahun: 'desc' }, { bulan: 'desc' }],
@@ -27,7 +29,7 @@ const createPeriodSchema = schedulePeriodSchema.extend({
 })
 
 export async function POST(request: NextRequest) {
-  const { response } = await requireAuth()
+  const { response } = await requireMultimediaAdmin()
   if (response) return response
   try {
     const body = await request.json()

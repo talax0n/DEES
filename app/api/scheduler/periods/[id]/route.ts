@@ -1,6 +1,6 @@
 import { NextRequest, NextResponse } from "next/server"
 import { db } from "@/lib/db"
-import { requireAuth } from "@/lib/auth"
+import { requireMultimediaAccess, requireMultimediaAdmin } from "@/lib/auth"
 import { z } from "zod"
 
 interface Params {
@@ -8,6 +8,8 @@ interface Params {
 }
 
 export async function GET(_request: NextRequest, { params }: Params) {
+  const { response } = await requireMultimediaAccess()
+  if (response) return response
   const { id } = await params
   try {
     const data = await db.schedulePeriod.findUnique({
@@ -40,7 +42,7 @@ const patchSchema = z.object({
 })
 
 export async function PATCH(request: NextRequest, { params }: Params) {
-  const { response } = await requireAuth()
+  const { response } = await requireMultimediaAdmin()
   if (response) return response
   const { id } = await params
   try {
@@ -57,7 +59,7 @@ export async function PATCH(request: NextRequest, { params }: Params) {
 }
 
 export async function DELETE(_request: NextRequest, { params }: Params) {
-  const { response } = await requireAuth()
+  const { response } = await requireMultimediaAdmin()
   if (response) return response
   const { id } = await params
   try {

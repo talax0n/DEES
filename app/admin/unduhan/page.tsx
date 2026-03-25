@@ -57,8 +57,7 @@ type Unduhan = {
 }
 
 export default function AdminUnduhanPage() {
-  const { role } = useAuth()
-  const canDelete = role === "ADMIN"
+  const { canDeleteCms: canDelete } = useAuth()
   const [data, setData] = useState<Unduhan[]>([])
   const [loading, setLoading] = useState(true)
   const [activeTab, setActiveTab] = useState("semua")

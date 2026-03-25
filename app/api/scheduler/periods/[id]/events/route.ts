@@ -1,13 +1,15 @@
 import { NextRequest, NextResponse } from "next/server"
 import { db } from "@/lib/db"
 import { scheduleEventSchema } from "@/lib/validations"
-import { requireAuth } from "@/lib/auth"
+import { requireMultimediaAccess, requireMultimediaAdmin } from "@/lib/auth"
 
 interface Params {
   params: Promise<{ id: string }>
 }
 
 export async function GET(_request: NextRequest, { params }: Params) {
+  const { response } = await requireMultimediaAccess()
+  if (response) return response
   const { id: periodId } = await params
   try {
     const data = await db.scheduleEvent.findMany({
@@ -24,7 +26,7 @@ export async function GET(_request: NextRequest, { params }: Params) {
 }
 
 export async function POST(request: NextRequest, { params }: Params) {
-  const { response } = await requireAuth()
+  const { response } = await requireMultimediaAdmin()
   if (response) return response
   const { id: periodId } = await params
   try {
