@@ -19,6 +19,7 @@ import {
   ClipboardCheck,
   Monitor,
   Video,
+  BarChart,
 } from "lucide-react"
 import { Button } from "@/components/ui/button"
 import { Sheet, SheetContent, SheetTrigger } from "@/components/ui/sheet"
@@ -35,6 +36,7 @@ import { ThemeToggle } from "@/components/theme-toggle"
 
 const pageTitles: Record<string, string> = {
   "/admin": "Dashboard",
+  "/admin/analytics": "Analytics",
   "/admin/jadwal": "Jadwal Ibadah",
   "/admin/unduhan": "Unduhan",
   "/admin/dokumentasi": "Dokumentasi Kegiatan",
@@ -81,6 +83,7 @@ function SidebarContent({ pathname }: { pathname: string }) {
 
   const cmsNav = [
     { label: "Dashboard", href: "/admin", icon: LayoutDashboard, exact: true },
+    { label: "Analytics", href: "/admin/analytics", icon: BarChart, exact: false },
     { label: "Jadwal Ibadah", href: "/admin/jadwal", icon: Clock, exact: false },
     { label: "Unduhan", href: "/admin/unduhan", icon: FileDown, exact: false },
     { label: "Dokumentasi", href: "/admin/dokumentasi", icon: Camera, exact: false },

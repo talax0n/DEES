@@ -2,6 +2,7 @@ import { NextRequest, NextResponse } from "next/server"
 import { MultimediaRole } from "@prisma/client"
 import { db } from "@/lib/db"
 import { requireMultimediaAdmin } from "@/lib/auth"
+import { generateLlmText } from "@/lib/llm"
 
 export async function POST(request: NextRequest) {
   const { response } = await requireMultimediaAdmin()
@@ -60,26 +61,10 @@ RULES:
 Respond with ONLY a valid JSON array of assignments (no markdown, no explanation):
 [{ "eventId": "...", "memberId": "...", "role": "SLD|SND|STR|CAM" }]`
 
-    const aiRes = await fetch('https://api.anthropic.com/v1/messages', {
-      method: 'POST',
-      headers: {
-        'Content-Type': 'application/json',
-        'x-api-key': process.env.ANTHROPIC_API_KEY!,
-        'anthropic-version': '2023-06-01',
-      },
-      body: JSON.stringify({
-        model: 'claude-sonnet-4-20250514',
-        max_tokens: 4000,
-        messages: [{ role: 'user', content: prompt }],
-      }),
+    const content = await generateLlmText({
+      prompt,
+      maxTokens: 4000,
     })
-
-    if (!aiRes.ok) {
-      throw new Error(`Anthropic API error: ${aiRes.status}`)
-    }
-
-    const aiResponse = await aiRes.json()
-    const content = aiResponse.content[0].text
 
     const jsonText = content.replace(/```json\n?/g, '').replace(/```\n?/g, '').trim()
     const rawAssignments = JSON.parse(jsonText) as Array<{ eventId: string; memberId: string; role: string }>
