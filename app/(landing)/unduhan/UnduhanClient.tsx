@@ -4,6 +4,7 @@ import { useState, useMemo } from "react";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Download, FileText, BookOpen, Newspaper, ChevronLeft, ChevronRight } from "lucide-react";
+import { motion, AnimatePresence, useReducedMotion } from "framer-motion";
 
 interface UnduhanItem {
   id: string;
@@ -35,6 +36,7 @@ function formatFileSize(bytes?: number | null) {
 export function UnduhanClient({ unduhan }: { unduhan: UnduhanItem[] }) {
   const [filter, setFilter] = useState<FilterType>("Semua");
   const [page, setPage] = useState(1);
+  const shouldReduce = useReducedMotion();
 
   const filtered = useMemo(() => {
     if (filter === "Semua") return unduhan;
@@ -52,7 +54,12 @@ export function UnduhanClient({ unduhan }: { unduhan: UnduhanItem[] }) {
   return (
     <div className="w-full px-4 sm:px-6 lg:px-8 xl:px-12 py-12">
       {/* Header */}
-      <div className="mb-8">
+      <motion.div
+        initial={{ opacity: 0, y: shouldReduce ? 0 : 20 }}
+        animate={{ opacity: 1, y: 0 }}
+        transition={{ duration: shouldReduce ? 0 : 0.5 }}
+        className="mb-8"
+      >
         <Badge className="bg-navy text-white hover:bg-navy px-4 py-1.5 text-xs font-medium rounded-full mb-4">
           Unduhan
         </Badge>
@@ -62,10 +69,15 @@ export function UnduhanClient({ unduhan }: { unduhan: UnduhanItem[] }) {
         <p className="text-gray-text mt-3 text-base max-w-xl">
           Akses tata ibadah, warta jemaat, dan dokumen pelayanan lainnya.
         </p>
-      </div>
+      </motion.div>
 
       {/* Filter tabs */}
-      <div className="flex items-center gap-2 mb-6">
+      <motion.div
+        initial={{ opacity: 0, y: shouldReduce ? 0 : 16 }}
+        animate={{ opacity: 1, y: 0 }}
+        transition={{ duration: shouldReduce ? 0 : 0.4, delay: shouldReduce ? 0 : 0.1 }}
+        className="flex items-center gap-2 mb-6"
+      >
         {(["Semua", "TAIB", "WARTA"] as FilterType[]).map((f) => (
           <button
             key={f}
@@ -80,82 +92,95 @@ export function UnduhanClient({ unduhan }: { unduhan: UnduhanItem[] }) {
           </button>
         ))}
         <span className="ml-auto text-sm text-gray-text">{filtered.length} dokumen</span>
-      </div>
+      </motion.div>
 
-      {/* Table */}
-      {paginated.length === 0 ? (
-        <div className="text-center py-20 text-gray-text">
-          <FileText className="w-12 h-12 mx-auto mb-4 opacity-30" />
-          <p>Tidak ada dokumen ditemukan.</p>
-        </div>
-      ) : (
-        <div className="rounded-2xl border border-gray-line overflow-hidden">
-          {paginated.map((item, i) => (
-            <div
-              key={item.id}
-              className={`flex items-center gap-4 px-5 py-4 ${
-                i < paginated.length - 1 ? "border-b border-gray-line" : ""
-              } hover:bg-off-white transition-colors`}
-            >
-              {/* Icon */}
-              <div
-                className={`w-10 h-10 rounded-xl flex items-center justify-center shrink-0 ${
-                  item.tipe === "TAIB" ? "bg-red-50" : "bg-blue-50"
-                }`}
-              >
-                {item.tipe === "TAIB" ? (
-                  <BookOpen className="w-5 h-5 text-red-500" />
-                ) : (
-                  <Newspaper className="w-5 h-5 text-blue-500" />
-                )}
-              </div>
-
-              {/* Info */}
-              <div className="flex-1 min-w-0">
-                <p className="font-medium text-navy text-sm truncate">{item.judul}</p>
-                <div className="flex items-center gap-2 mt-1">
-                  <span className="text-xs text-gray-text">{formatDate(item.tanggal)}</span>
-                  {formatFileSize(item.fileSize) && (
-                    <>
-                      <span className="text-gray-line">·</span>
-                      <span className="text-xs text-gray-text">{formatFileSize(item.fileSize)}</span>
-                    </>
-                  )}
-                </div>
-              </div>
-
-              {/* Badge */}
-              <Badge
-                variant="outline"
-                className={
-                  item.tipe === "TAIB"
-                    ? "border-red-200 text-red-600 bg-red-50 shrink-0 hidden sm:inline-flex"
-                    : "border-blue-200 text-blue-600 bg-blue-50 shrink-0 hidden sm:inline-flex"
-                }
-              >
-                {item.tipe === "TAIB" ? "Tata Ibadah" : "Warta Jemaat"}
-              </Badge>
-
-              {/* Download button */}
-              <a
-                href={item.fileUrl}
-                target="_blank"
-                rel="noopener noreferrer"
-                download
-              >
-                <Button
-                  size="sm"
-                  variant="outline"
-                  className="rounded-full border-gray-line hover:border-navy hover:bg-navy hover:text-white transition-colors shrink-0"
-                >
-                  <Download className="w-4 h-4 sm:mr-2" />
-                  <span className="hidden sm:inline">Unduh</span>
-                </Button>
-              </a>
+      {/* Table with AnimatePresence for tab switching */}
+      <AnimatePresence mode="wait">
+        <motion.div
+          key={filter}
+          initial={{ opacity: 0, y: shouldReduce ? 0 : 12 }}
+          animate={{ opacity: 1, y: 0 }}
+          exit={{ opacity: 0, y: shouldReduce ? 0 : -8 }}
+          transition={{ duration: shouldReduce ? 0 : 0.25 }}
+        >
+          {paginated.length === 0 ? (
+            <div className="text-center py-20 text-gray-text">
+              <FileText className="w-12 h-12 mx-auto mb-4 opacity-30" />
+              <p>Tidak ada dokumen ditemukan.</p>
             </div>
-          ))}
-        </div>
-      )}
+          ) : (
+            <div className="rounded-2xl border border-gray-line overflow-hidden">
+              {paginated.map((item, i) => (
+                <motion.div
+                  key={item.id}
+                  initial={{ opacity: 0, y: shouldReduce ? 0 : 10 }}
+                  animate={{ opacity: 1, y: 0 }}
+                  transition={{ duration: shouldReduce ? 0 : 0.3, delay: shouldReduce ? 0 : i * 0.04 }}
+                  className={`flex items-center gap-4 px-5 py-4 ${
+                    i < paginated.length - 1 ? "border-b border-gray-line" : ""
+                  } hover:bg-off-white transition-colors`}
+                >
+                  {/* Icon */}
+                  <div
+                    className={`w-10 h-10 rounded-xl flex items-center justify-center shrink-0 ${
+                      item.tipe === "TAIB" ? "bg-red-50" : "bg-blue-50"
+                    }`}
+                  >
+                    {item.tipe === "TAIB" ? (
+                      <BookOpen className="w-5 h-5 text-red-500" />
+                    ) : (
+                      <Newspaper className="w-5 h-5 text-blue-500" />
+                    )}
+                  </div>
+
+                  {/* Info */}
+                  <div className="flex-1 min-w-0">
+                    <p className="font-medium text-navy text-sm truncate">{item.judul}</p>
+                    <div className="flex items-center gap-2 mt-1">
+                      <span className="text-xs text-gray-text">{formatDate(item.tanggal)}</span>
+                      {formatFileSize(item.fileSize) && (
+                        <>
+                          <span className="text-gray-line">·</span>
+                          <span className="text-xs text-gray-text">{formatFileSize(item.fileSize)}</span>
+                        </>
+                      )}
+                    </div>
+                  </div>
+
+                  {/* Badge */}
+                  <Badge
+                    variant="outline"
+                    className={
+                      item.tipe === "TAIB"
+                        ? "border-red-200 text-red-600 bg-red-50 shrink-0 hidden sm:inline-flex"
+                        : "border-blue-200 text-blue-600 bg-blue-50 shrink-0 hidden sm:inline-flex"
+                    }
+                  >
+                    {item.tipe === "TAIB" ? "Tata Ibadah" : "Warta Jemaat"}
+                  </Badge>
+
+                  {/* Download button */}
+                  <a
+                    href={item.fileUrl}
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    download
+                  >
+                    <Button
+                      size="sm"
+                      variant="outline"
+                      className="rounded-full border-gray-line hover:border-navy hover:bg-navy hover:text-white transition-colors shrink-0"
+                    >
+                      <Download className="w-4 h-4 sm:mr-2" />
+                      <span className="hidden sm:inline">Unduh</span>
+                    </Button>
+                  </a>
+                </motion.div>
+              ))}
+            </div>
+          )}
+        </motion.div>
+      </AnimatePresence>
 
       {/* Pagination */}
       {totalPages > 1 && (

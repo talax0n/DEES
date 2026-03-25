@@ -8,8 +8,10 @@ import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
 import { ArrowUpRight, Cross, Loader2 } from "lucide-react";
 import { contactSchema, type ContactFormValues } from "@/lib/validations";
+import { motion, useReducedMotion } from "framer-motion";
 
 export function ContactForm() {
+  const shouldReduce = useReducedMotion();
   const {
     register,
     handleSubmit,
@@ -39,7 +41,13 @@ export function ContactForm() {
   }
 
   return (
-    <div className="bg-white rounded-3xl border border-gray-line shadow-sm p-6 lg:p-8">
+    <motion.div
+      initial={{ opacity: 0, y: shouldReduce ? 0 : 30 }}
+      whileInView={{ opacity: 1, y: 0 }}
+      viewport={{ once: true }}
+      transition={{ duration: shouldReduce ? 0 : 0.5 }}
+      className="bg-white rounded-3xl border border-gray-line shadow-sm p-6 lg:p-8"
+    >
       {/* Form header */}
       <div className="flex items-center gap-3 mb-6">
         <div className="w-10 h-10 rounded-full bg-navy flex items-center justify-center">
@@ -113,6 +121,6 @@ export function ContactForm() {
           )}
         </Button>
       </form>
-    </div>
+    </motion.div>
   );
 }

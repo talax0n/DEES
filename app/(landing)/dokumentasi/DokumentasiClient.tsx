@@ -4,6 +4,7 @@ import { useState } from "react";
 import { Badge } from "@/components/ui/badge";
 import { Camera } from "lucide-react";
 import { PhotoLightbox } from "@/components/landing/PhotoLightbox";
+import { motion, useReducedMotion } from "framer-motion";
 
 interface Photo {
   id: string;
@@ -33,6 +34,7 @@ export function DokumentasiClient({ events }: { events: EventItem[] }) {
     eventIndex: number;
     photoIndex: number;
   } | null>(null);
+  const shouldReduce = useReducedMotion();
 
   function openLightbox(eventIndex: number) {
     setLightbox({ eventIndex, photoIndex: 0 });
@@ -47,7 +49,12 @@ export function DokumentasiClient({ events }: { events: EventItem[] }) {
   return (
     <div className="w-full px-4 sm:px-6 lg:px-8 xl:px-12 py-12">
       {/* Header */}
-      <div className="mb-10">
+      <motion.div
+        initial={{ opacity: 0, y: shouldReduce ? 0 : 20 }}
+        animate={{ opacity: 1, y: 0 }}
+        transition={{ duration: shouldReduce ? 0 : 0.5 }}
+        className="mb-10"
+      >
         <Badge className="bg-navy text-white hover:bg-navy px-4 py-1.5 text-xs font-medium rounded-full mb-4">
           Dokumentasi
         </Badge>
@@ -57,7 +64,7 @@ export function DokumentasiClient({ events }: { events: EventItem[] }) {
         <p className="text-gray-text mt-3 text-base max-w-xl">
           Kumpulan foto dari berbagai kegiatan dan acara pelayanan gereja.
         </p>
-      </div>
+      </motion.div>
 
       {events.length === 0 ? (
         <div className="text-center py-20 text-gray-text">

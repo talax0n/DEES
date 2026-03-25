@@ -6,6 +6,8 @@ import Image from "next/image";
 import Link from "next/link";
 import { pelkat } from "@/lib/data/pelkat";
 import { jadwalSepekan, dayStyles } from "@/lib/data/jadwal-sepekan";
+import { AnimatedSection } from "@/components/landing/AnimatedSection";
+import { AnimatedGrid } from "@/components/landing/AnimatedGrid";
 
 export const revalidate = 60;
 
@@ -55,19 +57,22 @@ export default async function JadwalPage() {
     <div className="min-h-screen bg-white pt-20">
       <div className="w-full px-4 sm:px-6 lg:px-8 xl:px-12 py-12">
         {/* Header */}
-        <div className="mb-10">
-          <Badge className="bg-navy text-white hover:bg-navy px-4 py-1.5 text-xs font-medium rounded-full mb-4">
-            Jadwal Pelayanan
-          </Badge>
-          <h1 className="font-serif text-3xl sm:text-4xl lg:text-5xl font-medium text-navy">
-            Jadwal Ibadah & Pelayanan
-          </h1>
-          <p className="text-gray-text mt-3 text-base max-w-xl">
-            Jadwal lengkap ibadah dan pelayanan di GPIB Damai Sejahtera.
-          </p>
-        </div>
+        <AnimatedSection>
+          <div className="mb-10">
+            <Badge className="bg-navy text-white hover:bg-navy px-4 py-1.5 text-xs font-medium rounded-full mb-4">
+              Jadwal Pelayanan
+            </Badge>
+            <h1 className="font-serif text-3xl sm:text-4xl lg:text-5xl font-medium text-navy">
+              Jadwal Ibadah & Pelayanan
+            </h1>
+            <p className="text-gray-text mt-3 text-base max-w-xl">
+              Jadwal lengkap ibadah dan pelayanan di GPIB Damai Sejahtera.
+            </p>
+          </div>
+        </AnimatedSection>
 
         {/* Jadwal Grid */}
+        <AnimatedSection delay={0.1}>
         {jadwal.length === 0 ? (
           <div className="text-center py-20 text-gray-text">
             <Clock className="w-12 h-12 mx-auto mb-4 opacity-30" />
@@ -112,9 +117,11 @@ export default async function JadwalPage() {
             ))}
           </div>
         )}
+        </AnimatedSection>
 
         {/* Jadwal Kegiatan Sepekan */}
         {/* TODO: Connect to database/admin CRUD in future phase */}
+        <AnimatedSection delay={0.1}>
         <div className="border-t border-gray-line pt-12 mb-12">
           <h2 className="font-serif text-2xl sm:text-3xl font-medium text-navy mb-2">
             Jadwal Kegiatan Sepekan
@@ -156,16 +163,19 @@ export default async function JadwalPage() {
             })}
           </div>
         </div>
+        </AnimatedSection>
 
         {/* Pelkat section */}
         <div className="border-t border-gray-line pt-12">
-          <h2 className="font-serif text-2xl sm:text-3xl font-medium text-navy mb-2">
-            Pelayanan Kategorial
-          </h2>
-          <p className="text-gray-text text-sm mb-8">
-            Persekutuan pelayanan berdasarkan usia dan kategori jemaat.
-          </p>
-          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
+          <AnimatedSection delay={0.1}>
+            <h2 className="font-serif text-2xl sm:text-3xl font-medium text-navy mb-2">
+              Pelayanan Kategorial
+            </h2>
+            <p className="text-gray-text text-sm mb-8">
+              Persekutuan pelayanan berdasarkan usia dan kategori jemaat.
+            </p>
+          </AnimatedSection>
+          <AnimatedGrid className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
             {pelkat.map((item) => (
               <Link
                 key={item.id}
@@ -204,7 +214,7 @@ export default async function JadwalPage() {
                 </div>
               </Link>
             ))}
-          </div>
+          </AnimatedGrid>
         </div>
       </div>
     </div>
