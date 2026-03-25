@@ -1,4 +1,5 @@
 import { NextRequest, NextResponse } from "next/server"
+import { MultimediaRole } from "@prisma/client"
 import { db } from "@/lib/db"
 import { requireAuth } from "@/lib/auth"
 
@@ -97,8 +98,8 @@ Respond with ONLY a valid JSON array of assignments (no markdown, no explanation
       validAssignments.map(a =>
         db.scheduleAssignment.upsert({
           where: { eventId_memberId: { eventId: a.eventId, memberId: a.memberId } },
-          create: { eventId: a.eventId, memberId: a.memberId, role: a.role as any, isManual: false },
-          update: { role: a.role as any, isManual: false },
+          create: { eventId: a.eventId, memberId: a.memberId, role: a.role as MultimediaRole, isManual: false },
+          update: { role: a.role as MultimediaRole, isManual: false },
         })
       )
     )
