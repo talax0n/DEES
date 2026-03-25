@@ -6,6 +6,13 @@ import { Badge } from '@/components/ui/badge'
 import Image from 'next/image'
 import { ArrowUpRight, Cross } from 'lucide-react'
 import { AnimatedSection } from './AnimatedSection'
+import {
+  Carousel,
+  CarouselContent,
+  CarouselItem,
+  CarouselNext,
+  CarouselPrevious,
+} from "@/components/ui/carousel"
 
 function AnimatedCounter({ target, suffix = "" }: { target: number; suffix?: string }) {
   const [count, setCount] = useState(0)
@@ -29,6 +36,11 @@ function AnimatedCounter({ target, suffix = "" }: { target: number; suffix?: str
 
   return <span ref={ref}>{count}{suffix}</span>
 }
+
+const ABOUT_IMAGES = [
+  { src: "/INTERIOR.jpg", alt: "Interior Gereja GPIB Damai Sejahtera" },
+  { src: "/hero.jpg", alt: "Eksterior Gereja GPIB Damai Sejahtera" },
+]
 
 export function About() {
   return (
@@ -82,18 +94,36 @@ export function About() {
 
           {/* Right column - 60% */}
           <AnimatedSection className="lg:col-span-6 relative" delay={0.2}>
-            {/* Main image card with rotation */}
+            {/* Main image card with rotation and carousel */}
             <div
-              className="relative rounded-3xl overflow-hidden shadow-xl aspect-[4/3]"
+              className="relative rounded-3xl overflow-hidden shadow-xl aspect-[4/3] group"
               style={{ transform: 'rotate(2deg)' }}
             >
-              <Image
-                src="/INTERIOR.jpg"
-                alt="Interior Gereja GPIB Damai Sejahtera"
-                fill
-                sizes="(min-width: 1024px) 50vw, 100vw"
-                className="object-cover"
-              />
+              <Carousel
+                opts={{
+                  align: "start",
+                  loop: true,
+                }}
+                className="w-full h-full"
+              >
+                <CarouselContent className="h-full">
+                  {ABOUT_IMAGES.map((img, index) => (
+                    <CarouselItem key={index} className="relative w-full h-full basis-full">
+                      <div className="relative w-full h-full aspect-[4/3]">
+                        <Image
+                          src={img.src}
+                          alt={img.alt}
+                          fill
+                          sizes="(min-width: 1024px) 50vw, 100vw"
+                          className="object-cover"
+                        />
+                      </div>
+                    </CarouselItem>
+                  ))}
+                </CarouselContent>
+                <CarouselPrevious className="left-4 z-10 h-16 w-16 bg-transparent hover:bg-transparent text-white border-none shadow-none opacity-0 group-hover:opacity-100 transition-opacity duration-300 disabled:opacity-0 [&>svg]:w-10 [&>svg]:h-10 hover:scale-110 drop-shadow-md" />
+                <CarouselNext className="right-4 z-10 h-16 w-16 bg-transparent hover:bg-transparent text-white border-none shadow-none opacity-0 group-hover:opacity-100 transition-opacity duration-300 disabled:opacity-0 [&>svg]:w-10 [&>svg]:h-10 hover:scale-110 drop-shadow-md" />
+              </Carousel>
             </div>
 
             {/* Floating stat cards */}
