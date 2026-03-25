@@ -16,6 +16,7 @@ import {
   Search,
   BarChart2,
   CalendarClock,
+  Users,
 } from "lucide-react"
 import { Button } from "@/components/ui/button"
 import { Sheet, SheetContent, SheetTrigger } from "@/components/ui/sheet"
@@ -36,7 +37,8 @@ const navItems = [
   { label: "Jadwal Ibadah", href: "/admin/jadwal", icon: Clock, exact: false },
   { label: "Unduhan", href: "/admin/unduhan", icon: FileDown, exact: false },
   { label: "Dokumentasi", href: "/admin/dokumentasi", icon: Camera, exact: false },
-  { label: "Jadwal Multimedia", href: "/admin/scheduler", icon: CalendarClock, exact: false },
+  { label: "Jadwal Multimedia", href: "/admin/scheduler", icon: CalendarClock, exact: true },
+  { label: "Anggota Multimedia", href: "/admin/scheduler/members", icon: Users, exact: false },
 ]
 
 const pageTitles: Record<string, string> = {
@@ -46,6 +48,7 @@ const pageTitles: Record<string, string> = {
   "/admin/dokumentasi": "Dokumentasi Kegiatan",
   "/admin/analytics": "Analytics",
   "/admin/scheduler": "Jadwal Tim Multimedia",
+  "/admin/scheduler/members": "Anggota Tim Multimedia",
 }
 
 function getPageTitle(pathname: string) {
