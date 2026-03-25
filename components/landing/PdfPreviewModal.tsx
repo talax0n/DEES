@@ -18,6 +18,9 @@ export function PdfPreviewModal({ isOpen, onClose, fileUrl, title }: PdfPreviewM
   useEffect(() => {
     if (fileUrl) lastFileUrl.current = fileUrl
   }, [fileUrl])
+  // Derive display URL synchronously: use current prop if available, fall back to cached ref
+  // This ensures the iframe loads on first open and doesn't flicker during exit animation
+  const displayUrl = fileUrl || lastFileUrl.current
 
   // ESC key handler
   useEffect(() => {
@@ -65,7 +68,7 @@ export function PdfPreviewModal({ isOpen, onClose, fileUrl, title }: PdfPreviewM
               <h2 className="font-medium text-navy text-sm truncate flex-1">{title}</h2>
               <div className="flex items-center gap-2 shrink-0">
                 <a
-                  href={fileUrl}
+                  href={displayUrl}
                   download
                   target="_blank"
                   rel="noopener noreferrer"
@@ -87,7 +90,7 @@ export function PdfPreviewModal({ isOpen, onClose, fileUrl, title }: PdfPreviewM
             {/* PDF iframe */}
             <div className="flex-1 min-h-0">
               <iframe
-                src={lastFileUrl.current}
+                src={displayUrl}
                 className="w-full h-full border-0"
                 title={title}
               />
