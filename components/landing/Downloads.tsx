@@ -1,11 +1,13 @@
 "use client";
 
+import { useState } from "react";
 import { motion, useReducedMotion } from "framer-motion";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
-import { FileText, ArrowRight, BookOpen, Newspaper } from "lucide-react";
+import { Eye, FileText, ArrowRight, BookOpen, Newspaper } from "lucide-react";
 import { AnimatedSection } from "./AnimatedSection";
 import Link from "next/link";
+import { PdfPreviewModal } from "./PdfPreviewModal";
 
 interface UnduhanItem {
   id: string
@@ -22,6 +24,8 @@ interface DownloadsProps {
 
 export function Downloads({ unduhan = [] }: DownloadsProps) {
   const shouldReduceMotion = useReducedMotion();
+  const [previewUrl, setPreviewUrl] = useState<string | null>(null);
+  const [previewTitle, setPreviewTitle] = useState("");
 
   const data = unduhan;
 
@@ -86,6 +90,13 @@ export function Downloads({ unduhan = [] }: DownloadsProps) {
                     <div>
                       <p className="text-xs text-gray-text mb-1">Terbaru • {formatDate(latestTataIbadah.tanggal)}</p>
                       <p className="font-medium text-navy text-sm line-clamp-2">{latestTataIbadah.judul}</p>
+                      <button
+                        onClick={() => { setPreviewUrl(latestTataIbadah.fileUrl ?? latestTataIbadah.url ?? ""); setPreviewTitle(latestTataIbadah.judul) }}
+                        className="mt-3 inline-flex items-center gap-1.5 text-xs text-navy font-medium hover:text-gold transition-colors"
+                      >
+                        <Eye className="w-3.5 h-3.5" />
+                        Pratinjau
+                      </button>
                     </div>
                   </div>
                 </div>
@@ -124,6 +135,13 @@ export function Downloads({ unduhan = [] }: DownloadsProps) {
                     <div>
                       <p className="text-xs text-gray-text mb-1">Terbaru • {formatDate(latestWartaJemaat.tanggal)}</p>
                       <p className="font-medium text-navy text-sm line-clamp-2">{latestWartaJemaat.judul}</p>
+                      <button
+                        onClick={() => { setPreviewUrl(latestWartaJemaat.fileUrl ?? latestWartaJemaat.url ?? ""); setPreviewTitle(latestWartaJemaat.judul) }}
+                        className="mt-3 inline-flex items-center gap-1.5 text-xs text-navy font-medium hover:text-gold transition-colors"
+                      >
+                        <Eye className="w-3.5 h-3.5" />
+                        Pratinjau
+                      </button>
                     </div>
                   </div>
                 </div>
@@ -141,6 +159,13 @@ export function Downloads({ unduhan = [] }: DownloadsProps) {
           </div>
         </AnimatedSection>
       </div>
+
+      <PdfPreviewModal
+        isOpen={!!previewUrl}
+        onClose={() => setPreviewUrl(null)}
+        fileUrl={previewUrl ?? ""}
+        title={previewTitle}
+      />
     </section>
   );
 }

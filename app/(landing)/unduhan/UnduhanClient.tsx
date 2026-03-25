@@ -3,8 +3,9 @@
 import { useState, useMemo } from "react";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
-import { Download, FileText, BookOpen, Newspaper, ChevronLeft, ChevronRight } from "lucide-react";
+import { Download, Eye, FileText, BookOpen, Newspaper, ChevronLeft, ChevronRight } from "lucide-react";
 import { motion, AnimatePresence, useReducedMotion } from "framer-motion";
+import { PdfPreviewModal } from "@/components/landing/PdfPreviewModal";
 
 interface UnduhanItem {
   id: string;
@@ -36,6 +37,8 @@ function formatFileSize(bytes?: number | null) {
 export function UnduhanClient({ unduhan }: { unduhan: UnduhanItem[] }) {
   const [filter, setFilter] = useState<FilterType>("Semua");
   const [page, setPage] = useState(1);
+  const [previewUrl, setPreviewUrl] = useState<string | null>(null);
+  const [previewTitle, setPreviewTitle] = useState("");
   const shouldReduce = useReducedMotion();
 
   const filtered = useMemo(() => {
@@ -159,6 +162,15 @@ export function UnduhanClient({ unduhan }: { unduhan: UnduhanItem[] }) {
                     {item.tipe === "TAIB" ? "Tata Ibadah" : "Warta Jemaat"}
                   </Badge>
 
+                  {/* Lihat button */}
+                  <button
+                    className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-full text-sm font-medium text-navy hover:bg-navy/10 transition-colors shrink-0"
+                    onClick={() => { setPreviewUrl(item.fileUrl); setPreviewTitle(item.judul) }}
+                  >
+                    <Eye className="w-4 h-4" />
+                    <span className="hidden sm:inline">Lihat</span>
+                  </button>
+
                   {/* Download button */}
                   <a
                     href={item.fileUrl}
@@ -223,6 +235,13 @@ export function UnduhanClient({ unduhan }: { unduhan: UnduhanItem[] }) {
           </div>
         </div>
       )}
+
+      <PdfPreviewModal
+        isOpen={!!previewUrl}
+        onClose={() => setPreviewUrl(null)}
+        fileUrl={previewUrl ?? ""}
+        title={previewTitle}
+      />
     </div>
   );
 }
