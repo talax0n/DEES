@@ -13,6 +13,7 @@ import {
 import { AnimatedSection } from "./AnimatedSection";
 import { Marquee } from "@/components/ui/marquee";
 import Image from "next/image";
+import Link from "next/link";
 import { pelkat } from "@/lib/data/pelkat";
 import { CHURCH_INFO } from "@/lib/constants";
 
@@ -176,8 +177,9 @@ export function Programs({ jadwal = [] }: ProgramsProps) {
           <div className="relative flex w-full flex-col items-center justify-center overflow-hidden py-10">
             <Marquee pauseOnHover className="[--duration:30s]">
               {pelkat.map((item) => (
-                <div
+                <Link
                   key={item.id}
+                  href={`/pelkat/${item.singkatan}`}
                   className="group/card relative flex w-48 h-48 sm:w-64 sm:h-64 cursor-pointer overflow-hidden rounded-3xl border border-gray-line bg-white hover:shadow-[0_8px_30px_rgb(0,0,0,0.08)] transition-all duration-300 items-center justify-center p-6"
                 >
                   <div className="absolute inset-0 bg-gradient-to-br from-navy/5 to-transparent opacity-0 group-hover/card:opacity-100 transition-opacity duration-300" />
@@ -201,7 +203,7 @@ export function Programs({ jadwal = [] }: ProgramsProps) {
                       {item.nama}
                     </Badge>
                   </div>
-                </div>
+                </Link>
               ))}
             </Marquee>
             <div className="pointer-events-none absolute inset-y-0 left-0 w-1/4 bg-gradient-to-r from-white to-transparent"></div>

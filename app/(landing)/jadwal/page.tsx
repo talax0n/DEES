@@ -1,8 +1,9 @@
 import type { Metadata } from "next";
 import { db } from "@/lib/db";
 import { Badge } from "@/components/ui/badge";
-import { MapPin, Clock, Wifi, WifiOff, ExternalLink } from "lucide-react";
+import { MapPin, Clock, Wifi, WifiOff, ExternalLink, ArrowUpRight } from "lucide-react";
 import Image from "next/image";
+import Link from "next/link";
 import { pelkat } from "@/lib/data/pelkat";
 
 export const revalidate = 60;
@@ -122,9 +123,10 @@ export default async function JadwalPage() {
           </p>
           <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
             {pelkat.map((item) => (
-              <div
+              <Link
                 key={item.id}
-                className="rounded-2xl border border-gray-line bg-white p-5 flex gap-4 hover:shadow-md transition-shadow"
+                href={`/pelkat/${item.singkatan}`}
+                className="group rounded-2xl border border-gray-line bg-white p-5 flex gap-4 hover:shadow-md hover:border-navy/20 transition-all"
               >
                 {item.icon ? (
                   <div className="relative w-16 h-16 shrink-0">
@@ -142,7 +144,10 @@ export default async function JadwalPage() {
                   </div>
                 )}
                 <div className="flex-1 min-w-0">
-                  <h3 className="font-semibold text-navy text-sm">{item.nama}</h3>
+                  <div className="flex items-start justify-between gap-1">
+                    <h3 className="font-semibold text-navy text-sm">{item.nama}</h3>
+                    <ArrowUpRight className="w-4 h-4 text-gray-text opacity-0 group-hover:opacity-100 transition-opacity shrink-0 mt-0.5" />
+                  </div>
                   {item.deskripsi && (
                     <p className="text-gray-text text-xs mt-1 line-clamp-3">{item.deskripsi}</p>
                   )}
@@ -153,7 +158,7 @@ export default async function JadwalPage() {
                     <p className="text-gray-text text-xs mt-1">Kontak: {(item as any).kontakPerson}</p>
                   )}
                 </div>
-              </div>
+              </Link>
             ))}
           </div>
         </div>
