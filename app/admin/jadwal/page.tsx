@@ -16,6 +16,7 @@ import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
 import { Label } from "@/components/ui/label"
 import { Switch } from "@/components/ui/switch"
+import { MoreHorizontal, Search } from "lucide-react"
 import {
   Dialog,
   DialogContent,
@@ -23,6 +24,13 @@ import {
   DialogTitle,
   DialogFooter,
 } from "@/components/ui/dialog"
+import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuSeparator,
+  DropdownMenuTrigger,
+} from "@/components/ui/dropdown-menu"
 import {
   Select,
   SelectContent,
@@ -67,6 +75,7 @@ export default function AdminJadwalPage() {
   const [deleteId, setDeleteId] = useState<string | null>(null)
   const [saving, setSaving] = useState(false)
   const [deleting, setDeleting] = useState(false)
+  const [search, setSearch] = useState("")
 
   const {
     register,
@@ -174,16 +183,29 @@ export default function AdminJadwalPage() {
         }
       />
 
-      <div className="rounded-lg border bg-white overflow-hidden">
+      {/* Search toolbar */}
+      <div className="flex items-center gap-3">
+        <div className="relative max-w-xs w-full">
+          <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
+          <Input
+            placeholder="Cari jadwal..."
+            value={search}
+            onChange={(e) => setSearch(e.target.value)}
+            className="pl-9"
+          />
+        </div>
+      </div>
+
+      <div className="bg-background rounded-lg border border-border/40 shadow-sm overflow-hidden">
         <Table>
           <TableHeader>
-            <TableRow className="bg-muted/40">
+            <TableRow>
               <TableHead>Nama Ibadah</TableHead>
               <TableHead>Hari / Waktu</TableHead>
               <TableHead>Lokasi</TableHead>
               <TableHead>Metode</TableHead>
               <TableHead>Status</TableHead>
-              <TableHead className="w-24">Aksi</TableHead>
+              <TableHead className="w-12 text-right">Aksi</TableHead>
             </TableRow>
           </TableHeader>
           <TableBody>
@@ -204,41 +226,57 @@ export default function AdminJadwalPage() {
                 </TableCell>
               </TableRow>
             ) : (
-              data.map((jadwal) => (
-                <TableRow key={jadwal.id}>
-                  <TableCell className="font-medium">{jadwal.namaIbadah}</TableCell>
-                  <TableCell>{jadwal.hari}, {jadwal.waktu}</TableCell>
-                  <TableCell className="text-muted-foreground">{jadwal.lokasi}</TableCell>
-                  <TableCell>
-                    <span className={`inline-flex items-center rounded-full px-2 py-0.5 text-xs font-medium ${
-                      jadwal.metode === "online" ? "bg-blue-100 text-blue-700"
-                        : jadwal.metode === "hybrid" ? "bg-purple-100 text-purple-700"
-                        : "bg-gray-100 text-gray-700"
-                    }`}>
-                      {METODE_LABEL[jadwal.metode] ?? jadwal.metode}
-                    </span>
-                  </TableCell>
-                  <TableCell>
-                    <span className={`inline-flex items-center rounded-full px-2 py-0.5 text-xs font-medium ${
-                      jadwal.isActive ? "bg-green-100 text-green-700" : "bg-red-100 text-red-700"
-                    }`}>
-                      {jadwal.isActive ? "Aktif" : "Nonaktif"}
-                    </span>
-                  </TableCell>
-                  <TableCell>
-                    <div className="flex gap-2">
-                      <button className="text-xs text-blue-600 hover:underline" onClick={() => openEdit(jadwal)}>
-                        Edit
-                      </button>
-                      {canDelete && (
-                        <button className="text-xs text-red-600 hover:underline" onClick={() => openDelete(jadwal.id)}>
-                          Hapus
-                        </button>
-                      )}
-                    </div>
-                  </TableCell>
-                </TableRow>
-              ))
+              data
+                .filter((j) => j.namaIbadah.toLowerCase().includes(search.toLowerCase()))
+                .map((jadwal) => (
+                  <TableRow key={jadwal.id}>
+                    <TableCell className="font-medium text-foreground">{jadwal.namaIbadah}</TableCell>
+                    <TableCell className="text-muted-foreground">{jadwal.hari}, {jadwal.waktu}</TableCell>
+                    <TableCell className="text-muted-foreground">{jadwal.lokasi}</TableCell>
+                    <TableCell>
+                      <span className={`inline-flex items-center rounded-full px-2 py-0.5 text-xs font-medium ${
+                        jadwal.metode === "online" ? "bg-blue-500/10 text-blue-500 border border-blue-500/20"
+                          : jadwal.metode === "hybrid" ? "bg-purple-500/10 text-purple-500 border border-purple-500/20"
+                          : "bg-muted text-muted-foreground border border-border/50"
+                      }`}>
+                        {METODE_LABEL[jadwal.metode] ?? jadwal.metode}
+                      </span>
+                    </TableCell>
+                    <TableCell>
+                      <span className={`inline-flex items-center rounded-full px-2 py-0.5 text-xs font-medium border ${
+                        jadwal.isActive ? "bg-green-500/10 text-green-500 border-green-500/20" : "bg-red-500/10 text-red-500 border-red-500/20"
+                      }`}>
+                        {jadwal.isActive ? "Aktif" : "Nonaktif"}
+                      </span>
+                    </TableCell>
+                    <TableCell>
+                      <DropdownMenu>
+                        <DropdownMenuTrigger asChild>
+                          <Button variant="ghost" size="icon" className="h-8 w-8">
+                            <MoreHorizontal className="h-4 w-4" />
+                            <span className="sr-only">Aksi</span>
+                          </Button>
+                        </DropdownMenuTrigger>
+                        <DropdownMenuContent align="end">
+                          <DropdownMenuItem onClick={() => openEdit(jadwal)}>
+                            Edit
+                          </DropdownMenuItem>
+                          {canDelete && (
+                            <>
+                              <DropdownMenuSeparator />
+                              <DropdownMenuItem
+                                className="text-destructive focus:text-destructive"
+                                onClick={() => openDelete(jadwal.id)}
+                              >
+                                Hapus
+                              </DropdownMenuItem>
+                            </>
+                          )}
+                        </DropdownMenuContent>
+                      </DropdownMenu>
+                    </TableCell>
+                  </TableRow>
+                ))
             )}
           </TableBody>
         </Table>

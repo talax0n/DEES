@@ -4,6 +4,8 @@ import "./globals.css";
 import { TooltipProvider } from "@/components/ui/tooltip";
 import { Toaster } from "sonner";
 
+import { ThemeProvider } from "@/components/theme-provider";
+
 const playfairDisplay = Playfair_Display({
   subsets: ["latin"],
   variable: "--font-serif",
@@ -28,7 +30,7 @@ export default function RootLayout({
   children: React.ReactNode;
 }>) {
   return (
-    <html lang="id" className={playfairDisplay.variable}>
+    <html lang="id" className={playfairDisplay.variable} suppressHydrationWarning>
       <head>
         <script
           type="application/ld+json"
@@ -52,9 +54,16 @@ export default function RootLayout({
           }}
         />
       </head>
-      <body className="font-sans">
-        <TooltipProvider>{children}</TooltipProvider>
-        <Toaster richColors position="top-right" />
+      <body className="font-sans antialiased bg-background text-foreground min-h-screen">
+        <ThemeProvider
+          attribute="class"
+          defaultTheme="system"
+          enableSystem
+          disableTransitionOnChange
+        >
+          <TooltipProvider>{children}</TooltipProvider>
+          <Toaster richColors position="top-right" />
+        </ThemeProvider>
       </body>
     </html>
   );

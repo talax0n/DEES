@@ -4,7 +4,6 @@ import { motion, useReducedMotion } from "framer-motion";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { FileText, ArrowRight, BookOpen, Newspaper } from "lucide-react";
-import { unduhan as fallbackUnduhan } from "@/lib/data";
 import { AnimatedSection } from "./AnimatedSection";
 import Link from "next/link";
 
@@ -21,10 +20,10 @@ interface DownloadsProps {
   unduhan?: UnduhanItem[]
 }
 
-export function Downloads({ unduhan }: DownloadsProps) {
+export function Downloads({ unduhan = [] }: DownloadsProps) {
   const shouldReduceMotion = useReducedMotion();
 
-  const data = unduhan && unduhan.length > 0 ? unduhan : fallbackUnduhan as UnduhanItem[]
+  const data = unduhan;
 
   const latestTataIbadah = data.find((u) => u.tipe === "TAIB" || u.tipe === "tata-ibadah")
   const latestWartaJemaat = data.find((u) => u.tipe === "WARTA" || u.tipe === "warta")

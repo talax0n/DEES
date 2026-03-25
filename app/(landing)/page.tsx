@@ -5,7 +5,6 @@ import { Downloads } from "@/components/landing/Downloads";
 import { Dokumentasi } from "@/components/landing/Dokumentasi";
 import { Contact } from "@/components/landing/Contact";
 import { db } from "@/lib/db";
-import { jadwalIbadah, pelkat, unduhan, dokumentasi } from "@/lib/data";
 
 export const revalidate = 60;
 
@@ -26,14 +25,14 @@ async function getData() {
     ]);
     return { jadwal, pelkat: pelkatData, unduhan: unduhanData, dokumentasi: dokuData };
   } catch (error) {
-    console.warn("DB fetch failed, using fallback data:", error);
-    return { jadwal: jadwalIbadah, pelkat, unduhan, dokumentasi };
+    console.error("DB fetch failed:", error);
+    return { jadwal: [], pelkat: [], unduhan: [], dokumentasi: [] };
   }
 }
 
 export default async function HomePage() {
   const data = await getData();
-  console.log(data);
+  
   return (
     <div className="min-h-screen bg-white">
       <main>

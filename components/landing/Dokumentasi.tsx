@@ -4,7 +4,6 @@ import Link from "next/link"
 import { motion, useReducedMotion } from "framer-motion"
 import { Badge } from "@/components/ui/badge"
 import { ArrowUpRight, Camera } from "lucide-react"
-import { dokumentasi as fallbackDokumentasi } from "@/lib/data"
 import { AnimatedSection } from "./AnimatedSection"
 
 interface DokumentasiPhoto {
@@ -37,10 +36,10 @@ function resolveItem(item: DokumentasiEventItem) {
   return { coverPhoto, totalFoto }
 }
 
-export function Dokumentasi({ events }: DokumentasiProps) {
+export function Dokumentasi({ events = [] }: DokumentasiProps) {
   const shouldReduceMotion = useReducedMotion()
 
-  const rawData = events && events.length > 0 ? events : fallbackDokumentasi as DokumentasiEventItem[]
+  const rawData = events
   const displayed = rawData.slice(0, 6)
 
   const formatDate = (dateStr: string | Date) => {

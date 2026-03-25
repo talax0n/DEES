@@ -1,6 +1,5 @@
 import type { Metadata } from "next";
 import { db } from "@/lib/db";
-import { dokumentasi as fallbackDokumentasi } from "@/lib/data";
 import { DokumentasiClient } from "./DokumentasiClient";
 
 export const revalidate = 60;
@@ -32,15 +31,9 @@ async function getData() {
         caption: p.caption ?? null,
       })),
     }));
-  } catch {
-    return fallbackDokumentasi.map((e) => ({
-      id: e.id,
-      namaAcara: e.namaAcara,
-      tanggal: e.tanggal,
-      coverPhoto: e.coverPhoto,
-      totalFoto: e.totalFoto,
-      photos: [] as { id: string; imageUrl: string; caption: string | null }[],
-    }));
+  } catch (error) {
+    console.error("DB fetch failed:", error);
+    return [];
   }
 }
 

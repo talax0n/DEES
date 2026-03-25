@@ -1,33 +1,17 @@
 "use client";
 
-import { useState } from "react";
-import { motion, AnimatePresence, useReducedMotion } from "framer-motion";
+import { motion, useReducedMotion } from "framer-motion";
 import { Badge } from "@/components/ui/badge";
 import {
   ArrowUpRight,
   ChevronRight,
   ChevronLeft,
-  Baby,
-  GraduationCap,
-  Users,
-  Heart,
-  Shield,
-  Star,
   Play,
+  Users,
 } from "lucide-react";
 import { AnimatedSection } from "./AnimatedSection";
 import { Marquee } from "@/components/ui/marquee";
 import Image from "next/image";
-import { jadwalIbadah as fallbackJadwal, pelkat as fallbackPelkat } from "@/lib/data";
-
-const iconMap: Record<string, React.ComponentType<{ className?: string }>> = {
-  Baby,
-  GraduationCap,
-  Users,
-  Heart,
-  Shield,
-  Star,
-};
 
 interface JadwalItem {
   id: string
@@ -52,12 +36,8 @@ interface ProgramsProps {
   pelkat?: PelkatItem[]
 }
 
-export function Programs({ jadwal, pelkat }: ProgramsProps) {
-  const [expandedPelkat, setExpandedPelkat] = useState<string>("1");
+export function Programs({ jadwal = [], pelkat = [] }: ProgramsProps) {
   const shouldReduceMotion = useReducedMotion();
-
-  const jadwalData = jadwal && jadwal.length > 0 ? jadwal : fallbackJadwal as JadwalItem[]
-  const pelkatData = pelkat && pelkat.length > 0 ? pelkat : fallbackPelkat as PelkatItem[]
 
   return (
     <section id="programs" className="w-full py-20 lg:py-32 bg-white">
@@ -99,9 +79,9 @@ export function Programs({ jadwal, pelkat }: ProgramsProps) {
 
             {/* Service times grid */}
             <div className="grid grid-cols-2 gap-4">
-              {jadwalData.map((jadwal, i) => (
+              {jadwal.map((jadwalItem, i) => (
                 <motion.div
-                  key={jadwal.id}
+                  key={jadwalItem.id}
                   className="relative rounded-2xl border border-gray-line p-4 hover:shadow-md transition-shadow bg-white"
                   initial={{ opacity: 0, y: shouldReduceMotion ? 0 : 20 }}
                   whileInView={{ opacity: 1, y: 0 }}
@@ -116,12 +96,12 @@ export function Programs({ jadwal, pelkat }: ProgramsProps) {
                     <ArrowUpRight className="w-4 h-4 text-gray-text" />
                   </div>
                   <p className="font-semibold text-navy text-sm mb-1 pr-5">
-                    {jadwal.namaIbadah ?? jadwal.jenis}
+                    {jadwalItem.namaIbadah ?? jadwalItem.jenis}
                   </p>
                   <p className="text-gold font-medium text-sm">
-                    {jadwal.waktu}
+                    {jadwalItem.waktu}
                   </p>
-                  {(jadwal.highlight || jadwal.linkStreaming) && (
+                  {(jadwalItem.highlight || jadwalItem.linkStreaming) && (
                     <div className="mt-2 flex items-center gap-1">
                       <Play className="w-3 h-3 text-red-500" />
                       <span className="text-xs text-red-500">Live</span>
@@ -157,7 +137,7 @@ export function Programs({ jadwal, pelkat }: ProgramsProps) {
 
           <div className="relative flex w-full flex-col items-center justify-center overflow-hidden py-10">
             <Marquee pauseOnHover className="[--duration:30s]">
-              {pelkatData.map((item) => (
+              {pelkat.map((item) => (
                 <div
                   key={item.id}
                   className="group/card relative flex w-48 h-48 sm:w-64 sm:h-64 cursor-pointer overflow-hidden rounded-3xl border border-gray-line bg-white hover:shadow-xl transition-all duration-300 items-center justify-center p-6"

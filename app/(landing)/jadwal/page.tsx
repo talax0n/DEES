@@ -1,6 +1,5 @@
 import type { Metadata } from "next";
 import { db } from "@/lib/db";
-import { jadwalIbadah, pelkat as fallbackPelkat } from "@/lib/data";
 import { Badge } from "@/components/ui/badge";
 import { MapPin, Clock, Wifi, WifiOff, ExternalLink } from "lucide-react";
 import Image from "next/image";
@@ -19,8 +18,9 @@ async function getData() {
       db.pelayananKategorial.findMany({ orderBy: { order: "asc" } }),
     ]);
     return { jadwal, pelkat };
-  } catch {
-    return { jadwal: jadwalIbadah, pelkat: fallbackPelkat };
+  } catch (error) {
+    console.error("DB fetch failed:", error);
+    return { jadwal: [], pelkat: [] };
   }
 }
 

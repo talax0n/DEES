@@ -1,6 +1,5 @@
 import type { Metadata } from "next";
 import { db } from "@/lib/db";
-import { unduhan as fallbackUnduhan } from "@/lib/data";
 import { UnduhanClient } from "./UnduhanClient";
 
 export const revalidate = 60;
@@ -21,15 +20,9 @@ async function getData() {
       fileUrl: u.fileUrl,
       fileSize: u.fileSize,
     }));
-  } catch {
-    return fallbackUnduhan.map((u) => ({
-      id: u.id,
-      judul: u.judul,
-      tipe: u.tipe === "tata-ibadah" ? "TAIB" : "WARTA",
-      tanggal: u.tanggal,
-      fileUrl: u.url ?? "#",
-      fileSize: null,
-    }));
+  } catch (error) {
+    console.error("DB fetch failed:", error);
+    return [];
   }
 }
 

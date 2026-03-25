@@ -1,6 +1,6 @@
 "use client"
 
-import { useState, useEffect } from 'react'
+import { useState } from 'react'
 import Image from 'next/image'
 import { motion, useReducedMotion, AnimatePresence } from 'framer-motion'
 import { useScrollY } from '@/hooks/useScrollY'
