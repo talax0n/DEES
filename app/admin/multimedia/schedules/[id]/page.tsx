@@ -876,38 +876,40 @@ export default function MultimediaSchedulePeriodPage({ params }: { params: Promi
 
       {/* ── Tabs ───────────────────────────────────────────────────────────── */}
       <Tabs value={activeTab} onValueChange={handleTabChange} className="w-full">
-        <TabsList className="h-auto p-0 bg-transparent border-b border-border/50 w-full justify-start gap-0 rounded-none">
-          <TabsTrigger
-            value="events"
-            className="relative h-10 rounded-none border-b-2 border-transparent bg-transparent px-4 font-semibold text-muted-foreground data-[state=active]:border-primary data-[state=active]:text-foreground data-[state=active]:shadow-none"
-          >
-            <LayoutDashboard className="mr-2 h-4 w-4" />
-            Daftar Ibadah
-            {period.events.length > 0 && (
-              <span className="ml-2 rounded-full bg-muted px-1.5 py-0.5 text-[10px] font-bold">
-                {period.events.length}
-              </span>
+        <div className="sticky top-[64px] z-10 bg-background/95 backdrop-blur border-b border-border/50 -mx-4 px-4">
+          <TabsList variant="line" className="h-auto p-0 bg-transparent w-full justify-start gap-0 rounded-none">
+            <TabsTrigger
+              value="events"
+              className="relative h-12 rounded-none border-b-2 border-transparent bg-transparent px-4 font-bold text-muted-foreground data-[state=active]:border-primary data-[state=active]:text-foreground data-[state=active]:shadow-none transition-all"
+            >
+              <LayoutDashboard className="mr-2 h-4 w-4" />
+              Daftar Ibadah
+              {period.events.length > 0 && (
+                <span className="ml-2 rounded-full bg-primary/10 text-primary px-2 py-0.5 text-[10px] font-bold">
+                  {period.events.length}
+                </span>
+              )}
+            </TabsTrigger>
+            {showAvailability && (
+              <TabsTrigger
+                value="availability"
+                className="relative h-12 rounded-none border-b-2 border-transparent bg-transparent px-4 font-bold text-muted-foreground data-[state=active]:border-primary data-[state=active]:text-foreground data-[state=active]:shadow-none transition-all"
+              >
+                <UsersIcon className="mr-2 h-4 w-4" />
+                Ketersediaan
+              </TabsTrigger>
             )}
-          </TabsTrigger>
-          {showAvailability && (
-            <TabsTrigger
-              value="availability"
-              className="relative h-10 rounded-none border-b-2 border-transparent bg-transparent px-4 font-semibold text-muted-foreground data-[state=active]:border-primary data-[state=active]:text-foreground data-[state=active]:shadow-none"
-            >
-              <UsersIcon className="mr-2 h-4 w-4" />
-              Ketersediaan
-            </TabsTrigger>
-          )}
-          {showFinal && (
-            <TabsTrigger
-              value="final"
-              className="relative h-10 rounded-none border-b-2 border-transparent bg-transparent px-4 font-semibold text-muted-foreground data-[state=active]:border-primary data-[state=active]:text-foreground data-[state=active]:shadow-none"
-            >
-              <CalendarIcon className="mr-2 h-4 w-4" />
-              Jadwal Final
-            </TabsTrigger>
-          )}
-        </TabsList>
+            {showFinal && (
+              <TabsTrigger
+                value="final"
+                className="relative h-12 rounded-none border-b-2 border-transparent bg-transparent px-4 font-bold text-muted-foreground data-[state=active]:border-primary data-[state=active]:text-foreground data-[state=active]:shadow-none transition-all"
+              >
+                <CalendarIcon className="mr-2 h-4 w-4" />
+                Jadwal Final
+              </TabsTrigger>
+            )}
+          </TabsList>
+        </div>
 
         {/* ── TAB 1: Daftar Ibadah ─────────────────────────────────────────── */}
         <TabsContent value="events" className="mt-6 outline-none space-y-6">
