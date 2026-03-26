@@ -88,10 +88,9 @@ CREATE TABLE "schedule_assignments" (
 
 -- Create app_settings
 CREATE TABLE "app_settings" (
-    "id" TEXT NOT NULL DEFAULT 'default',
     "key" TEXT NOT NULL,
     "value" TEXT NOT NULL,
-    CONSTRAINT "app_settings_pkey" PRIMARY KEY ("id")
+    CONSTRAINT "app_settings_pkey" PRIMARY KEY ("key")
 );
 
 -- Unique constraints
@@ -99,7 +98,6 @@ CREATE UNIQUE INDEX "schedule_periods_bulan_tahun_key" ON "schedule_periods"("bu
 CREATE UNIQUE INDEX "schedule_periods_formToken_key" ON "schedule_periods"("formToken");
 CREATE UNIQUE INDEX "member_availability_memberId_eventId_key" ON "member_availability"("memberId", "eventId");
 CREATE UNIQUE INDEX "schedule_assignments_eventId_memberId_key" ON "schedule_assignments"("eventId", "memberId");
-CREATE UNIQUE INDEX "app_settings_key_key" ON "app_settings"("key");
 
 -- Foreign keys
 ALTER TABLE "schedule_events" ADD CONSTRAINT "schedule_events_periodId_fkey"

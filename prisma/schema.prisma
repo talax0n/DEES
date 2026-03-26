@@ -191,8 +191,7 @@ model ScheduleAssignment {
 }
 
 model AppSettings {
-  id    String @id @default("default")
-  key   String @unique
+  key   String @id
   value String
 
   @@map("app_settings")

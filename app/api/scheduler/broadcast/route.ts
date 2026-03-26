@@ -39,8 +39,11 @@ export async function POST(request: NextRequest) {
     let message = ''
 
     if (type === 'FORM_LINK') {
+      if (!period.formToken) {
+        return NextResponse.json({ success: false, message: "Form belum diaktifkan, tidak ada token tersedia" }, { status: 400 })
+      }
       const siteUrl = process.env.NEXT_PUBLIC_SITE_URL ?? 'https://yourdomain.com'
-      const formUrl = `${siteUrl}/jadwal/isi`
+      const formUrl = `${siteUrl}/availability/${period.formToken}`
       const deadlineSetting = await db.appSettings.findUnique({ where: { key: 'availability_deadline' } })
       const deadline = deadlineSetting?.value ?? 'Segera'
 

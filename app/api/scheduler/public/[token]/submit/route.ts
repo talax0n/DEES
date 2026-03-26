@@ -32,8 +32,20 @@ export async function POST(request: NextRequest, { params }: Params) {
       return NextResponse.json({ error: "Data tidak lengkap" }, { status: 400 })
     }
 
+    // Validate that eventIds belong to this period
+    const periodEvents = await db.scheduleEvent.findMany({
+      where: { periodId: period.id },
+      select: { id: true },
+    })
+    const validEventIds = new Set(periodEvents.map(e => e.id))
+
+    const validAvailability = availability.filter((a) => validEventIds.has(a.eventId))
+    if (validAvailability.length === 0) {
+      return NextResponse.json({ success: false, message: "Tidak ada event valid dalam pengiriman ini" }, { status: 400 })
+    }
+
     const now = new Date()
-    const upserts = availability.map((entry) =>
+    const upserts = validAvailability.map((entry) =>
       db.memberAvailability.upsert({
         where: { memberId_eventId: { memberId, eventId: entry.eventId } },
         update: { status: entry.status, updatedAt: now },
@@ -46,7 +58,7 @@ export async function POST(request: NextRequest, { params }: Params) {
     return NextResponse.json({
       success: true,
       message: "Ketersediaan berhasil disimpan",
-      count: availability.length,
+      count: validAvailability.length,
     })
   } catch {
     return NextResponse.json({ error: "Gagal menyimpan ketersediaan" }, { status: 500 })

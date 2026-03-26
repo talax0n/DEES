@@ -20,7 +20,11 @@ export async function POST(request: NextRequest) {
 
   try {
     const body = await request.json()
-    periodId = body.periodId as string
+    const { periodId: pid } = body
+    if (!pid || typeof pid !== 'string') {
+      return NextResponse.json({ success: false, message: "periodId wajib diisi" }, { status: 400 })
+    }
+    periodId = pid
 
     await db.schedulePeriod.update({
       where: { id: periodId },
