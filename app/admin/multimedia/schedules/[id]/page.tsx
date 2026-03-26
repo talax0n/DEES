@@ -714,7 +714,7 @@ export default function MultimediaSchedulePeriodPage({ params }: { params: Promi
   const showAvailability = statusGte(period.status, "COLLECTING")
   const showFinal = statusGte(period.status, "REVIEW")
   const formUrl = period.formToken
-    ? `${typeof window !== "undefined" ? window.location.origin : ""}/schedule/${id}?token=${period.formToken}`
+    ? `${typeof window !== "undefined" ? window.location.origin : ""}/availability/${period.formToken}`
     : ""
 
   // Group assignments by event for final tab
