@@ -36,7 +36,8 @@ export async function GET() {
         multimediaMemberId: dbUser.multimediaMember?.id ?? null,
       },
     })
-  } catch {
-    return NextResponse.json({ error: "Internal Server Error" }, { status: 500 })
+  } catch(error) {
+    // return NextResponse.json({ error: "Internal Server Error" }, { status: 500 })
+    return NextResponse.json({ error: error }, { status: 500 })
   }
 }
