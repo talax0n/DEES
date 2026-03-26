@@ -608,13 +608,12 @@ export default function MultimediaSchedulePeriodPage({ params }: { params: Promi
     if (!waParsed || waParsed.parsed.length === 0) return
     setWaImporting(true)
     try {
-      const res = await fetch(`/api/scheduler/periods/${id}/events/import`, {
+      const res = await fetch(`/api/scheduler/periods/${id}/events`, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ text: waText }),
+        body: JSON.stringify(waParsed.parsed),
       })
       const json = await res.json()
-      // If import endpoint exists and works, great
       if (json.success) {
         toast.success(`${waParsed.parsed.length} event berhasil diimpor`)
         setWaImportOpen(false)
@@ -622,22 +621,7 @@ export default function MultimediaSchedulePeriodPage({ params }: { params: Promi
         setWaParsed(null)
         fetchPeriod()
       } else {
-        // Fallback: POST events array directly
-        const bulkRes = await fetch(`/api/scheduler/periods/${id}/events`, {
-          method: "POST",
-          headers: { "Content-Type": "application/json" },
-          body: JSON.stringify(waParsed.parsed),
-        })
-        const bulkJson = await bulkRes.json()
-        if (bulkJson.success) {
-          toast.success(`${waParsed.parsed.length} event berhasil diimpor`)
-          setWaImportOpen(false)
-          setWaText("")
-          setWaParsed(null)
-          fetchPeriod()
-        } else {
-          toast.error(bulkJson.message ?? "Gagal mengimpor event")
-        }
+        toast.error(json.message ?? "Gagal mengimpor event")
       }
     } catch {
       toast.error("Gagal mengimpor event")
@@ -1520,13 +1504,17 @@ export default function MultimediaSchedulePeriodPage({ params }: { params: Promi
             <Textarea
               rows={8}
               value={waText}
-              onChange={e => { setWaText(e.target.value); setWaParsed(null) }}
+              onChange={e => {
+                setWaText(e.target.value)
+                if (e.target.value.trim()) {
+                  setWaParsed(parseWhatsAppText(e.target.value))
+                } else {
+                  setWaParsed(null)
+                }
+              }}
               placeholder="Tempel teks dari WhatsApp di sini..."
               className="font-mono text-xs"
             />
-            <Button variant="outline" size="sm" onClick={handleWaParse} disabled={!waText.trim()}>
-              Parse
-            </Button>
 
             {waParsed && (
               <div className="space-y-3">
