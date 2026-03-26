@@ -19,14 +19,7 @@ export async function PATCH(
     data: { ...(name !== undefined && { name }), ...(roles && { roles }) }
   })
 
-  // Auto-create MultimediaMember if multimedia roles added
-  if (roles && (roles.includes('MULTIMEDIA_ADMIN') || roles.includes('MULTIMEDIA_MEMBER'))) {
-    await db.multimediaMember.upsert({
-      where: { userId: id },
-      update: {},
-      create: { userId: id, nama: user.name ?? user.email, roles: [] }
-    })
-  }
+  // Note: MultimediaMember is now standalone (no userId FK); provisioning is manual.
 
   return NextResponse.json({ data: user })
 }

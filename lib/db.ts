@@ -10,7 +10,8 @@ function createPrismaClient() {
   const connectionString = process.env.DATABASE_URL
   if (!connectionString) throw new Error('DATABASE_URL is not set')
   const pool = new Pool({ connectionString })
-  const adapter = new PrismaPg(pool)
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  const adapter = new PrismaPg(pool as any)
   return new PrismaClient({ adapter })
 }
 

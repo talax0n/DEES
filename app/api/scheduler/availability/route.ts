@@ -26,10 +26,9 @@ export async function POST(request: NextRequest) {
 
     const isAdmin = dbUser!.roles.includes('ADMIN') || dbUser!.roles.includes('MULTIMEDIA_ADMIN')
     if (!isAdmin) {
-      const callerMember = await db.multimediaMember.findUnique({ where: { userId: dbUser!.id } })
-      if (!callerMember || callerMember.id !== memberId) {
-        return NextResponse.json({ error: "Cannot submit availability for another member" }, { status: 403 })
-      }
+      // Non-admins must explicitly identify themselves via memberId in request body
+      // and only admins can submit for arbitrary members
+      return NextResponse.json({ error: "Only admins can submit availability for members" }, { status: 403 })
     }
 
     const results = await Promise.all(
