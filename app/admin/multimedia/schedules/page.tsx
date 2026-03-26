@@ -44,7 +44,7 @@ import {
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu"
 
-type SchedulePeriodStatus = "DRAFT" | "COLLECTING" | "GENERATING" | "REVIEW" | "PUBLISHED"
+type SchedulePeriodStatus = "DRAFT" | "COLLECTING" | "CLOSED" | "REVIEW" | "PUBLISHED"
 
 type SchedulePeriod = {
   id: string
@@ -57,9 +57,9 @@ type SchedulePeriod = {
 const STATUS_CONFIG: Record<SchedulePeriodStatus, { label: string; class: string; icon: any }> = {
   DRAFT: { label: "Draft", class: "bg-slate-500/10 text-slate-600 border-slate-500/20", icon: Clock },
   COLLECTING: { label: "Mengumpulkan", class: "bg-blue-500/10 text-blue-600 border-blue-500/20", icon: UsersIcon },
-  GENERATING: { label: "Proses AI", class: "bg-indigo-500/10 text-indigo-600 border-indigo-500/20", icon: Zap },
-  REVIEW: { label: "Tinjauan", class: "bg-orange-500/10 text-orange-600 border-orange-500/20", icon: Filter },
-  PUBLISHED: { label: "Diterbitkan", class: "bg-emerald-500/10 text-emerald-600 border-emerald-500/20", icon: LayoutDashboard },
+  CLOSED: { label: "Ditutup", class: "bg-yellow-500/10 text-yellow-600 border-yellow-500/20", icon: Filter },
+  REVIEW: { label: "Tinjauan", class: "bg-orange-500/10 text-orange-600 border-orange-500/20", icon: LayoutDashboard },
+  PUBLISHED: { label: "Diterbitkan", class: "bg-emerald-500/10 text-emerald-600 border-emerald-500/20", icon: Zap },
 }
 
 const BULAN_OPTIONS = [

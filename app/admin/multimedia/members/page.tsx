@@ -40,32 +40,32 @@ import {
 } from "@/components/ui/dropdown-menu"
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar"
 
-type MultimediaRole = "SLD" | "SND" | "STR" | "CAM"
+type MultimediaServiceRole = "SLD" | "SND" | "STR" | "CAM"
 
 type Member = {
   id: string
   nama: string
   phone: string | null
-  roles: MultimediaRole[]
+  serviceRoles: MultimediaServiceRole[]
   isActive: boolean
   userId: string | null
 }
 
-const ALL_ROLES: MultimediaRole[] = ["SLD", "SND", "STR", "CAM"]
-const ROLE_LABELS: Record<MultimediaRole, string> = {
+const ALL_ROLES: MultimediaServiceRole[] = ["SLD", "SND", "STR", "CAM"]
+const ROLE_LABELS: Record<MultimediaServiceRole, string> = {
   SLD: "Operator Slide",
   SND: "Operator Sound",
   STR: "Streamer",
   CAM: "Cameraman",
 }
-const ROLE_CLASS: Record<MultimediaRole, string> = {
-  SLD: "bg-slate-500/10 text-slate-500 border-slate-500/20",
-  SND: "bg-blue-500/10 text-blue-500 border-blue-500/20",
-  STR: "bg-rose-500/10 text-rose-500 border-rose-500/20",
-  CAM: "bg-indigo-500/10 text-indigo-500 border-indigo-500/20",
+const ROLE_CLASS: Record<MultimediaServiceRole, string> = {
+  SLD: "bg-blue-500/10 text-blue-500 border-blue-500/20",
+  SND: "bg-green-500/10 text-green-600 border-green-500/20",
+  STR: "bg-purple-500/10 text-purple-600 border-purple-500/20",
+  CAM: "bg-orange-500/10 text-orange-600 border-orange-500/20",
 }
 
-const defaultForm = { nama: "", phone: "", roles: [] as MultimediaRole[], userId: "" }
+const defaultForm = { nama: "", phone: "", serviceRoles: [] as MultimediaServiceRole[], userId: "" }
 
 export default function MultimediaMembersPage() {
   const router = useRouter()
@@ -117,7 +117,7 @@ export default function MultimediaMembersPage() {
 
   function openEdit(member: Member) {
     setEditingMember(member)
-    setForm({ nama: member.nama, phone: member.phone ?? "", roles: [...member.roles], userId: member.userId ?? "" })
+    setForm({ nama: member.nama, phone: member.phone ?? "", serviceRoles: [...member.serviceRoles], userId: member.userId ?? "" })
     setDialogOpen(true)
   }
 
@@ -127,23 +127,23 @@ export default function MultimediaMembersPage() {
     setLinkDialogOpen(true)
   }
 
-  function toggleRole(role: MultimediaRole) {
+  function toggleRole(role: MultimediaServiceRole) {
     setForm(f => ({
       ...f,
-      roles: f.roles.includes(role) ? f.roles.filter(r => r !== role) : [...f.roles, role],
+      serviceRoles: f.serviceRoles.includes(role) ? f.serviceRoles.filter(r => r !== role) : [...f.serviceRoles, role],
     }))
   }
 
   async function handleSave(e: React.FormEvent) {
     e.preventDefault()
-    if (form.roles.length === 0) { toast.error("Pilih minimal 1 role"); return }
+    if (form.serviceRoles.length === 0) { toast.error("Pilih minimal 1 role"); return }
 
     setSaving(true)
     try {
       const body: Record<string, unknown> = {
         nama: form.nama,
         phone: form.phone || undefined,
-        roles: form.roles,
+        serviceRoles: form.serviceRoles,
       }
       const url = editingMember ? `/api/scheduler/members/${editingMember.id}` : "/api/scheduler/members"
       const method = editingMember ? "PATCH" : "POST"
@@ -324,16 +324,16 @@ export default function MultimediaMembersPage() {
                 <div className="space-y-2">
                   <p className="text-[10px] font-bold uppercase tracking-widest text-muted-foreground/60">Keahlian Role</p>
                   <div className="flex flex-wrap gap-1.5">
-                    {m.roles.map(r => (
-                      <Badge 
-                        key={r} 
-                        variant="outline" 
+                    {m.serviceRoles.map(r => (
+                      <Badge
+                        key={r}
+                        variant="outline"
                         className={cn("text-[9px] font-bold uppercase tracking-tighter px-2 py-0 border", ROLE_CLASS[r])}
                       >
                         {r}
                       </Badge>
                     ))}
-                    {m.roles.length === 0 && (
+                    {m.serviceRoles.length === 0 && (
                       <span className="text-[10px] italic text-muted-foreground">No roles assigned</span>
                     )}
                   </div>
@@ -390,7 +390,7 @@ export default function MultimediaMembersPage() {
                   <label key={role} className="flex items-center gap-3 cursor-pointer">
                     <input
                       type="checkbox"
-                      checked={form.roles.includes(role)}
+                      checked={form.serviceRoles.includes(role)}
                       onChange={() => toggleRole(role)}
                       className="rounded"
                     />
