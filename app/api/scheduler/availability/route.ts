@@ -1,12 +1,16 @@
 import { NextRequest, NextResponse } from "next/server"
 import { z } from "zod"
 import { db } from "@/lib/db"
-import { availabilitySchema } from "@/lib/validations"
 import { requireMultimediaAccess } from "@/lib/auth"
+
+const submissionItemSchema = z.object({
+  eventId: z.string().min(1),
+  status: z.enum(['AVAILABLE', 'UNAVAILABLE']),
+})
 
 const batchSchema = z.object({
   memberId: z.string().min(1),
-  submissions: z.array(availabilitySchema).min(1),
+  submissions: z.array(submissionItemSchema).min(1),
 })
 
 export async function POST(request: NextRequest) {
@@ -29,11 +33,11 @@ export async function POST(request: NextRequest) {
     }
 
     const results = await Promise.all(
-      submissions.map(({ eventId, status, note }) =>
+      submissions.map(({ eventId, status }) =>
         db.memberAvailability.upsert({
           where: { memberId_eventId: { memberId, eventId } },
-          create: { memberId, eventId, status, note },
-          update: { status, note },
+          create: { memberId, eventId, status },
+          update: { status },
         })
       )
     )

@@ -1,5 +1,5 @@
 import { NextRequest, NextResponse } from "next/server"
-import { MultimediaRole } from "@prisma/client"
+import { MultimediaServiceRole } from "@prisma/client"
 import { db } from "@/lib/db"
 import { requireMultimediaAdmin } from "@/lib/auth"
 import { generateLlmText } from "@/lib/llm"
@@ -16,7 +16,7 @@ export async function POST(request: NextRequest) {
 
     await db.schedulePeriod.update({
       where: { id: periodId },
-      data: { status: 'GENERATING' },
+      data: { status: 'CLOSED' },
     })
 
     const [events, members, availabilityData] = await Promise.all([
@@ -35,14 +35,14 @@ export async function POST(request: NextRequest) {
 
     const availabilityText = events.map(e => {
       const avail = availabilityData.filter(a => a.eventId === e.id)
-      const lines = avail.map(a => `  - ${a.member.nama}: ${a.status}${a.note ? ` (${a.note})` : ''}`)
+      const lines = avail.map(a => `  - ${a.member.nama}: ${a.status}`)
       return `${e.namaEvent} (${e.tanggal.toISOString().split('T')[0]}):\n${lines.join('\n') || '  (no submissions)'}`
     }).join('\n\n')
 
     const prompt = `You are a scheduling assistant for a church multimedia team.
 
 TEAM MEMBERS:
-${members.map(m => `- ${m.nama} (can do: ${m.roles.join(', ')})`).join('\n')}
+${members.map(m => `- ${m.nama} (can do: ${m.serviceRoles.join(', ')})`).join('\n')}
 
 EVENTS TO SCHEDULE:
 ${events.map(e => `- [${e.id}] ${e.namaEvent} on ${e.tanggal.toISOString().split('T')[0]} at ${e.waktu} — needs: ${e.requiredRoles.join(', ')} ${e.isLive ? '(LIVE)' : ''}`).join('\n')}
@@ -56,7 +56,7 @@ RULES:
 3. Distribute workload fairly — no one person should be assigned to every event
 4. For LIVE events, prioritize experienced members for STR and CAM roles
 5. Try to avoid assigning the same person to both the 06.00 and 09.00 service on the same day unless necessary
-6. Members marked as MAYBE can be assigned as backup if needed, but prefer AVAILABLE members
+6. Only assign members marked as AVAILABLE; skip UNAVAILABLE members
 
 Respond with ONLY a valid JSON array of assignments (no markdown, no explanation):
 [{ "eventId": "...", "memberId": "...", "role": "SLD|SND|STR|CAM" }]`
@@ -83,8 +83,8 @@ Respond with ONLY a valid JSON array of assignments (no markdown, no explanation
       validAssignments.map(a =>
         db.scheduleAssignment.upsert({
           where: { eventId_memberId: { eventId: a.eventId, memberId: a.memberId } },
-          create: { eventId: a.eventId, memberId: a.memberId, role: a.role as MultimediaRole, isManual: false },
-          update: { role: a.role as MultimediaRole, isManual: false },
+          create: { eventId: a.eventId, memberId: a.memberId, role: a.role as MultimediaServiceRole, isManual: false },
+          update: { role: a.role as MultimediaServiceRole, isManual: false },
         })
       )
     )
