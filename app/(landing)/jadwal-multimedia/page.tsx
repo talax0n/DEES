@@ -34,7 +34,7 @@ async function getData() {
       orderBy: { publishedAt: "desc" },
       include: {
         events: {
-          orderBy: { tanggal: "asc" },
+          orderBy: [{ tanggal: "asc" }, { order: "asc" }],
           include: {
             assignments: {
               include: {
@@ -55,7 +55,8 @@ async function getData() {
 export default async function JadwalMultimediaPage() {
   const period = await getData();
 
-  type PeriodEvent = NonNullable<typeof period>["events"][number]
+  type PeriodEvent = NonNullable<typeof period>["events"][number];
+
   // Group events by kategori
   const grouped: Record<string, PeriodEvent[]> = {};
 
@@ -102,7 +103,7 @@ export default async function JadwalMultimediaPage() {
                 <Calendar className="w-8 h-8 text-navy/30" />
               </div>
               <p className="text-gray-text text-lg font-medium">
-                Jadwal belum tersedia
+                Jadwal pelayanan multimedia belum tersedia.
               </p>
               <p className="text-gray-text/70 text-sm mt-1">
                 Jadwal akan ditampilkan setelah dipublikasikan oleh admin.
@@ -132,10 +133,10 @@ export default async function JadwalMultimediaPage() {
                             Waktu
                           </th>
                           <th className="text-left px-4 py-3 font-medium">
-                            Nama Ibadah
-                          </th>
-                          <th className="text-left px-4 py-3 font-medium">
                             Pelayan
+                          </th>
+                          <th className="text-left px-4 py-3 font-medium whitespace-nowrap">
+                            Role
                           </th>
                           <th className="text-left px-4 py-3 font-medium">
                             Keterangan
@@ -143,41 +144,66 @@ export default async function JadwalMultimediaPage() {
                         </tr>
                       </thead>
                       <tbody className="divide-y divide-gray-line">
-                        {grouped[kategori].map((event) => {
-                          const pelayan = event.assignments
-                            .map((a) => {
-                              const roleLabel =
-                                ROLE_LABELS[a.role] ?? a.role;
-                              return `${a.member.nama} (${roleLabel})`;
-                            })
-                            .join(", ");
+                        {grouped[kategori].flatMap((event) => {
+                          if (event.assignments.length === 0) {
+                            return [
+                              <tr
+                                key={event.id}
+                                className="hover:bg-navy/[0.02] transition-colors"
+                              >
+                                <td className="px-4 py-3 text-gray-text whitespace-nowrap">
+                                  {formatTanggal(event.tanggal)}
+                                </td>
+                                <td className="px-4 py-3 text-gray-text whitespace-nowrap">
+                                  {event.waktu}
+                                </td>
+                                <td className="px-4 py-3 text-gray-text italic opacity-50" colSpan={2}>
+                                  Belum ditentukan
+                                </td>
+                                <td className="px-4 py-3 text-gray-text">
+                                  {event.keterangan || "—"}
+                                </td>
+                              </tr>,
+                            ];
+                          }
 
-                          return (
+                          return event.assignments.map((assignment, aIdx) => (
                             <tr
-                              key={event.id}
-                              className="hover:bg-navy/2 transition-colors"
+                              key={`${event.id}-${assignment.id}`}
+                              className="hover:bg-navy/[0.02] transition-colors"
                             >
-                              <td className="px-4 py-3 text-gray-text whitespace-nowrap">
-                                {formatTanggal(event.tanggal)}
-                              </td>
-                              <td className="px-4 py-3 text-gray-text whitespace-nowrap">
-                                {event.waktu}
-                              </td>
+                              {aIdx === 0 && (
+                                <>
+                                  <td
+                                    className="px-4 py-3 text-gray-text whitespace-nowrap align-top"
+                                    rowSpan={event.assignments.length}
+                                  >
+                                    {formatTanggal(event.tanggal)}
+                                  </td>
+                                  <td
+                                    className="px-4 py-3 text-gray-text whitespace-nowrap align-top"
+                                    rowSpan={event.assignments.length}
+                                  >
+                                    {event.waktu}
+                                  </td>
+                                </>
+                              )}
                               <td className="px-4 py-3 text-navy font-medium">
-                                {event.namaEvent}
+                                {assignment.member.nama}
                               </td>
-                              <td className="px-4 py-3 text-gray-text">
-                                {pelayan || (
-                                  <span className="italic opacity-50">
-                                    Belum ditentukan
-                                  </span>
-                                )}
+                              <td className="px-4 py-3 text-gray-text whitespace-nowrap">
+                                {ROLE_LABELS[assignment.role] ?? assignment.role}
                               </td>
-                              <td className="px-4 py-3 text-gray-text">
-                                {event.keterangan || "—"}
-                              </td>
+                              {aIdx === 0 && (
+                                <td
+                                  className="px-4 py-3 text-gray-text align-top"
+                                  rowSpan={event.assignments.length}
+                                >
+                                  {event.keterangan || "—"}
+                                </td>
+                              )}
                             </tr>
-                          );
+                          ));
                         })}
                       </tbody>
                     </table>

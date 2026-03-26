@@ -34,7 +34,7 @@ export async function GET(_request: NextRequest, { params }: Params) {
 }
 
 const patchSchema = z.object({
-  status: z.enum(['DRAFT', 'COLLECTING', 'GENERATING', 'REVIEW', 'PUBLISHED']).optional(),
+  status: z.enum(['DRAFT', 'COLLECTING', 'CLOSED', 'REVIEW', 'PUBLISHED']).optional(),
   deadlineAvailability: z.coerce.date().optional().nullable(),
   notes: z.string().optional(),
   nama: z.string().optional(),

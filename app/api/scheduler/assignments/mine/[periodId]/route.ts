@@ -7,13 +7,17 @@ export async function GET(
   _req: Request,
   { params }: { params: Promise<{ periodId: string }> }
 ) {
-  const { dbUser, response } = await requireMultimediaAccess()
+  const { response } = await requireMultimediaAccess()
   if (response) return response
 
   const { periodId } = await params
-  const member = await db.multimediaMember.findUnique({
-    where: { userId: dbUser!.id }
-  })
+  // MultimediaMember is now standalone; caller must supply their memberId via query param
+  const url = new URL(_req.url)
+  const memberId = url.searchParams.get('memberId')
+  if (!memberId) {
+    return NextResponse.json({ data: [] })
+  }
+  const member = await db.multimediaMember.findUnique({ where: { id: memberId } })
   if (!member) {
     return NextResponse.json({ data: [] })
   }

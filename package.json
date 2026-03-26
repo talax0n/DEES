@@ -17,6 +17,7 @@
     "test:report": "mkdir -p test-results && vitest run --reporter=verbose 2>&1 | tee test-results/unit-results.txt && playwright test --reporter=list 2>&1 | tee test-results/e2e-results.txt && echo '=== TEST SUMMARY ===' && echo 'Unit test results: test-results/unit-results.txt' && echo 'E2E test results: test-results/e2e-results.txt'"
   },
   "dependencies": {
+    "@anthropic-ai/sdk": "^0.80.0",
     "@google-analytics/data": "^5.2.1",
     "@hookform/resolvers": "^5.2.2",
     "@next/third-parties": "^16.2.1",

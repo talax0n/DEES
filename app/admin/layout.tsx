@@ -20,6 +20,7 @@ import {
   Monitor,
   Video,
   BarChart,
+  Settings,
 } from "lucide-react"
 import { Button } from "@/components/ui/button"
 import { Sheet, SheetContent, SheetTrigger } from "@/components/ui/sheet"
@@ -46,6 +47,7 @@ const pageTitles: Record<string, string> = {
   "/admin/multimedia/members": "Anggota Tim",
   "/admin/multimedia/availability": "Ketersediaan",
   "/admin/multimedia/my-schedule": "Jadwal Saya",
+  "/admin/multimedia/settings": "Pengaturan Multimedia",
 }
 
 function getPageTitle(pathname: string) {
@@ -94,6 +96,7 @@ function SidebarContent({ pathname }: { pathname: string }) {
     { label: "Dashboard", href: "/admin/multimedia", icon: LayoutDashboard, exact: true },
     { label: "Jadwal Pelayanan", href: "/admin/multimedia/schedules", icon: CalendarClock, exact: false },
     { label: "Anggota Tim", href: "/admin/multimedia/members", icon: Users, exact: false },
+    { label: "Pengaturan", href: "/admin/multimedia/settings", icon: Settings, exact: false },
   ]
 
   const mmMemberNav = [

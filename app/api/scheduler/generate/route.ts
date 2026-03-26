@@ -1,22 +1,34 @@
 import { NextRequest, NextResponse } from "next/server"
-import { MultimediaRole } from "@prisma/client"
+import { MultimediaServiceRole } from "@prisma/client"
 import { db } from "@/lib/db"
 import { requireMultimediaAdmin } from "@/lib/auth"
-import { generateLlmText } from "@/lib/llm"
+import Anthropic from "@anthropic-ai/sdk"
+
+function formatDate(date: Date): string {
+  return date.toLocaleDateString('id-ID', { weekday: 'long', year: 'numeric', month: 'long', day: 'numeric' })
+}
 
 export async function POST(request: NextRequest) {
   const { response } = await requireMultimediaAdmin()
   if (response) return response
 
+  if (!process.env.ANTHROPIC_API_KEY) {
+    return NextResponse.json({ success: false, message: "ANTHROPIC_API_KEY belum dikonfigurasi" }, { status: 500 })
+  }
+
   let periodId: string | undefined
 
   try {
     const body = await request.json()
-    periodId = body.periodId as string
+    const { periodId: pid } = body
+    if (!pid || typeof pid !== 'string') {
+      return NextResponse.json({ success: false, message: "periodId wajib diisi" }, { status: 400 })
+    }
+    periodId = pid
 
     await db.schedulePeriod.update({
       where: { id: periodId },
-      data: { status: 'GENERATING' },
+      data: { status: 'CLOSED' },
     })
 
     const [events, members, availabilityData] = await Promise.all([
@@ -33,58 +45,72 @@ export async function POST(request: NextRequest) {
       }),
     ])
 
-    const availabilityText = events.map(e => {
+    const availabilitySummary = events.map(e => {
       const avail = availabilityData.filter(a => a.eventId === e.id)
-      const lines = avail.map(a => `  - ${a.member.nama}: ${a.status}${a.note ? ` (${a.note})` : ''}`)
-      return `${e.namaEvent} (${e.tanggal.toISOString().split('T')[0]}):\n${lines.join('\n') || '  (no submissions)'}`
+      const available = avail.filter(a => a.status === 'AVAILABLE').map(a => a.member.nama)
+      const unavailable = avail.filter(a => a.status === 'UNAVAILABLE').map(a => a.member.nama)
+      return `${e.namaEvent} (${e.tanggal.toISOString().split('T')[0]}):\n  AVAILABLE: ${available.join(', ') || 'none'}\n  UNAVAILABLE: ${unavailable.join(', ') || 'none'}`
     }).join('\n\n')
 
     const prompt = `You are a scheduling assistant for a church multimedia team.
 
-TEAM MEMBERS:
-${members.map(m => `- ${m.nama} (can do: ${m.roles.join(', ')})`).join('\n')}
+TEAM MEMBERS (with their capabilities):
+${members.map(m => `- ${m.nama} [ID: ${m.id}] — can do: ${m.serviceRoles.join(', ')}`).join('\n')}
 
-EVENTS TO SCHEDULE:
-${events.map(e => `- [${e.id}] ${e.namaEvent} on ${e.tanggal.toISOString().split('T')[0]} at ${e.waktu} — needs: ${e.requiredRoles.join(', ')} ${e.isLive ? '(LIVE)' : ''}`).join('\n')}
+EVENTS TO STAFF:
+${events.map(e => `- ${e.namaEvent} [ID: ${e.id}] on ${formatDate(e.tanggal)} at ${e.waktu} — needs: ${e.requiredRoles.join(', ')}${e.isLive ? ' 🔴 LIVE' : ''}${e.keterangan ? ` (${e.keterangan})` : ''}`).join('\n')}
 
 MEMBER AVAILABILITY:
-${availabilityText}
+${availabilitySummary}
 
-RULES:
-1. Only assign members to events where they are AVAILABLE (not UNAVAILABLE)
-2. Only assign members to roles they are capable of (check their roles array)
-3. Distribute workload fairly — no one person should be assigned to every event
-4. For LIVE events, prioritize experienced members for STR and CAM roles
-5. Try to avoid assigning the same person to both the 06.00 and 09.00 service on the same day unless necessary
-6. Members marked as MAYBE can be assigned as backup if needed, but prefer AVAILABLE members
+SCHEDULING RULES:
+- ONLY assign members who are AVAILABLE for that event
+- ONLY assign members to roles matching their serviceRoles
+- Distribute workload FAIRLY across members
+- For LIVE events: prioritize experienced members for STR and CAM
+- Each event needs exactly the roles listed in requiredRoles
+- If not enough available members, leave role UNASSIGNED
 
-Respond with ONLY a valid JSON array of assignments (no markdown, no explanation):
-[{ "eventId": "...", "memberId": "...", "role": "SLD|SND|STR|CAM" }]`
+Return ONLY valid JSON array, no markdown:
+[{"eventId":"...","memberId":"...","role":"SLD|SND|STR|CAM"}]
+For unassignable slots: [{"eventId":"...","memberId":null,"role":"SLD","reason":"..."}]`
 
-    const content = await generateLlmText({
-      prompt,
-      maxTokens: 4000,
+    const client = new Anthropic({ apiKey: process.env.ANTHROPIC_API_KEY })
+    const aiResponse = await client.messages.create({
+      model: 'claude-sonnet-4-6',
+      max_tokens: 4096,
+      messages: [{ role: 'user', content: prompt }]
     })
+    const text = aiResponse.content[0].type === 'text' ? aiResponse.content[0].text : ''
 
-    const jsonText = content.replace(/```json\n?/g, '').replace(/```\n?/g, '').trim()
-    const rawAssignments = JSON.parse(jsonText) as Array<{ eventId: string; memberId: string; role: string }>
+    const jsonText = text.replace(/```json\n?/g, '').replace(/```\n?/g, '').trim()
+    const rawAssignments = JSON.parse(jsonText) as Array<{
+      eventId: string
+      memberId: string | null
+      role: string
+      reason?: string
+    }>
 
     const validEventIds = new Set(events.map(e => e.id))
     const validMemberIds = new Set(members.map(m => m.id))
     const validRoles = new Set(['SLD', 'SND', 'STR', 'CAM'])
 
-    const validAssignments = rawAssignments.filter(a =>
-      validEventIds.has(a.eventId) &&
-      validMemberIds.has(a.memberId) &&
-      validRoles.has(a.role)
-    )
+    const warnings: Array<{ eventId: string; role: string; reason: string }> = []
+    const validAssignments = rawAssignments.filter(a => {
+      if (!validEventIds.has(a.eventId)) return false
+      if (a.memberId === null) {
+        warnings.push({ eventId: a.eventId, role: a.role, reason: a.reason ?? 'No available member' })
+        return false
+      }
+      return validMemberIds.has(a.memberId) && validRoles.has(a.role)
+    }) as Array<{ eventId: string; memberId: string; role: string }>
 
     await Promise.all(
       validAssignments.map(a =>
         db.scheduleAssignment.upsert({
           where: { eventId_memberId: { eventId: a.eventId, memberId: a.memberId } },
-          create: { eventId: a.eventId, memberId: a.memberId, role: a.role as MultimediaRole, isManual: false },
-          update: { role: a.role as MultimediaRole, isManual: false },
+          create: { eventId: a.eventId, memberId: a.memberId, role: a.role as MultimediaServiceRole, isManual: false },
+          update: { role: a.role as MultimediaServiceRole, isManual: false },
         })
       )
     )
@@ -94,7 +120,7 @@ Respond with ONLY a valid JSON array of assignments (no markdown, no explanation
       data: { status: 'REVIEW' },
     })
 
-    return NextResponse.json({ success: true, data: validAssignments, message: "Penugasan berhasil dibuat" })
+    return NextResponse.json({ success: true, data: validAssignments, warnings, message: "Penugasan berhasil dibuat" })
   } catch (error) {
     console.error('Generate schedule error:', error)
     if (periodId) {
