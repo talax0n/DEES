@@ -21,8 +21,28 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select"
-import { Loader2 } from "lucide-react"
+import { 
+  Loader2, 
+  Plus, 
+  Calendar as CalendarIcon, 
+  Clock, 
+  ChevronRight, 
+  LayoutDashboard,
+  Filter,
+  MoreVertical,
+  Users as UsersIcon,
+  Zap
+} from "lucide-react"
+import { cn } from "@/lib/utils"
 import { useAuth } from "@/components/providers/AuthProvider"
+import { Badge } from "@/components/ui/badge"
+import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
+import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuTrigger,
+} from "@/components/ui/dropdown-menu"
 
 type SchedulePeriodStatus = "DRAFT" | "COLLECTING" | "GENERATING" | "REVIEW" | "PUBLISHED"
 
@@ -34,20 +54,12 @@ type SchedulePeriod = {
   _count?: { events: number }
 }
 
-const STATUS_LABEL: Record<SchedulePeriodStatus, string> = {
-  DRAFT: "Draft",
-  COLLECTING: "Mengumpulkan",
-  GENERATING: "Membuat Jadwal",
-  REVIEW: "Tinjauan",
-  PUBLISHED: "Diterbitkan",
-}
-
-const STATUS_CLASS: Record<SchedulePeriodStatus, string> = {
-  DRAFT: "bg-gray-100 text-gray-700",
-  COLLECTING: "bg-blue-100 text-blue-700",
-  GENERATING: "bg-yellow-100 text-yellow-700",
-  REVIEW: "bg-orange-100 text-orange-700",
-  PUBLISHED: "bg-green-100 text-green-700",
+const STATUS_CONFIG: Record<SchedulePeriodStatus, { label: string; class: string; icon: any }> = {
+  DRAFT: { label: "Draft", class: "bg-slate-500/10 text-slate-600 border-slate-500/20", icon: Clock },
+  COLLECTING: { label: "Mengumpulkan", class: "bg-blue-500/10 text-blue-600 border-blue-500/20", icon: UsersIcon },
+  GENERATING: { label: "Proses AI", class: "bg-indigo-500/10 text-indigo-600 border-indigo-500/20", icon: Zap },
+  REVIEW: { label: "Tinjauan", class: "bg-orange-500/10 text-orange-600 border-orange-500/20", icon: Filter },
+  PUBLISHED: { label: "Diterbitkan", class: "bg-emerald-500/10 text-emerald-600 border-emerald-500/20", icon: LayoutDashboard },
 }
 
 const BULAN_OPTIONS = [
@@ -154,8 +166,8 @@ export default function MultimediaSchedulesPage() {
 
   if (authLoading) {
     return (
-      <div className="flex items-center justify-center h-64">
-        <Loader2 className="h-8 w-8 animate-spin text-muted-foreground" />
+      <div className="flex items-center justify-center h-96">
+        <Loader2 className="h-10 w-10 animate-spin text-primary/40" />
       </div>
     )
   }
@@ -163,71 +175,133 @@ export default function MultimediaSchedulesPage() {
   if (!isMultimediaAdmin) return null
 
   return (
-    <div className="space-y-6">
-      <PageHeader
-        title="Jadwal Tim Multimedia"
-        description="Kelola periode jadwal pelayanan tim multimedia"
-        action={
-          <Button className="bg-navy text-white hover:bg-navy/90" onClick={openDialog}>
-            + Buat Jadwal Baru
-          </Button>
-        }
-      />
+    <div className="space-y-8 max-w-7xl mx-auto pb-20">
+      <div className="flex flex-col sm:flex-row sm:items-end justify-between gap-6">
+        <div className="space-y-1">
+          <h1 className="text-3xl font-bold tracking-tight bg-gradient-to-br from-foreground to-foreground/60 bg-clip-text">
+            Jadwal Tim Multimedia
+          </h1>
+          <p className="text-muted-foreground">Kelola periode jadwal pelayanan tim multimedia gereja.</p>
+        </div>
+        <Button 
+          className="bg-primary hover:bg-primary/90 shadow-lg shadow-primary/20 h-11 px-6 font-semibold transition-all hover:scale-[1.02] active:scale-[0.98]" 
+          onClick={openDialog}
+        >
+          <Plus className="mr-2 h-5 w-5" />
+          Buat Jadwal Baru
+        </Button>
+      </div>
 
       {error && (
-        <div className="rounded-lg border border-red-200 bg-red-50 px-4 py-3 text-sm text-red-700">
+        <div className="rounded-xl border border-destructive/20 bg-destructive/5 px-4 py-3 text-sm text-destructive flex items-center gap-2">
+          <div className="h-1.5 w-1.5 rounded-full bg-destructive animate-pulse" />
           {error}
         </div>
       )}
 
       {loading ? (
-        <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
+        <div className="grid gap-6 sm:grid-cols-2 lg:grid-cols-3">
           {Array.from({ length: 3 }).map((_, i) => (
             <div
               key={i}
-              className="rounded-xl border border-border/40 bg-background p-5 shadow-sm animate-pulse"
-            >
-              <div className="h-5 w-1/2 rounded bg-muted mb-3" />
-              <div className="h-4 w-1/4 rounded bg-muted mb-4" />
-              <div className="h-3 w-3/4 rounded bg-muted" />
-            </div>
+              className="rounded-2xl border border-border/40 bg-background/50 p-6 shadow-sm animate-pulse h-48"
+            />
           ))}
         </div>
       ) : periods.length === 0 ? (
-        <div className="rounded-xl border border-border/40 bg-background p-12 text-center shadow-sm">
-          <p className="text-muted-foreground text-sm">Belum ada periode jadwal. Buat jadwal baru untuk memulai.</p>
-        </div>
+        <Card className="border-dashed bg-muted/30">
+          <CardContent className="flex flex-col items-center justify-center py-20 text-center">
+            <div className="h-16 w-16 rounded-full bg-background flex items-center justify-center mb-6 ring-1 ring-border shadow-sm">
+              <CalendarIcon className="h-8 w-8 text-muted-foreground/40" />
+            </div>
+            <h3 className="text-xl font-bold">Belum ada periode jadwal</h3>
+            <p className="text-muted-foreground max-w-sm mt-2 mb-8 text-sm">
+              Mulai kelola penugasan multimedia dengan membuat periode jadwal baru untuk bulan mendatang.
+            </p>
+            <Button onClick={openDialog} className="shadow-lg shadow-primary/10">
+              <Plus className="mr-2 h-4 w-4" />
+              Buat Jadwal Pertama
+            </Button>
+          </CardContent>
+        </Card>
       ) : (
-        <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
-          {periods.map((period) => (
-            <button
-              key={period.id}
-              onClick={() => router.push(`/admin/multimedia/schedules/${period.id}`)}
-              className="group rounded-xl border border-border/40 bg-background p-5 shadow-sm text-left transition-all hover:shadow-md hover:border-primary/30 hover:bg-primary/5 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary focus-visible:ring-offset-2"
-            >
-              <div className="flex items-start justify-between gap-2 mb-3">
-                <h3 className="font-semibold text-foreground text-base leading-tight group-hover:text-primary transition-colors">
-                  {period.nama}
-                </h3>
-                <span
-                  className={`shrink-0 inline-flex items-center gap-1.5 rounded-full px-2.5 py-0.5 text-xs font-medium ${STATUS_CLASS[period.status]}`}
-                >
-                  {period.status === "GENERATING" && (
-                    <Loader2 className="h-3 w-3 animate-spin" />
-                  )}
-                  {STATUS_LABEL[period.status]}
-                </span>
-              </div>
-              <p className="text-xs text-muted-foreground mb-1">
-                Deadline ketersediaan: {formatDate(period.deadlineAvailability)}
-              </p>
-              {period._count !== undefined && (
-                <p className="text-xs text-muted-foreground">
-                  {period._count.events} event
-                </p>
-              )}
-            </button>
-          ))}
+        <div className="grid gap-6 sm:grid-cols-2 lg:grid-cols-3">
+          {periods.map((period) => {
+            const config = STATUS_CONFIG[period.status]
+            const StatusIcon = config.icon
+
+            return (
+              <Card 
+                key={period.id}
+                className="group relative overflow-hidden border-border/50 bg-background/40 hover:bg-background transition-all hover:shadow-xl hover:shadow-primary/5 hover:-translate-y-1 cursor-pointer"
+                onClick={() => router.push(`/admin/multimedia/schedules/${period.id}`)}
+              >
+                <CardHeader className="p-6 pb-4">
+                  <div className="flex items-start justify-between gap-4">
+                    <div className="space-y-1.5 flex-1">
+                      <div className="flex items-center gap-2">
+                        <div className={cn("p-1.5 rounded-lg border", config.class)}>
+                          <StatusIcon className="h-3.5 w-3.5" />
+                        </div>
+                        <Badge variant="outline" className={cn("text-[10px] font-bold uppercase tracking-wider px-2 py-0 border-0", config.class)}>
+                          {config.label}
+                        </Badge>
+                      </div>
+                      <CardTitle className="text-lg font-bold group-hover:text-primary transition-colors leading-tight pt-1">
+                        {period.nama}
+                      </CardTitle>
+                    </div>
+                    
+                    <DropdownMenu>
+                      <DropdownMenuTrigger asChild onClick={(e) => e.stopPropagation()}>
+                        <Button variant="ghost" size="icon" className="h-8 w-8 rounded-full -mr-2 opacity-0 group-hover:opacity-100 transition-opacity">
+                          <MoreVertical className="h-4 w-4" />
+                        </Button>
+                      </DropdownMenuTrigger>
+                      <DropdownMenuContent align="end" className="w-40">
+                        <DropdownMenuItem onClick={() => router.push(`/admin/multimedia/schedules/${period.id}`)}>
+                          Buka Detail
+                        </DropdownMenuItem>
+                        <DropdownMenuItem className="text-destructive">
+                          Hapus Periode
+                        </DropdownMenuItem>
+                      </DropdownMenuContent>
+                    </DropdownMenu>
+                  </div>
+                </CardHeader>
+                
+                <CardContent className="p-6 pt-0 space-y-4">
+                  <div className="grid grid-cols-2 gap-4">
+                    <div className="space-y-1">
+                      <p className="text-[10px] font-bold uppercase tracking-widest text-muted-foreground/60">Total Agenda</p>
+                      <p className="text-xl font-bold tabular-nums">
+                        {period._count?.events || 0}
+                      </p>
+                    </div>
+                    <div className="space-y-1">
+                      <p className="text-[10px] font-bold uppercase tracking-widest text-muted-foreground/60">Bulan/Tahun</p>
+                      <p className="text-xl font-bold tabular-nums">
+                        {period.nama.split(" ").slice(-2).join(" ")}
+                      </p>
+                    </div>
+                  </div>
+                  
+                  <div className="pt-4 border-t border-border/40 flex items-center justify-between">
+                    <div className="flex items-center gap-1.5 text-[11px] text-muted-foreground font-medium">
+                      <Clock className="h-3.5 w-3.5" />
+                      Deadline: {formatDate(period.deadlineAvailability)}
+                    </div>
+                    <div className="h-7 w-7 rounded-full bg-accent flex items-center justify-center text-muted-foreground group-hover:bg-primary group-hover:text-primary-foreground transition-all">
+                      <ChevronRight className="h-4 w-4" />
+                    </div>
+                  </div>
+                </CardContent>
+                
+                {/* Decorative background element */}
+                <div className="absolute -right-4 -bottom-4 h-24 w-24 rounded-full bg-primary/5 blur-2xl group-hover:bg-primary/10 transition-colors" />
+              </Card>
+            )
+          })}
         </div>
       )}
 

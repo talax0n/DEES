@@ -24,9 +24,25 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select"
-import { Loader2, Trash2, Plus, Download } from "lucide-react"
+import {
+  Loader2,
+  Trash2,
+  Plus,
+  Download,
+  CheckCircle2,
+  Circle,
+  Clock,
+  ChevronRight,
+  Calendar as CalendarIcon,
+  Users as UsersIcon,
+  LayoutDashboard,
+  Zap,
+  Check
+} from "lucide-react"
 import { cn } from "@/lib/utils"
 import { useAuth } from "@/components/providers/AuthProvider"
+import { Badge } from "@/components/ui/badge"
+import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
 
 type MultimediaRole = "SLD" | "SND" | "STR" | "CAM"
 type SchedulePeriodStatus = "DRAFT" | "COLLECTING" | "GENERATING" | "REVIEW" | "PUBLISHED"
@@ -74,16 +90,16 @@ type AvailabilityRecord = {
   event: ScheduleEvent
 }
 
-const STATUS_LABEL: Record<SchedulePeriodStatus, string> = {
-  DRAFT: "Draft",
-  COLLECTING: "Mengumpulkan",
-  GENERATING: "Membuat Jadwal",
-  REVIEW: "Tinjauan",
-  PUBLISHED: "Diterbitkan",
-}
+const STATUS_STEPS: { status: SchedulePeriodStatus; label: string; description: string }[] = [
+  { status: "DRAFT", label: "Draft", description: "Persiapan daftar ibadah" },
+  { status: "COLLECTING", label: "Respon", description: "Mengumpulkan ketersediaan tim" },
+  { status: "GENERATING", label: "Proses AI", description: "Sistem membuat jadwal otomatis" },
+  { status: "REVIEW", label: "Tinjauan", description: "Cek & edit jadwal manual" },
+  { status: "PUBLISHED", label: "Selesai", description: "Jadwal sudah dibagikan" },
+]
 
 const STATUS_CLASS: Record<SchedulePeriodStatus, string> = {
-  DRAFT: "bg-gray-100 text-gray-700 dark:bg-gray-800 dark:text-gray-300",
+  DRAFT: "bg-slate-100 text-slate-700 dark:bg-slate-800 dark:text-slate-300",
   COLLECTING: "bg-blue-100 text-blue-700 dark:bg-blue-900/30 dark:text-blue-300",
   GENERATING: "bg-yellow-100 text-yellow-700 dark:bg-yellow-900/30 dark:text-yellow-300",
   REVIEW: "bg-orange-100 text-orange-700 dark:bg-orange-900/30 dark:text-orange-300",
@@ -91,17 +107,17 @@ const STATUS_CLASS: Record<SchedulePeriodStatus, string> = {
 }
 
 const KATEGORI_CLASS: Record<string, string> = {
-  "Ibadah Raya": "bg-blue-100 text-blue-700",
-  "Ibadah Pelkat": "bg-purple-100 text-purple-700",
-  "Kegiatan Khusus": "bg-orange-100 text-orange-700",
-  "Katekisasi": "bg-teal-100 text-teal-700",
+  "Ibadah Raya": "bg-blue-500/10 text-blue-500 border-blue-500/20",
+  "Ibadah Pelkat": "bg-purple-500/10 text-purple-500 border-purple-500/20",
+  "Kegiatan Khusus": "bg-orange-500/10 text-orange-500 border-orange-500/20",
+  "Katekisasi": "bg-emerald-500/10 text-emerald-500 border-emerald-500/20",
 }
 
 const ROLE_CLASS: Record<MultimediaRole, string> = {
-  SLD: "bg-slate-100 text-slate-700",
-  SND: "bg-blue-100 text-blue-700",
-  STR: "bg-red-100 text-red-700",
-  CAM: "bg-green-100 text-green-700",
+  SLD: "bg-slate-500/10 text-slate-500 border-slate-500/20",
+  SND: "bg-blue-500/10 text-blue-500 border-blue-500/20",
+  STR: "bg-rose-500/10 text-rose-500 border-rose-500/20",
+  CAM: "bg-indigo-500/10 text-indigo-500 border-indigo-500/20",
 }
 
 const ALL_ROLES: MultimediaRole[] = ["SLD", "SND", "STR", "CAM"]
@@ -115,7 +131,7 @@ const KATEGORI_OPTIONS = ["Ibadah Raya", "Ibadah Pelkat", "Kegiatan Khusus", "Ka
 
 function formatDate(isoString: string) {
   const d = new Date(isoString)
-  return d.toLocaleDateString("id-ID", { weekday: "long", day: "numeric", month: "long", year: "numeric" })
+  return d.toLocaleDateString("id-ID", { weekday: "long", day: "numeric", month: "long" })
 }
 
 function groupEventsByDate(events: ScheduleEvent[]): Record<string, ScheduleEvent[]> {
@@ -399,8 +415,11 @@ export default function MultimediaSchedulePeriodPage({ params }: { params: Promi
 
   if (authLoading || loading) {
     return (
-      <div className="flex items-center justify-center h-64">
-        <Loader2 className="h-8 w-8 animate-spin text-muted-foreground" />
+      <div className="flex items-center justify-center h-96">
+        <div className="flex flex-col items-center gap-4">
+          <Loader2 className="h-10 w-10 animate-spin text-primary/40" />
+          <p className="text-sm text-muted-foreground animate-pulse">Menyiapkan data jadwal...</p>
+        </div>
       </div>
     )
   }
@@ -409,10 +428,14 @@ export default function MultimediaSchedulePeriodPage({ params }: { params: Promi
 
   if (!period) {
     return (
-      <div className="text-center py-16">
-        <p className="text-muted-foreground">Periode tidak ditemukan.</p>
-        <Button variant="outline" className="mt-4" onClick={() => router.push("/admin/multimedia/schedules")}>
-          Kembali
+      <div className="text-center py-24">
+        <div className="inline-flex h-12 w-12 items-center justify-center rounded-full bg-muted mb-4">
+          <CalendarIcon className="h-6 w-6 text-muted-foreground" />
+        </div>
+        <p className="text-muted-foreground font-medium">Periode tidak ditemukan.</p>
+        <Button variant="outline" className="mt-6" onClick={() => router.push("/admin/multimedia/schedules")}>
+          <ChevronRight className="mr-2 h-4 w-4 rotate-180" />
+          Kembali ke Daftar
         </Button>
       </div>
     )
@@ -420,250 +443,496 @@ export default function MultimediaSchedulePeriodPage({ params }: { params: Promi
 
   const grouped = groupEventsByDate(period.events)
   const sortedDates = Object.keys(grouped).sort()
+  const currentStepIndex = STATUS_STEPS.findIndex(s => s.status === period.status)
 
   return (
-    <div className="space-y-6">
-      {/* Header */}
-      <div className="flex flex-col gap-3 sm:flex-row sm:items-start sm:justify-between">
-        <div className="space-y-1">
+    <div className="space-y-8 max-w-7xl mx-auto pb-20">
+      {/* Back & Title Section */}
+      <div className="flex flex-col gap-6">
+        <div>
           <button
             onClick={() => router.push("/admin/multimedia/schedules")}
-            className="text-xs text-muted-foreground hover:text-foreground mb-1 inline-flex items-center gap-1"
+            className="group mb-4 inline-flex items-center gap-2 text-sm text-muted-foreground transition-colors hover:text-foreground"
           >
-            ← Kembali ke Jadwal
+            <div className="flex h-6 w-6 items-center justify-center rounded-full border border-border bg-background transition-colors group-hover:border-foreground/20 group-hover:bg-accent">
+              <ChevronRight className="h-3 w-3 rotate-180" />
+            </div>
+            Kembali ke Daftar Jadwal
           </button>
-          <PageHeader
-            title={period.nama}
-            description={`Kelola jadwal dan penugasan tim multimedia`}
-          />
-          <div className="flex items-center gap-2 ml-0">
-            {period.status === "GENERATING" ? (
-              <span className={cn("inline-flex items-center gap-1.5 rounded-full px-2.5 py-0.5 text-xs font-medium", STATUS_CLASS[period.status])}>
-                <Loader2 className="h-3 w-3 animate-spin" />
-                {STATUS_LABEL[period.status]}
-              </span>
-            ) : (
-              <span className={cn("inline-flex items-center rounded-full px-2.5 py-0.5 text-xs font-medium", STATUS_CLASS[period.status])}>
-                {STATUS_LABEL[period.status]}
-              </span>
-            )}
+          
+          <div className="flex flex-col lg:flex-row lg:items-end justify-between gap-6">
+            <div className="space-y-2">
+              <div className="flex items-center gap-3">
+                <h1 className="text-3xl font-bold tracking-tight bg-gradient-to-br from-foreground to-foreground/60 bg-clip-text">
+                  {period.nama}
+                </h1>
+                <Badge variant="outline" className={cn("px-2.5 py-0.5 rounded-full font-medium border-0", STATUS_CLASS[period.status])}>
+                  {period.status === "GENERATING" && <Loader2 className="mr-1.5 h-3 w-3 animate-spin" />}
+                  {STATUS_STEPS[currentStepIndex]?.label || period.status}
+                </Badge>
+              </div>
+              <p className="text-muted-foreground max-w-2xl">
+                Periode penugasan multimedia untuk bulan {new Date(period.tahun, period.bulan - 1).toLocaleDateString('id-ID', { month: 'long', year: 'numeric' })}.
+              </p>
+            </div>
+
+            <div className="flex flex-wrap items-center gap-3">
+              {period.status === "DRAFT" && (
+                <Button 
+                  onClick={() => patchStatus("COLLECTING")} 
+                  disabled={actionLoading}
+                  className="bg-primary hover:bg-primary/90 shadow-lg shadow-primary/20"
+                >
+                  {actionLoading ? <Loader2 className="mr-2 h-4 w-4 animate-spin" /> : <UsersIcon className="mr-2 h-4 w-4" />}
+                  Buka Ketersediaan
+                </Button>
+              )}
+              {period.status === "COLLECTING" && (
+                <Button 
+                  onClick={handleGenerate} 
+                  disabled={actionLoading}
+                  className="bg-indigo-600 hover:bg-indigo-700 text-white shadow-lg shadow-indigo-500/20"
+                >
+                  {actionLoading ? <Loader2 className="mr-2 h-4 w-4 animate-spin" /> : <Zap className="mr-2 h-4 w-4 fill-current" />}
+                  Generate Jadwal AI
+                </Button>
+              )}
+              {period.status === "REVIEW" && (
+                <Button 
+                  onClick={() => patchStatus("PUBLISHED", { publishedAt: new Date().toISOString() })} 
+                  disabled={actionLoading}
+                  className="bg-green-600 hover:bg-green-700 text-white shadow-lg shadow-green-500/20"
+                >
+                  {actionLoading ? <Loader2 className="mr-2 h-4 w-4 animate-spin" /> : <CheckCircle2 className="mr-2 h-4 w-4" />}
+                  Publish Jadwal
+                </Button>
+              )}
+              {period.status === "PUBLISHED" && (
+                <Button 
+                  variant="outline" 
+                  asChild
+                  className="bg-background/50 backdrop-blur-sm border-border/50 hover:bg-accent transition-all"
+                >
+                  <a href={`/api/scheduler/periods/${id}/export`} target="_blank" rel="noreferrer">
+                    <Download className="mr-2 h-4 w-4" />
+                    Unduh PDF
+                  </a>
+                </Button>
+              )}
+              
+              <div className="h-8 w-[1px] bg-border/60 mx-1 hidden sm:block" />
+              
+              <Button 
+                variant="ghost" 
+                size="icon" 
+                className="rounded-full text-muted-foreground hover:text-destructive hover:bg-destructive/10"
+                onClick={() => {
+                  if (confirm("Hapus seluruh periode jadwal ini?")) {
+                    // Logic to delete period
+                  }
+                }}
+              >
+                <Trash2 className="h-4.5 w-4.5" />
+              </Button>
+            </div>
           </div>
         </div>
 
-        {/* Status actions */}
-        <div className="flex items-center gap-2 shrink-0">
-          {period.status === "DRAFT" && (
-            <Button onClick={() => patchStatus("COLLECTING")} disabled={actionLoading}>
-              {actionLoading && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
-              Buka Ketersediaan
-            </Button>
-          )}
-          {period.status === "COLLECTING" && (
-            <Button onClick={handleGenerate} disabled={actionLoading}>
-              {actionLoading && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
-              Generate Jadwal AI
-            </Button>
-          )}
-          {period.status === "REVIEW" && (
-            <Button onClick={() => patchStatus("PUBLISHED", { publishedAt: new Date().toISOString() })} disabled={actionLoading}>
-              {actionLoading && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
-              Publish Jadwal
-            </Button>
-          )}
-          {period.status === "PUBLISHED" && (
-            <Button variant="outline" asChild>
-              <a href={`/api/scheduler/periods/${id}/export`} target="_blank" rel="noreferrer">
-                <Download className="mr-2 h-4 w-4" />
-                Unduh PDF
-              </a>
-            </Button>
-          )}
+        {/* Workflow Stepper */}
+        <div className="relative">
+          <div className="absolute top-5 left-0 w-full h-0.5 bg-border -z-10 hidden md:block" />
+          <div className="grid grid-cols-2 md:grid-cols-5 gap-4">
+            {STATUS_STEPS.map((step, idx) => {
+              const isCompleted = idx < currentStepIndex || period.status === "PUBLISHED"
+              const isActive = idx === currentStepIndex
+              const isLocked = idx > currentStepIndex && period.status !== "PUBLISHED"
+
+              return (
+                <div key={step.status} className="flex flex-col items-center md:items-start text-center md:text-left space-y-2">
+                  <div className={cn(
+                    "flex h-10 w-10 items-center justify-center rounded-full border-2 transition-all duration-300 bg-background",
+                    isCompleted ? "border-green-500 bg-green-500/10 text-green-500" :
+                    isActive ? "border-primary bg-primary/5 text-primary ring-4 ring-primary/10" :
+                    "border-muted text-muted-foreground"
+                  )}>
+                    {isCompleted ? <Check className="h-5 w-5" /> : 
+                     isActive ? (step.status === "GENERATING" ? <Loader2 className="h-5 w-5 animate-spin" /> : <Clock className="h-5 w-5" />) : 
+                     <span className="text-xs font-bold">{idx + 1}</span>}
+                  </div>
+                  <div className="space-y-0.5">
+                    <p className={cn("text-xs font-bold uppercase tracking-wider", isActive ? "text-primary" : "text-muted-foreground")}>
+                      {step.label}
+                    </p>
+                    <p className="text-[10px] text-muted-foreground leading-tight hidden sm:block max-w-[120px]">
+                      {step.description}
+                    </p>
+                  </div>
+                </div>
+              )
+            })}
+          </div>
         </div>
       </div>
 
-      {/* Tabs */}
-      <Tabs defaultValue="events">
-        <TabsList>
-          <TabsTrigger value="events">Daftar Ibadah ({period.events.length})</TabsTrigger>
-          <TabsTrigger value="availability" onClick={() => { if (availability.length === 0) fetchAvailabilityData() }}>
-            Ketersediaan
-          </TabsTrigger>
-          <TabsTrigger value="assignments">Penugasan</TabsTrigger>
-        </TabsList>
+      {/* Main Content Area */}
+      <Tabs defaultValue="events" className="w-full">
+        <div className="flex items-center justify-between border-b pb-0 mb-6 overflow-x-auto no-scrollbar">
+          <TabsList className="h-auto p-0 bg-transparent gap-6">
+            <TabsTrigger 
+              value="events" 
+              className="relative h-10 rounded-none border-b-2 border-transparent bg-transparent px-2 pb-3 pt-2 font-semibold text-muted-foreground transition-none data-[state=active]:border-primary data-[state=active]:text-foreground data-[state=active]:shadow-none"
+            >
+              <LayoutDashboard className="mr-2 h-4 w-4" />
+              Daftar Ibadah
+              {period.events.length > 0 && (
+                <span className="ml-2 rounded-full bg-muted px-1.5 py-0.5 text-[10px] font-bold">
+                  {period.events.length}
+                </span>
+              )}
+            </TabsTrigger>
+            <TabsTrigger 
+              value="availability" 
+              onClick={() => { if (availability.length === 0) fetchAvailabilityData() }}
+              className="relative h-10 rounded-none border-b-2 border-transparent bg-transparent px-2 pb-3 pt-2 font-semibold text-muted-foreground transition-none data-[state=active]:border-primary data-[state=active]:text-foreground data-[state=active]:shadow-none"
+            >
+              <UsersIcon className="mr-2 h-4 w-4" />
+              Ketersediaan Tim
+            </TabsTrigger>
+            <TabsTrigger 
+              value="assignments" 
+              className="relative h-10 rounded-none border-b-2 border-transparent bg-transparent px-2 pb-3 pt-2 font-semibold text-muted-foreground transition-none data-[state=active]:border-primary data-[state=active]:text-foreground data-[state=active]:shadow-none"
+            >
+              <CalendarIcon className="mr-2 h-4 w-4" />
+              Matriks Penugasan
+            </TabsTrigger>
+          </TabsList>
+        </div>
 
         {/* TAB 1: Events */}
-        <TabsContent value="events" className="space-y-4 mt-4">
-          <div className="flex gap-2">
-            <Button size="sm" onClick={() => setAddEventOpen(true)}>
-              <Plus className="mr-2 h-4 w-4" />
-              Tambah Event
-            </Button>
-            <Button size="sm" variant="outline" onClick={() => setBatchOpen(true)}>
-              Batch Import
-            </Button>
+        <TabsContent value="events" className="space-y-6 outline-none">
+          <div className="flex flex-col sm:flex-row gap-4 items-start sm:items-center justify-between">
+            <div>
+              <h2 className="text-xl font-bold tracking-tight">Agenda Ibadah</h2>
+              <p className="text-sm text-muted-foreground">Kelola daftar ibadah dan peran yang dibutuhkan.</p>
+            </div>
+            <div className="flex gap-2 shrink-0">
+              <Button size="sm" variant="outline" onClick={() => setBatchOpen(true)} className="h-9">
+                Batch Import
+              </Button>
+              <Button size="sm" onClick={() => setAddEventOpen(true)} className="h-9">
+                <Plus className="mr-2 h-4 w-4" />
+                Tambah Event
+              </Button>
+            </div>
           </div>
 
           {period.events.length === 0 ? (
-            <div className="text-center py-12 text-muted-foreground border rounded-lg">
-              Belum ada event. Tambah event atau gunakan Batch Import.
-            </div>
-          ) : (
-            <div className="space-y-6">
-              {sortedDates.map(date => (
-                <div key={date}>
-                  <h3 className="text-sm font-semibold text-muted-foreground mb-2">
-                    {formatDate(date + "T00:00:00")}
-                  </h3>
-                  <div className="border rounded-lg overflow-hidden">
-                    {grouped[date].map((ev, i) => (
-                      <div
-                        key={ev.id}
-                        className={cn(
-                          "flex items-start justify-between gap-4 px-4 py-3",
-                          i > 0 && "border-t"
-                        )}
-                      >
-                        <div className="flex-1 space-y-1.5">
-                          <div className="flex items-center gap-2 flex-wrap">
-                            <span className="font-medium text-sm">{ev.namaEvent}</span>
-                            <span className="text-xs text-muted-foreground">{ev.waktu}</span>
-                            <span className={cn("text-xs rounded-full px-2 py-0.5", KATEGORI_CLASS[ev.kategori] ?? "bg-gray-100 text-gray-700")}>
-                              {ev.kategori}
-                            </span>
-                            {ev.isLive && (
-                              <span className="text-xs rounded-full px-2 py-0.5 bg-red-100 text-red-700">LIVE</span>
-                            )}
-                          </div>
-                          <div className="flex items-center gap-1 flex-wrap">
-                            {ev.requiredRoles.map(r => (
-                              <span key={r} className={cn("text-xs rounded px-1.5 py-0.5 font-mono", ROLE_CLASS[r])}>
-                                {r}
-                              </span>
-                            ))}
-                            {ev._count.availability > 0 && (
-                              <span className="text-xs text-muted-foreground ml-1">
-                                {ev._count.availability} respon ketersediaan
-                              </span>
-                            )}
-                          </div>
-                          {ev.keterangan && (
-                            <p className="text-xs text-muted-foreground">{ev.keterangan}</p>
-                          )}
-                        </div>
-                        <Button
-                          size="icon"
-                          variant="ghost"
-                          className="h-7 w-7 text-muted-foreground hover:text-destructive shrink-0"
-                          onClick={() => handleDeleteEvent(ev.id)}
-                        >
-                          <Trash2 className="h-3.5 w-3.5" />
-                        </Button>
-                      </div>
-                    ))}
-                  </div>
+            <Card className="border-dashed bg-muted/30">
+              <CardContent className="flex flex-col items-center justify-center py-16 text-center">
+                <div className="h-12 w-12 rounded-full bg-background flex items-center justify-center mb-4 ring-1 ring-border">
+                  <CalendarIcon className="h-6 w-6 text-muted-foreground" />
                 </div>
-              ))}
+                <h3 className="text-lg font-semibold">Belum ada agenda</h3>
+                <p className="text-sm text-muted-foreground max-w-sm mb-6">
+                  Mulai dengan menambahkan event secara manual atau gunakan fitur Batch Import untuk memproses banyak agenda sekaligus.
+                </p>
+                <div className="flex gap-3">
+                  <Button variant="outline" size="sm" onClick={() => setBatchOpen(true)}>Batch Import</Button>
+                  <Button size="sm" onClick={() => setAddEventOpen(true)}>Tambah Event</Button>
+                </div>
+              </CardContent>
+            </Card>
+          ) : (
+            <div className="grid grid-cols-1 lg:grid-cols-12 gap-8">
+              {/* Event Timeline */}
+              <div className="lg:col-span-8 space-y-8">
+                {sortedDates.map(date => (
+                  <div key={date} className="relative pl-6 border-l-2 border-muted/50 last:border-0 pb-2">
+                    <div className="absolute -left-[9px] top-0 h-4 w-4 rounded-full border-4 border-background bg-muted" />
+                    <h3 className="text-sm font-bold text-foreground mb-4 flex items-center gap-2">
+                      {formatDate(date + "T00:00:00")}
+                      <span className="h-[1px] flex-1 bg-border/40" />
+                    </h3>
+                    
+                    <div className="grid gap-3">
+                      {grouped[date].map((ev) => (
+                        <div
+                          key={ev.id}
+                          className="group relative flex flex-col sm:flex-row sm:items-center justify-between gap-4 rounded-xl border border-border/50 bg-background/50 p-4 transition-all hover:border-foreground/10 hover:bg-accent/5 hover:shadow-sm"
+                        >
+                          <div className="space-y-3">
+                            <div className="flex items-center gap-3">
+                              <span className="text-sm font-bold tabular-nums text-foreground/80">{ev.waktu}</span>
+                              <div className="h-3 w-[1px] bg-border" />
+                              <span className="font-semibold text-sm">{ev.namaEvent}</span>
+                              <Badge variant="outline" className={cn("text-[10px] px-1.5 py-0 rounded-md border", KATEGORI_CLASS[ev.kategori])}>
+                                {ev.kategori}
+                              </Badge>
+                              {ev.isLive && (
+                                <Badge variant="destructive" className="text-[10px] px-1.5 py-0 rounded-md bg-rose-500/10 text-rose-500 border-rose-500/20">
+                                  LIVE
+                                </Badge>
+                              )}
+                            </div>
+                            
+                            <div className="flex flex-wrap items-center gap-2">
+                              {ev.requiredRoles.map(r => (
+                                <span key={r} className={cn("text-[10px] font-bold uppercase tracking-tighter px-1.5 py-0.5 rounded border leading-none", ROLE_CLASS[r])}>
+                                  {r}
+                                </span>
+                              ))}
+                              {ev._count.availability > 0 && (
+                                <span className="text-[11px] text-muted-foreground flex items-center gap-1 ml-1">
+                                  <UsersIcon className="h-3 w-3" />
+                                  {ev._count.availability} Respon
+                                </span>
+                              )}
+                            </div>
+                            
+                            {ev.keterangan && (
+                              <p className="text-xs text-muted-foreground line-clamp-1 italic">{ev.keterangan}</p>
+                            )}
+                          </div>
+                          
+                          <div className="flex items-center gap-2 self-end sm:self-center opacity-0 group-hover:opacity-100 transition-opacity">
+                            <Button
+                              size="icon"
+                              variant="ghost"
+                              className="h-8 w-8 rounded-full hover:bg-background shadow-sm ring-1 ring-border/50"
+                              onClick={() => {
+                                // Edit logic
+                              }}
+                            >
+                              <Plus className="h-3.5 w-3.5 rotate-45" />
+                            </Button>
+                            <Button
+                              size="icon"
+                              variant="ghost"
+                              className="h-8 w-8 rounded-full text-muted-foreground hover:text-destructive hover:bg-destructive/10"
+                              onClick={() => handleDeleteEvent(ev.id)}
+                            >
+                              <Trash2 className="h-3.5 w-3.5" />
+                            </Button>
+                          </div>
+                        </div>
+                      ))}
+                    </div>
+                  </div>
+                ))}
+              </div>
+
+              {/* Summary Stats / Tips */}
+              <div className="lg:col-span-4 space-y-6">
+                <Card className="bg-gradient-to-br from-indigo-500/5 to-purple-500/5 border-indigo-500/10">
+                  <CardHeader className="pb-2">
+                    <CardTitle className="text-sm font-bold flex items-center gap-2">
+                      <Zap className="h-4 w-4 text-indigo-500" />
+                      Ringkasan Periode
+                    </CardTitle>
+                  </CardHeader>
+                  <CardContent className="space-y-4">
+                    <div className="grid grid-cols-2 gap-4">
+                      <div className="space-y-1">
+                        <p className="text-[10px] uppercase tracking-wider text-muted-foreground font-bold">Total Ibadah</p>
+                        <p className="text-2xl font-bold">{period.events.length}</p>
+                      </div>
+                      <div className="space-y-1">
+                        <p className="text-[10px] uppercase tracking-wider text-muted-foreground font-bold">Live Streams</p>
+                        <p className="text-2xl font-bold text-rose-500">{period.events.filter(e => e.isLive).length}</p>
+                      </div>
+                    </div>
+                    
+                    <div className="pt-2 space-y-2 border-t border-indigo-500/10">
+                      <p className="text-xs text-muted-foreground leading-relaxed">
+                        Tips: Gunakan <strong>Batch Import</strong> untuk mempercepat input agenda bulanan dari Warta Jemaat atau jadwal tahunan.
+                      </p>
+                    </div>
+                  </CardContent>
+                </Card>
+
+                <Card className="bg-accent/50 border-border/50">
+                  <CardHeader className="pb-2">
+                    <CardTitle className="text-sm font-bold">Butuh Bantuan?</CardTitle>
+                  </CardHeader>
+                  <CardContent>
+                    <ul className="text-xs space-y-2 text-muted-foreground">
+                      <li className="flex items-start gap-2">
+                        <Check className="h-3 w-3 mt-0.5 text-primary" />
+                        Lengkapi semua daftar ibadah sebelum membuka ketersediaan.
+                      </li>
+                      <li className="flex items-start gap-2">
+                        <Check className="h-3 w-3 mt-0.5 text-primary" />
+                        Pastikan setiap ibadah memiliki minimal satu role yang dibutuhkan.
+                      </li>
+                      <li className="flex items-start gap-2">
+                        <Check className="h-3 w-3 mt-0.5 text-primary" />
+                        AI akan memprioritaskan anggota yang tersedia dan belum sering bertugas.
+                      </li>
+                    </ul>
+                  </CardContent>
+                </Card>
+              </div>
             </div>
           )}
         </TabsContent>
 
         {/* TAB 2: Availability */}
-        <TabsContent value="availability" className="mt-4">
-          {availLoading ? (
-            <div className="flex items-center justify-center h-32">
-              <Loader2 className="h-6 w-6 animate-spin text-muted-foreground" />
-            </div>
-          ) : period.events.length === 0 ? (
-            <div className="text-center py-12 text-muted-foreground">Belum ada event untuk ditampilkan.</div>
-          ) : (
-            <div className="overflow-x-auto">
-              <table className="text-xs w-full border rounded-lg overflow-hidden">
-                <thead>
-                  <tr className="bg-muted/50">
-                    <th className="text-left px-3 py-2 font-medium border-b border-r min-w-[160px]">Event</th>
-                    {members.map(m => (
-                      <th key={m.id} className="px-2 py-2 font-medium border-b border-r text-center min-w-[80px]">{m.nama}</th>
-                    ))}
-                  </tr>
-                </thead>
-                <tbody>
-                  {period.events.map((ev, i) => {
-                    const avMap: Record<string, AvailabilityStatus> = {}
-                    availability.filter(a => a.eventId === ev.id).forEach(a => { avMap[a.memberId] = a.status })
-                    return (
-                      <tr key={ev.id} className={i % 2 === 0 ? "" : "bg-muted/20"}>
-                        <td className="px-3 py-2 border-b border-r font-medium">
-                          <div>{ev.namaEvent}</div>
-                          <div className="text-muted-foreground">{ev.waktu}</div>
-                        </td>
-                        {members.map(m => {
-                          const s = avMap[m.id]
-                          return (
-                            <td key={m.id} className="px-2 py-2 border-b border-r text-center">
-                              {s === "AVAILABLE" && <span className="text-green-600 font-bold">✓</span>}
-                              {s === "UNAVAILABLE" && <span className="text-red-500 font-bold">✗</span>}
-                              {s === "MAYBE" && <span className="text-yellow-600 font-bold">~</span>}
-                              {!s && <span className="text-muted-foreground">—</span>}
-                            </td>
-                          )
-                        })}
-                      </tr>
-                    )
-                  })}
-                </tbody>
-              </table>
-              {members.length === 0 && (
-                <p className="text-center text-muted-foreground py-6">Belum ada anggota terdaftar.</p>
-              )}
-            </div>
-          )}
-        </TabsContent>
-
-        {/* TAB 3: Assignments */}
-        <TabsContent value="assignments" className="mt-4 space-y-4">
-          {period.events.length === 0 ? (
-            <div className="text-center py-12 text-muted-foreground">Belum ada event.</div>
-          ) : (
-            <div className="space-y-4">
-              {period.events.map(ev => (
-                <div key={ev.id} className="border rounded-lg p-4 space-y-3">
-                  <div className="flex items-start justify-between">
-                    <div>
-                      <p className="font-medium text-sm">{ev.namaEvent}</p>
-                      <p className="text-xs text-muted-foreground">{formatDate(ev.tanggal)} · {ev.waktu}</p>
-                    </div>
-                    <Button
-                      size="sm"
-                      variant="outline"
-                      className="h-7 text-xs"
-                      onClick={() => {
-                        setAssignDialogEvent(ev)
-                        setAssignMemberId("")
-                        setAssignRole("SLD")
-                      }}
-                    >
-                      <Plus className="h-3 w-3 mr-1" />
-                      Tambah
-                    </Button>
+        <TabsContent value="availability" className="outline-none">
+          <Card className="border-border/50 bg-background/50 overflow-hidden">
+            <CardHeader className="border-b bg-muted/30">
+              <CardTitle className="text-lg font-bold tracking-tight">Status Respon Tim</CardTitle>
+              <CardDescription>Respon ketersediaan anggota multimedia untuk periode ini.</CardDescription>
+            </CardHeader>
+            <CardContent className="p-0">
+              {availLoading ? (
+                <div className="flex flex-col items-center justify-center py-24 gap-4">
+                  <Loader2 className="h-8 w-8 animate-spin text-primary/20" />
+                  <p className="text-xs text-muted-foreground animate-pulse">Memuat data respon...</p>
+                </div>
+              ) : period.events.length === 0 ? (
+                <div className="text-center py-16 text-muted-foreground">Belum ada event untuk ditampilkan.</div>
+              ) : (
+                <>
+                  <div className="flex items-center gap-4 text-xs p-4 border-b bg-muted/10">
+                    <div className="flex items-center gap-1.5 font-medium text-muted-foreground mr-2">Legenda:</div>
+                    <div className="flex items-center gap-1.5"><span className="h-2 w-2 rounded-full bg-green-500" /> Tersedia</div>
+                    <div className="flex items-center gap-1.5"><span className="h-2 w-2 rounded-full bg-red-500" /> Tidak Bisa</div>
+                    <div className="flex items-center gap-1.5"><span className="h-2 w-2 rounded-full bg-yellow-500" /> Ragu</div>
                   </div>
-                  {ev.assignments.length === 0 ? (
-                    <p className="text-xs text-muted-foreground italic">Belum ada penugasan</p>
-                  ) : (
-                    <div className="flex flex-wrap gap-2">
-                      {ev.assignments.map(a => (
-                        <div key={a.id} className="flex items-center gap-1.5 rounded-full border px-2.5 py-1 text-xs">
-                          <span className={cn("rounded px-1.5 py-0.5 font-mono text-[10px]", ROLE_CLASS[a.role as MultimediaRole])}>
-                            {a.role}
-                          </span>
-                          <span>{a.member.nama}</span>
-                        </div>
-                      ))}
+                  <div className="overflow-x-auto">
+                  <table className="w-full border-collapse text-left text-xs">
+                    <thead>
+                      <tr className="bg-muted/10">
+                        <th className="sticky left-0 z-10 bg-background border-b border-r p-4 font-bold min-w-[200px]">Agenda Ibadah</th>
+                        {members.map(m => (
+                          <th key={m.id} className="border-b border-r p-3 font-bold text-center min-w-[100px] whitespace-nowrap">
+                            {m.nama}
+                            <div className="text-[9px] font-normal text-muted-foreground uppercase tracking-wider mt-1">
+                              {m.roles.join(", ")}
+                            </div>
+                          </th>
+                        ))}
+                      </tr>
+                    </thead>
+                    <tbody>
+                      {period.events.map((ev, i) => {
+                        const avMap: Record<string, AvailabilityStatus> = {}
+                        availability.filter(a => a.eventId === ev.id).forEach(a => { avMap[a.memberId] = a.status })
+                        return (
+                          <tr key={ev.id} className="group hover:bg-muted/30 transition-colors">
+                            <td className="sticky left-0 z-10 bg-background group-hover:bg-muted/30 border-b border-r p-4 transition-colors">
+                              <div className="font-bold text-foreground/90">{ev.namaEvent}</div>
+                              <div className="text-[10px] text-muted-foreground mt-0.5">{formatDate(ev.tanggal)} · {ev.waktu}</div>
+                            </td>
+                            {members.map(m => {
+                              const s = avMap[m.id]
+                              return (
+                                <td key={m.id} className="border-b border-r p-2 text-center align-middle">
+                                  <div className="flex justify-center">
+                                    {s === "AVAILABLE" && (
+                                      <div className="h-6 w-6 rounded-full bg-green-500/10 text-green-600 flex items-center justify-center shadow-sm ring-1 ring-green-500/20">
+                                        <Check className="h-3.5 w-3.5" />
+                                      </div>
+                                    )}
+                                    {s === "UNAVAILABLE" && (
+                                      <div className="h-6 w-6 rounded-full bg-rose-500/10 text-rose-600 flex items-center justify-center shadow-sm ring-1 ring-rose-500/20">
+                                        <Plus className="h-3.5 w-3.5 rotate-45" />
+                                      </div>
+                                    )}
+                                    {s === "MAYBE" && (
+                                      <div className="h-6 w-6 rounded-full bg-yellow-500/10 text-yellow-600 flex items-center justify-center shadow-sm ring-1 ring-yellow-500/20 text-xs font-bold">
+                                        ~
+                                      </div>
+                                    )}
+                                    {!s && <span className="text-muted-foreground/30">—</span>}
+                                  </div>
+                                </td>
+                              )
+                            })}
+                          </tr>
+                        )
+                      })}
+                    </tbody>
+                  </table>
+                  {members.length === 0 && (
+                    <div className="flex flex-col items-center justify-center py-16 gap-2 border-t">
+                      <UsersIcon className="h-8 w-8 text-muted-foreground/30" />
+                      <p className="text-sm text-muted-foreground font-medium">Belum ada anggota terdaftar.</p>
+                      <Button variant="outline" size="sm" onClick={() => router.push("/admin/multimedia/members")}>Kelola Tim</Button>
                     </div>
                   )}
                 </div>
-              ))}
-            </div>
-          )}
+                </>
+              )}
+            </CardContent>
+          </Card>
+        </TabsContent>
+
+        {/* TAB 3: Assignments */}
+        <TabsContent value="assignments" className="outline-none">
+          <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-6">
+            {period.events.length === 0 ? (
+              <div className="md:col-span-2 xl:col-span-3 text-center py-16 text-muted-foreground bg-muted/30 rounded-xl border border-dashed">
+                Belum ada event.
+              </div>
+            ) : (
+              period.events.map(ev => (
+                <Card key={ev.id} className="group overflow-hidden border-border/50 bg-background/50 hover:border-primary/20 transition-all hover:shadow-md">
+                  <CardHeader className="p-4 border-b bg-muted/30 group-hover:bg-accent/5 transition-colors">
+                    <div className="flex items-start justify-between gap-4">
+                      <div className="space-y-1">
+                        <CardTitle className="text-sm font-bold line-clamp-1">{ev.namaEvent}</CardTitle>
+                        <CardDescription className="text-[10px] flex items-center gap-1 font-medium">
+                          <CalendarIcon className="h-3 w-3" />
+                          {formatDate(ev.tanggal)} · {ev.waktu}
+                        </CardDescription>
+                      </div>
+                      <Button
+                        size="icon"
+                        variant="ghost"
+                        className="h-8 w-8 rounded-full border bg-background/50 opacity-0 group-hover:opacity-100 transition-opacity"
+                        onClick={() => {
+                          setAssignDialogEvent(ev)
+                          setAssignMemberId("")
+                          setAssignRole("SLD")
+                        }}
+                      >
+                        <Plus className="h-4 w-4" />
+                      </Button>
+                    </div>
+                  </CardHeader>
+                  <CardContent className="p-4 space-y-4">
+                    <div className="grid grid-cols-1 gap-2">
+                      {ALL_ROLES.filter(role => ev.requiredRoles.includes(role)).map(role => {
+                        const assignment = ev.assignments.find(a => a.role === role)
+                        return (
+                          <div key={role} className="flex items-center justify-between gap-3 text-xs p-2 rounded-lg border border-border/40 bg-muted/20">
+                            <div className="flex items-center gap-2">
+                              <span className={cn("text-[9px] font-bold uppercase tracking-wider px-1.5 py-0.5 rounded border leading-none shrink-0", ROLE_CLASS[role])}>
+                                {role}
+                              </span>
+                              <span className="font-bold text-muted-foreground/80">{ROLE_LABELS[role]}</span>
+                            </div>
+                            
+                            {assignment ? (
+                              <div className="flex items-center gap-2 bg-background border px-2 py-0.5 rounded-full shadow-sm">
+                                <span className="font-semibold text-foreground/90">{assignment.member.nama}</span>
+                                <button className="text-muted-foreground hover:text-destructive transition-colors">
+                                  <Plus className="h-3 w-3 rotate-45" />
+                                </button>
+                              </div>
+                            ) : (
+                              <span className="text-[10px] italic text-muted-foreground/60">Belum diisi</span>
+                            )}
+                          </div>
+                        )
+                      })}
+                    </div>
+                  </CardContent>
+                </Card>
+              ))
+            )}
+          </div>
         </TabsContent>
       </Tabs>
 

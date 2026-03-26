@@ -3,11 +3,22 @@
 import { useEffect, useState } from "react"
 import { useRouter } from "next/navigation"
 import { toast } from "sonner"
-import { PageHeader } from "@/components/admin/PageHeader"
-import { Button } from "@/components/ui/button"
-import { Loader2 } from "lucide-react"
-import { cn } from "@/lib/utils"
+import {
+  Loader2,
+  Clock,
+  CheckCircle2,
+  AlertCircle,
+  Check,
+  X,
+  HelpCircle,
+  Calendar as CalendarIcon,
+  ChevronRight
+} from "lucide-react"
 import { useAuth } from "@/components/providers/AuthProvider"
+import { Badge } from "@/components/ui/badge"
+import { Card, CardContent, CardDescription, CardHeader, CardTitle, CardFooter } from "@/components/ui/card"
+import { Button } from "@/components/ui/button"
+import { cn } from "@/lib/utils"
 
 type SchedulePeriodStatus = "DRAFT" | "COLLECTING" | "GENERATING" | "REVIEW" | "PUBLISHED"
 type AvailabilityStatus = "AVAILABLE" | "UNAVAILABLE" | "MAYBE"
@@ -40,26 +51,30 @@ type AvailabilityEntry = {
 const STATUS_OPTIONS: {
   value: AvailabilityStatus
   label: string
-  baseClass: string
+  icon: any
   activeClass: string
+  inactiveClass: string
 }[] = [
   {
     value: "AVAILABLE",
     label: "Bisa",
-    baseClass: "border-green-300 bg-green-50 text-green-700 hover:bg-green-100",
-    activeClass: "border-green-500 bg-green-500 text-white",
+    icon: Check,
+    activeClass: "bg-green-500 text-white border-green-600 shadow-green-500/20",
+    inactiveClass: "bg-green-500/5 text-green-600 border-green-500/20 hover:bg-green-500/10",
   },
   {
     value: "MAYBE",
-    label: "Mungkin",
-    baseClass: "border-yellow-300 bg-yellow-50 text-yellow-700 hover:bg-yellow-100",
-    activeClass: "border-yellow-500 bg-yellow-500 text-white",
+    label: "Ragu",
+    icon: HelpCircle,
+    activeClass: "bg-yellow-500 text-white border-yellow-600 shadow-yellow-500/20",
+    inactiveClass: "bg-yellow-500/5 text-yellow-600 border-yellow-500/20 hover:bg-yellow-500/10",
   },
   {
     value: "UNAVAILABLE",
     label: "Tidak Bisa",
-    baseClass: "border-red-300 bg-red-50 text-red-700 hover:bg-red-100",
-    activeClass: "border-red-500 bg-red-500 text-white",
+    icon: X,
+    activeClass: "bg-rose-500 text-white border-rose-600 shadow-rose-500/20",
+    inactiveClass: "bg-rose-500/5 text-rose-600 border-rose-500/20 hover:bg-rose-500/10",
   },
 ]
 
@@ -68,7 +83,6 @@ function formatDate(dateStr: string) {
     weekday: "long",
     day: "numeric",
     month: "long",
-    year: "numeric",
   })
 }
 
@@ -190,8 +204,8 @@ export default function AvailabilityPage() {
 
   if (authLoading) {
     return (
-      <div className="flex items-center justify-center h-64">
-        <Loader2 className="h-8 w-8 animate-spin text-muted-foreground" />
+      <div className="flex items-center justify-center h-96">
+        <Loader2 className="h-10 w-10 animate-spin text-primary/40" />
       </div>
     )
   }
@@ -201,113 +215,150 @@ export default function AvailabilityPage() {
   // No member linked
   if (!user?.multimediaMemberId) {
     return (
-      <div className="space-y-6">
-        <PageHeader
-          title="Isi Ketersediaan"
-          description="Beritahukan ketersediaan Anda untuk periode jadwal mendatang"
-        />
-        <div className="rounded-xl border border-yellow-200 bg-yellow-50 p-8 text-center">
-          <p className="text-yellow-800 font-medium mb-2">Akun belum terdaftar sebagai anggota</p>
-          <p className="text-sm text-yellow-700">
-            Akun Anda belum terdaftar sebagai anggota tim multimedia. Hubungi admin untuk menautkan akun Anda.
-          </p>
+      <div className="space-y-8 max-w-3xl mx-auto pb-20">
+        <div className="space-y-1">
+          <h1 className="text-3xl font-bold tracking-tight bg-gradient-to-br from-foreground to-foreground/60 bg-clip-text">
+            Isi Ketersediaan
+          </h1>
+          <p className="text-muted-foreground">Beritahukan ketersediaan Anda untuk jadwal mendatang.</p>
         </div>
+        
+        <Card className="border-yellow-500/20 bg-yellow-500/[0.03] shadow-lg shadow-yellow-500/5">
+          <CardContent className="flex flex-col items-center justify-center py-16 text-center">
+            <div className="h-16 w-16 rounded-full bg-yellow-500/10 flex items-center justify-center mb-6 ring-1 ring-yellow-500/20 shadow-sm">
+              <AlertCircle className="h-8 w-8 text-yellow-600" />
+            </div>
+            <h3 className="text-xl font-bold text-yellow-800 dark:text-yellow-500">Akun belum terdaftar</h3>
+            <p className="text-muted-foreground max-w-sm mt-2 mb-8 text-sm">
+              Akun Anda belum terdaftar sebagai anggota tim multimedia. Hubungi admin multimedia untuk menautkan akun Anda agar dapat mengisi ketersediaan.
+            </p>
+            <Button variant="outline" className="border-yellow-500/30 hover:bg-yellow-500/10" onClick={() => router.push("/admin/multimedia")}>
+              Kembali ke Dashboard
+            </Button>
+          </CardContent>
+        </Card>
       </div>
     )
   }
 
   return (
-    <div className="space-y-6">
-      <PageHeader
-        title="Isi Ketersediaan"
-        description="Beritahukan ketersediaan Anda untuk periode jadwal mendatang"
-      />
+    <div className="space-y-8 max-w-4xl mx-auto pb-20">
+      <div className="space-y-1">
+        <h1 className="text-3xl font-bold tracking-tight bg-gradient-to-br from-foreground to-foreground/60 bg-clip-text">
+          Isi Ketersediaan
+        </h1>
+        <p className="text-muted-foreground">Beritahukan ketersediaan Anda untuk periode jadwal mendatang.</p>
+      </div>
 
       {loading ? (
-        <div className="flex items-center justify-center h-48">
-          <Loader2 className="h-6 w-6 animate-spin text-muted-foreground" />
+        <div className="space-y-6">
+          <Card className="animate-pulse h-64 border-border/40 bg-background/50" />
         </div>
       ) : periodsWithEvents.length === 0 ? (
-        <div className="rounded-xl border border-border/40 bg-background p-12 text-center shadow-sm">
-          <p className="text-muted-foreground text-sm">
-            Tidak ada periode yang sedang mengumpulkan ketersediaan saat ini.
-          </p>
-        </div>
+        <Card className="border-dashed bg-muted/30">
+          <CardContent className="flex flex-col items-center justify-center py-20 text-center">
+            <div className="h-16 w-16 rounded-full bg-background flex items-center justify-center mb-6 ring-1 ring-border shadow-sm">
+              <CalendarIcon className="h-8 w-8 text-muted-foreground/30" />
+            </div>
+            <p className="text-muted-foreground text-sm font-medium">
+              Tidak ada periode yang sedang mengumpulkan ketersediaan saat ini.
+            </p>
+          </CardContent>
+        </Card>
       ) : (
-        <div className="space-y-8">
+        <div className="space-y-10">
           {periodsWithEvents.map(({ period, events }) => (
-            <div key={period.id} className="rounded-xl border border-border/40 bg-background shadow-sm overflow-hidden">
-              <div className="px-6 py-4 border-b bg-muted/30">
-                <div className="flex items-start justify-between gap-4">
-                  <div>
-                    <h2 className="font-semibold text-lg">{period.nama}</h2>
+            <Card key={period.id} className="overflow-hidden border-border/50 bg-background/40 shadow-xl shadow-primary/5">
+              <CardHeader className="border-b bg-muted/30 p-6">
+                <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
+                  <div className="space-y-1">
+                    <CardTitle className="text-xl font-bold">{period.nama}</CardTitle>
                     {period.deadlineAvailability && (
-                      <p className="text-sm text-muted-foreground mt-0.5">
-                        Deadline: {formatDeadline(period.deadlineAvailability)}
-                      </p>
+                      <CardDescription className="flex items-center gap-1.5 font-medium">
+                        <Clock className="h-3.5 w-3.5 text-primary/60" />
+                        Batas Akhir: {formatDeadline(period.deadlineAvailability)}
+                      </CardDescription>
                     )}
                   </div>
                   {submitted[period.id] && (
-                    <span className="text-xs text-green-600 font-medium bg-green-100 px-3 py-1 rounded-full">
+                    <Badge className="bg-emerald-500/10 text-emerald-600 border-emerald-500/20 px-3 py-1 rounded-full font-bold uppercase tracking-widest text-[10px]">
+                      <CheckCircle2 className="mr-1.5 h-3.5 w-3.5" />
                       Tersimpan
-                    </span>
+                    </Badge>
                   )}
                 </div>
-              </div>
+              </CardHeader>
 
-              {events.length === 0 ? (
-                <div className="px-6 py-8 text-center text-muted-foreground text-sm">
-                  Belum ada event untuk periode ini.
-                </div>
-              ) : (
-                <div className="divide-y">
-                  {events.map(ev => {
-                    const currentStatus = selections[period.id]?.[ev.id] ?? "AVAILABLE"
-                    return (
-                      <div key={ev.id} className="px-6 py-4">
-                        <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3">
-                          <div>
-                            <p className="font-medium text-sm">{ev.namaEvent}</p>
-                            <p className="text-xs text-muted-foreground mt-0.5">
-                              {formatDate(ev.tanggal)} · {ev.waktu}
-                            </p>
-                          </div>
-                          <div className="flex gap-2 shrink-0">
-                            {STATUS_OPTIONS.map(opt => {
-                              const isSelected = currentStatus === opt.value
-                              return (
-                                <button
-                                  key={opt.value}
-                                  type="button"
-                                  onClick={() => setStatus(period.id, ev.id, opt.value)}
-                                  className={cn(
-                                    "px-3 py-1.5 text-xs font-medium rounded-full border transition-colors",
-                                    isSelected ? opt.activeClass : opt.baseClass
-                                  )}
-                                >
-                                  {opt.label}
-                                </button>
-                              )
-                            })}
+              <CardContent className="p-0">
+                {events.length === 0 ? (
+                  <div className="py-16 text-center text-muted-foreground text-sm italic">
+                    Belum ada event yang didaftarkan untuk periode ini.
+                  </div>
+                ) : (
+                  <div className="divide-y divide-border/40">
+                    {events.map((ev) => {
+                      const currentStatus = selections[period.id]?.[ev.id] ?? "AVAILABLE"
+                      return (
+                        <div key={ev.id} className="group p-6 transition-colors hover:bg-muted/20">
+                          <div className="flex flex-col md:flex-row md:items-center justify-between gap-6">
+                            <div className="flex items-start gap-4">
+                              <div className="h-10 w-10 rounded-xl bg-primary/5 border border-primary/10 flex flex-col items-center justify-center shrink-0">
+                                <span className="text-[10px] font-bold text-primary/60 uppercase leading-none">{formatDate(ev.tanggal).split(" ")[0].substring(0, 3)}</span>
+                                <span className="text-sm font-bold text-primary leading-none mt-0.5">{new Date(ev.tanggal).getDate()}</span>
+                              </div>
+                              <div className="space-y-1">
+                                <p className="font-bold text-sm leading-none">{ev.namaEvent}</p>
+                                <p className="text-xs text-muted-foreground flex items-center gap-1.5">
+                                  <Clock className="h-3 w-3" />
+                                  {ev.waktu}
+                                </p>
+                              </div>
+                            </div>
+                            
+                            <div className="grid grid-cols-3 gap-2 w-full md:w-auto">
+                              {STATUS_OPTIONS.map(opt => {
+                                const isSelected = currentStatus === opt.value
+                                const Icon = opt.icon
+                                return (
+                                  <button
+                                    key={opt.value}
+                                    type="button"
+                                    onClick={() => setStatus(period.id, ev.id, opt.value)}
+                                    className={cn(
+                                      "flex flex-col md:flex-row items-center justify-center gap-1.5 px-3 py-2.5 md:py-2 text-[10px] md:text-xs font-bold uppercase tracking-wider rounded-xl border transition-all duration-300",
+                                      isSelected 
+                                        ? cn("scale-[1.02] shadow-lg", opt.activeClass) 
+                                        : opt.inactiveClass
+                                    )}
+                                  >
+                                    <Icon className={cn("h-3.5 w-3.5", isSelected ? "animate-in zoom-in-50 duration-300" : "opacity-60")} />
+                                    {opt.label}
+                                  </button>
+                                )
+                              })}
+                            </div>
                           </div>
                         </div>
-                      </div>
-                    )
-                  })}
-                </div>
-              )}
+                      )
+                    })}
+                  </div>
+                )}
+              </CardContent>
 
-              <div className="px-6 py-4 border-t bg-muted/20 flex justify-end">
+              <CardFooter className="bg-muted/20 p-6 border-t flex items-center justify-between gap-4">
+                <p className="text-xs text-muted-foreground hidden sm:block">
+                  Pastikan semua jadwal sudah sesuai sebelum menekan tombol simpan.
+                </p>
                 <Button
-                  className="bg-navy text-white hover:bg-navy/90"
+                  className="bg-primary hover:bg-primary/90 shadow-lg shadow-primary/20 h-11 px-8 font-bold w-full sm:w-auto"
                   disabled={submitting[period.id] || events.length === 0}
                   onClick={() => handleSubmit(period, events)}
                 >
-                  {submitting[period.id] && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
-                  {submitted[period.id] ? "Perbarui Ketersediaan" : "Simpan Ketersediaan"}
+                  {submitting[period.id] ? <Loader2 className="mr-2 h-4 w-4 animate-spin" /> : <CheckCircle2 className="mr-2 h-4 w-4" />}
+                  {submitted[period.id] ? "Perbarui Ketersediaan" : "Kirim Respon"}
                 </Button>
-              </div>
-            </div>
+              </CardFooter>
+            </Card>
           ))}
         </div>
       )}
