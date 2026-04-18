@@ -38,7 +38,7 @@ const validJadwal = {
   metode: 'offline',
 }
 
-const mockRecord = { id: 'cuid-1', ...validJadwal, isActive: true, createdAt: new Date(), updatedAt: new Date() }
+const mockRecord = { id: 'cuid-1', ...validJadwal, linkStreaming: null, isActive: true, createdAt: new Date(), updatedAt: new Date() }
 
 // ---------------------------------------------------------------------------
 // GET /api/jadwal

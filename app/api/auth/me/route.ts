@@ -13,7 +13,6 @@ export async function GET() {
 
     let dbUser = await db.user.findUnique({
       where: { id: user.id },
-      include: { multimediaMember: { select: { id: true } } },
     })
 
     if (!dbUser) {
@@ -23,7 +22,6 @@ export async function GET() {
           email: user.email!,
           roles: ['EDITOR'],
         },
-        include: { multimediaMember: { select: { id: true } } },
       })
     }
 
@@ -33,10 +31,10 @@ export async function GET() {
         email: dbUser.email,
         name: dbUser.name,
         roles: dbUser.roles,
-        multimediaMemberId: dbUser.multimediaMember?.id ?? null,
       },
     })
-  } catch {
-    return NextResponse.json({ error: "Internal Server Error" }, { status: 500 })
+  } catch(error) {
+    // return NextResponse.json({ error: "Internal Server Error" }, { status: 500 })
+    return NextResponse.json({ error: error }, { status: 500 })
   }
 }

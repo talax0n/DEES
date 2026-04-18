@@ -70,7 +70,8 @@ describe('GET /api/dokumentasi', () => {
 
   it('maps _count.photos to totalFoto', async () => {
     const { db } = await import('@/lib/db')
-    vi.mocked(db.dokumentasiEvent.findMany).mockResolvedValue([{ ...mockEvent, _count: { photos: 5 } }])
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    vi.mocked(db.dokumentasiEvent.findMany).mockResolvedValue([{ ...mockEvent, _count: { photos: 5 } }] as any)
 
     const { GET } = await import('@/app/api/dokumentasi/route')
     const res = await GET()
@@ -125,10 +126,11 @@ describe('GET /api/dokumentasi/[id]', () => {
 
   it('returns single event with photos', async () => {
     const { db } = await import('@/lib/db')
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
     vi.mocked(db.dokumentasiEvent.findUnique).mockResolvedValue({
       ...mockEvent,
       photos: [mockPhoto],
-    })
+    } as any)
 
     const { GET } = await import('@/app/api/dokumentasi/[id]/route')
     const req = new NextRequest('http://localhost:3000/api/dokumentasi/event-1')
@@ -159,7 +161,8 @@ describe('DELETE /api/dokumentasi/[id]', () => {
 
   it('returns 200 with success message', async () => {
     const { db } = await import('@/lib/db')
-    vi.mocked(db.dokumentasiEvent.findUnique).mockResolvedValue({ ...mockEvent, photos: [] })
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    vi.mocked(db.dokumentasiEvent.findUnique).mockResolvedValue({ ...mockEvent, photos: [] } as any)
     vi.mocked(db.dokumentasiEvent.delete).mockResolvedValue(mockEvent)
 
     const { DELETE } = await import('@/app/api/dokumentasi/[id]/route')

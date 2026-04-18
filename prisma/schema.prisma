@@ -21,8 +21,6 @@ model User {
   roles           UserRole[]
   createdAt       DateTime          @default(now())
   updatedAt       DateTime          @updatedAt
-  multimediaMember MultimediaMember?
-
   @@map("users")
 }
 
@@ -91,17 +89,17 @@ model DokumentasiPhoto {
   @@map("dokumentasi_photo")
 }
 
-// --- Multimedia Team Scheduler ---
+// --- Multimedia Scheduler ---
 
 enum ScheduleStatus {
   DRAFT
   COLLECTING
-  GENERATING
+  CLOSED
   REVIEW
   PUBLISHED
 }
 
-enum MultimediaRole {
+enum MultimediaServiceRole {
   SLD
   SND
   STR
@@ -111,19 +109,16 @@ enum MultimediaRole {
 enum AvailabilityStatus {
   AVAILABLE
   UNAVAILABLE
-  MAYBE
 }
 
 model MultimediaMember {
-  id             String              @id @default(cuid())
-  userId         String?             @unique
-  user           User?               @relation(fields: [userId], references: [id])
+  id             String                  @id @default(cuid())
   nama           String
   phone          String?
-  roles          MultimediaRole[]
-  isActive       Boolean             @default(true)
-  createdAt      DateTime            @default(now())
-  updatedAt      DateTime            @updatedAt
+  serviceRoles   MultimediaServiceRole[]
+  isActive       Boolean                 @default(true)
+  createdAt      DateTime                @default(now())
+  updatedAt      DateTime                @updatedAt
   availability   MemberAvailability[]
   assignments    ScheduleAssignment[]
 
@@ -131,65 +126,73 @@ model MultimediaMember {
 }
 
 model SchedulePeriod {
-  id                   String            @id @default(cuid())
-  nama                 String
-  bulan                Int
-  tahun                Int
-  status               ScheduleStatus    @default(DRAFT)
-  deadlineAvailability DateTime?
-  publishedAt          DateTime?
-  createdAt            DateTime          @default(now())
-  updatedAt            DateTime          @updatedAt
-  events               ScheduleEvent[]
-  notes                String?
+  id                    String            @id @default(cuid())
+  nama                  String
+  bulan                 Int
+  tahun                 Int
+  status                ScheduleStatus    @default(DRAFT)
+  formToken             String?           @unique
+  formEnabled           Boolean           @default(false)
+  deadlineAvailability  DateTime?
+  publishedAt           DateTime?
+  notes                 String?
+  createdAt             DateTime          @default(now())
+  updatedAt             DateTime          @updatedAt
+  events                ScheduleEvent[]
 
   @@unique([bulan, tahun])
   @@map("schedule_periods")
 }
 
 model ScheduleEvent {
-  id             String              @id @default(cuid())
-  periodId       String
-  period         SchedulePeriod      @relation(fields: [periodId], references: [id], onDelete: Cascade)
-  namaEvent      String
-  tanggal        DateTime
-  waktu          String
-  kategori       String
-  keterangan     String?
-  isLive         Boolean             @default(false)
-  requiredRoles  MultimediaRole[]
-  assignments    ScheduleAssignment[]
-  availability   MemberAvailability[]
-  order          Int                 @default(0)
+  id              String                  @id @default(cuid())
+  periodId        String
+  period          SchedulePeriod          @relation(fields: [periodId], references: [id], onDelete: Cascade)
+  namaEvent       String
+  tanggal         DateTime
+  waktu           String
+  kategori        String
+  keterangan      String?
+  isLive          Boolean                 @default(false)
+  requiredRoles   MultimediaServiceRole[]
+  order           Int                     @default(0)
+  assignments     ScheduleAssignment[]
+  availability    MemberAvailability[]
 
   @@map("schedule_events")
 }
 
 model MemberAvailability {
-  id         String              @id @default(cuid())
-  memberId   String
-  member     MultimediaMember    @relation(fields: [memberId], references: [id], onDelete: Cascade)
-  eventId    String
-  event      ScheduleEvent       @relation(fields: [eventId], references: [id], onDelete: Cascade)
-  status     AvailabilityStatus  @default(AVAILABLE)
-  note       String?
-  createdAt  DateTime            @default(now())
-  updatedAt  DateTime            @updatedAt
+  id          String              @id @default(cuid())
+  memberId    String
+  member      MultimediaMember    @relation(fields: [memberId], references: [id], onDelete: Cascade)
+  eventId     String
+  event       ScheduleEvent       @relation(fields: [eventId], references: [id], onDelete: Cascade)
+  status      AvailabilityStatus  @default(AVAILABLE)
+  submittedAt DateTime            @default(now())
+  updatedAt   DateTime            @updatedAt
 
   @@unique([memberId, eventId])
   @@map("member_availability")
 }
 
 model ScheduleAssignment {
-  id         String              @id @default(cuid())
+  id         String                  @id @default(cuid())
   eventId    String
-  event      ScheduleEvent       @relation(fields: [eventId], references: [id], onDelete: Cascade)
+  event      ScheduleEvent           @relation(fields: [eventId], references: [id], onDelete: Cascade)
   memberId   String
-  member     MultimediaMember    @relation(fields: [memberId], references: [id], onDelete: Cascade)
-  role       MultimediaRole
-  isManual   Boolean             @default(false)
-  createdAt  DateTime            @default(now())
+  member     MultimediaMember        @relation(fields: [memberId], references: [id], onDelete: Cascade)
+  role       MultimediaServiceRole
+  isManual   Boolean                 @default(false)
+  createdAt  DateTime                @default(now())
 
   @@unique([eventId, memberId])
   @@map("schedule_assignments")
+}
+
+model AppSettings {
+  key   String @id
+  value String
+
+  @@map("app_settings")
 }

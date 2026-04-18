@@ -14,36 +14,58 @@ import {
   DialogTitle,
   DialogFooter,
 } from "@/components/ui/dialog"
-import { Loader2, Plus, Pencil, UserX, Link2 } from "lucide-react"
+import { 
+  Loader2, 
+  Plus, 
+  Pencil, 
+  UserX, 
+  Link2, 
+  Users as UsersIcon, 
+  Phone, 
+  Mail, 
+  MoreVertical,
+  CheckCircle2,
+  AlertCircle,
+  ShieldCheck
+} from "lucide-react"
 import { cn } from "@/lib/utils"
 import { useAuth } from "@/components/providers/AuthProvider"
+import { Badge } from "@/components/ui/badge"
+import { Card, CardContent, CardDescription, CardHeader, CardTitle, CardFooter } from "@/components/ui/card"
+import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuTrigger,
+} from "@/components/ui/dropdown-menu"
+import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar"
 
-type MultimediaRole = "SLD" | "SND" | "STR" | "CAM"
+type MultimediaServiceRole = "SLD" | "SND" | "STR" | "CAM"
 
 type Member = {
   id: string
   nama: string
   phone: string | null
-  roles: MultimediaRole[]
+  serviceRoles: MultimediaServiceRole[]
   isActive: boolean
   userId: string | null
 }
 
-const ALL_ROLES: MultimediaRole[] = ["SLD", "SND", "STR", "CAM"]
-const ROLE_LABELS: Record<MultimediaRole, string> = {
+const ALL_ROLES: MultimediaServiceRole[] = ["SLD", "SND", "STR", "CAM"]
+const ROLE_LABELS: Record<MultimediaServiceRole, string> = {
   SLD: "Operator Slide",
   SND: "Operator Sound",
   STR: "Streamer",
   CAM: "Cameraman",
 }
-const ROLE_CLASS: Record<MultimediaRole, string> = {
-  SLD: "bg-slate-100 text-slate-700",
-  SND: "bg-blue-100 text-blue-700",
-  STR: "bg-red-100 text-red-700",
-  CAM: "bg-green-100 text-green-700",
+const ROLE_CLASS: Record<MultimediaServiceRole, string> = {
+  SLD: "bg-blue-500/10 text-blue-500 border-blue-500/20",
+  SND: "bg-green-500/10 text-green-600 border-green-500/20",
+  STR: "bg-purple-500/10 text-purple-600 border-purple-500/20",
+  CAM: "bg-orange-500/10 text-orange-600 border-orange-500/20",
 }
 
-const defaultForm = { nama: "", phone: "", roles: [] as MultimediaRole[], userId: "" }
+const defaultForm = { nama: "", phone: "", serviceRoles: [] as MultimediaServiceRole[], userId: "" }
 
 export default function MultimediaMembersPage() {
   const router = useRouter()
@@ -95,7 +117,7 @@ export default function MultimediaMembersPage() {
 
   function openEdit(member: Member) {
     setEditingMember(member)
-    setForm({ nama: member.nama, phone: member.phone ?? "", roles: [...member.roles], userId: member.userId ?? "" })
+    setForm({ nama: member.nama, phone: member.phone ?? "", serviceRoles: [...member.serviceRoles], userId: member.userId ?? "" })
     setDialogOpen(true)
   }
 
@@ -105,23 +127,23 @@ export default function MultimediaMembersPage() {
     setLinkDialogOpen(true)
   }
 
-  function toggleRole(role: MultimediaRole) {
+  function toggleRole(role: MultimediaServiceRole) {
     setForm(f => ({
       ...f,
-      roles: f.roles.includes(role) ? f.roles.filter(r => r !== role) : [...f.roles, role],
+      serviceRoles: f.serviceRoles.includes(role) ? f.serviceRoles.filter(r => r !== role) : [...f.serviceRoles, role],
     }))
   }
 
   async function handleSave(e: React.FormEvent) {
     e.preventDefault()
-    if (form.roles.length === 0) { toast.error("Pilih minimal 1 role"); return }
+    if (form.serviceRoles.length === 0) { toast.error("Pilih minimal 1 role"); return }
 
     setSaving(true)
     try {
       const body: Record<string, unknown> = {
         nama: form.nama,
         phone: form.phone || undefined,
-        roles: form.roles,
+        serviceRoles: form.serviceRoles,
       }
       const url = editingMember ? `/api/scheduler/members/${editingMember.id}` : "/api/scheduler/members"
       const method = editingMember ? "PATCH" : "POST"
@@ -187,8 +209,8 @@ export default function MultimediaMembersPage() {
 
   if (authLoading) {
     return (
-      <div className="flex items-center justify-center h-64">
-        <Loader2 className="h-8 w-8 animate-spin text-muted-foreground" />
+      <div className="flex items-center justify-center h-96">
+        <Loader2 className="h-10 w-10 animate-spin text-primary/40" />
       </div>
     )
   }
@@ -196,113 +218,142 @@ export default function MultimediaMembersPage() {
   if (!isMultimediaAdmin) return null
 
   return (
-    <div className="space-y-6">
-      <div className="flex items-start justify-between">
-        <PageHeader
-          title="Anggota Tim Multimedia"
-          description="Kelola daftar anggota dan kemampuan role mereka"
-        />
-        <Button onClick={openAdd}>
-          <Plus className="mr-2 h-4 w-4" />
+    <div className="space-y-8 max-w-7xl mx-auto pb-20">
+      <div className="flex flex-col sm:flex-row sm:items-end justify-between gap-6">
+        <div className="space-y-1">
+          <h1 className="text-3xl font-bold tracking-tight bg-gradient-to-br from-foreground to-foreground/60 bg-clip-text">
+            Anggota Tim Multimedia
+          </h1>
+          <p className="text-muted-foreground">Kelola daftar personil dan peran spesialisasi mereka.</p>
+        </div>
+        <Button 
+          className="bg-primary hover:bg-primary/90 shadow-lg shadow-primary/20 h-11 px-6 font-semibold transition-all hover:scale-[1.02] active:scale-[0.98]" 
+          onClick={openAdd}
+        >
+          <Plus className="mr-2 h-5 w-5" />
           Tambah Anggota
         </Button>
       </div>
 
       {loading ? (
-        <div className="flex items-center justify-center h-48">
-          <Loader2 className="h-6 w-6 animate-spin text-muted-foreground" />
+        <div className="grid gap-6 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4">
+          {Array.from({ length: 4 }).map((_, i) => (
+            <div
+              key={i}
+              className="rounded-2xl border border-border/40 bg-background/50 p-6 shadow-sm animate-pulse h-64"
+            />
+          ))}
         </div>
       ) : members.length === 0 ? (
-        <div className="text-center py-16 border rounded-lg text-muted-foreground">
-          <p>Belum ada anggota terdaftar.</p>
-          <Button variant="outline" className="mt-4" onClick={openAdd}>
-            <Plus className="mr-2 h-4 w-4" />
-            Tambah Anggota Pertama
-          </Button>
-        </div>
+        <Card className="border-dashed bg-muted/30">
+          <CardContent className="flex flex-col items-center justify-center py-24 text-center">
+            <div className="h-20 w-20 rounded-full bg-background flex items-center justify-center mb-6 ring-1 ring-border shadow-sm">
+              <UsersIcon className="h-10 w-10 text-muted-foreground/30" />
+            </div>
+            <h3 className="text-xl font-bold">Belum ada anggota tim</h3>
+            <p className="text-muted-foreground max-w-sm mt-2 mb-8 text-sm">
+              Mulai membangun tim multimedia dengan menambahkan anggota dan menentukan peran mereka.
+            </p>
+            <Button onClick={openAdd} className="shadow-lg shadow-primary/10">
+              <Plus className="mr-2 h-4 w-4" />
+              Tambah Anggota Pertama
+            </Button>
+          </CardContent>
+        </Card>
       ) : (
-        <div className="border rounded-lg overflow-hidden">
-          <table className="w-full text-sm">
-            <thead>
-              <tr className="bg-muted/50 border-b">
-                <th className="text-left px-4 py-3 font-medium">Nama</th>
-                <th className="text-left px-4 py-3 font-medium">No. HP</th>
-                <th className="text-left px-4 py-3 font-medium">Role</th>
-                <th className="text-left px-4 py-3 font-medium">Akun</th>
-                <th className="px-4 py-3 w-28" />
-              </tr>
-            </thead>
-            <tbody>
-              {members.map((m, i) => (
-                <tr key={m.id} className={cn("border-b last:border-0", i % 2 === 1 && "bg-muted/20")}>
-                  <td className="px-4 py-3 font-medium">{m.nama}</td>
-                  <td className="px-4 py-3 text-muted-foreground">
+        <div className="grid gap-6 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4">
+          {members.map((m) => (
+            <Card 
+              key={m.id}
+              className="group relative overflow-hidden border-border/50 bg-background/40 hover:bg-background transition-all hover:shadow-xl hover:shadow-primary/5 hover:-translate-y-1"
+            >
+              <CardHeader className="p-6 pb-4">
+                <div className="flex items-start justify-between gap-4">
+                  <Avatar className="h-14 w-14 border-2 border-background shadow-sm group-hover:scale-105 transition-transform">
+                    <AvatarFallback className="bg-primary/5 text-primary font-bold text-lg">
+                      {m.nama.split(" ").map(n => n[0]).join("").substring(0, 2).toUpperCase()}
+                    </AvatarFallback>
+                  </Avatar>
+                  
+                  <DropdownMenu>
+                    <DropdownMenuTrigger asChild>
+                      <Button variant="ghost" size="icon" className="h-8 w-8 rounded-full -mr-2 opacity-0 group-hover:opacity-100 transition-opacity">
+                        <MoreVertical className="h-4 w-4" />
+                      </Button>
+                    </DropdownMenuTrigger>
+                    <DropdownMenuContent align="end" className="w-48">
+                      <DropdownMenuItem onClick={() => openEdit(m)}>
+                        <Pencil className="mr-2 h-4 w-4" />
+                        Edit Profil
+                      </DropdownMenuItem>
+                      <DropdownMenuItem onClick={() => openLinkUser(m)}>
+                        <Link2 className="mr-2 h-4 w-4" />
+                        Tautkan Akun
+                      </DropdownMenuItem>
+                      <DropdownMenuItem className="text-destructive" onClick={() => handleDeactivate(m)}>
+                        <UserX className="mr-2 h-4 w-4" />
+                        Nonaktifkan
+                      </DropdownMenuItem>
+                    </DropdownMenuContent>
+                  </DropdownMenu>
+                </div>
+                
+                <div className="pt-4 space-y-1">
+                  <CardTitle className="text-base font-bold flex items-center gap-1.5 truncate">
+                    {m.nama}
+                    {m.userId && (
+                      <div title="Akun Terhubung">
+                        <ShieldCheck className="h-3.5 w-3.5 text-emerald-500" />
+                      </div>
+                    )}
+                  </CardTitle>
+                  <CardDescription className="text-xs truncate flex items-center gap-1.5">
                     {m.phone ? (
-                      <a
-                        href={`https://wa.me/${m.phone.replace(/\D/g, "")}`}
-                        target="_blank"
-                        rel="noreferrer"
-                        className="hover:underline text-blue-600"
-                      >
+                      <span className="flex items-center gap-1 hover:text-primary transition-colors cursor-pointer" onClick={() => window.open(`https://wa.me/${m.phone?.replace(/\D/g, "")}`, "_blank")}>
+                        <Phone className="h-3 w-3" />
                         {m.phone}
-                      </a>
+                      </span>
                     ) : (
-                      <span className="text-muted-foreground/50">—</span>
+                      <span className="opacity-50 italic">No phone available</span>
                     )}
-                  </td>
-                  <td className="px-4 py-3">
-                    <div className="flex gap-1.5 flex-wrap">
-                      {m.roles.map(r => (
-                        <span
-                          key={r}
-                          title={ROLE_LABELS[r]}
-                          className={cn("text-xs rounded px-1.5 py-0.5 font-mono", ROLE_CLASS[r])}
-                        >
-                          {r}
-                        </span>
-                      ))}
-                    </div>
-                  </td>
-                  <td className="px-4 py-3">
-                    {m.userId ? (
-                      <span className="text-xs text-green-600 font-mono">Terhubung</span>
-                    ) : (
-                      <span className="text-xs text-muted-foreground/50">—</span>
+                  </CardDescription>
+                </div>
+              </CardHeader>
+              
+              <CardContent className="p-6 pt-0 space-y-4">
+                <div className="space-y-2">
+                  <p className="text-[10px] font-bold uppercase tracking-widest text-muted-foreground/60">Keahlian Role</p>
+                  <div className="flex flex-wrap gap-1.5">
+                    {m.serviceRoles.map(r => (
+                      <Badge
+                        key={r}
+                        variant="outline"
+                        className={cn("text-[9px] font-bold uppercase tracking-tighter px-2 py-0 border", ROLE_CLASS[r])}
+                      >
+                        {r}
+                      </Badge>
+                    ))}
+                    {m.serviceRoles.length === 0 && (
+                      <span className="text-[10px] italic text-muted-foreground">No roles assigned</span>
                     )}
-                  </td>
-                  <td className="px-4 py-3">
-                    <div className="flex items-center justify-end gap-1">
-                      <Button
-                        size="icon"
-                        variant="ghost"
-                        className="h-7 w-7 text-muted-foreground hover:text-foreground"
-                        title="Tautkan akun pengguna"
-                        onClick={() => openLinkUser(m)}
-                      >
-                        <Link2 className="h-3.5 w-3.5" />
-                      </Button>
-                      <Button
-                        size="icon"
-                        variant="ghost"
-                        className="h-7 w-7 text-muted-foreground hover:text-foreground"
-                        onClick={() => openEdit(m)}
-                      >
-                        <Pencil className="h-3.5 w-3.5" />
-                      </Button>
-                      <Button
-                        size="icon"
-                        variant="ghost"
-                        className="h-7 w-7 text-muted-foreground hover:text-destructive"
-                        onClick={() => handleDeactivate(m)}
-                      >
-                        <UserX className="h-3.5 w-3.5" />
-                      </Button>
-                    </div>
-                  </td>
-                </tr>
-              ))}
-            </tbody>
-          </table>
+                  </div>
+                </div>
+              </CardContent>
+              
+              <CardFooter className="p-0 border-t border-border/40 overflow-hidden">
+                <Button 
+                  variant="ghost" 
+                  className="w-full h-10 rounded-none text-[11px] font-bold uppercase tracking-widest text-muted-foreground hover:text-primary hover:bg-primary/5 transition-all"
+                  onClick={() => openEdit(m)}
+                >
+                  Lihat Riwayat Tugas
+                </Button>
+              </CardFooter>
+              
+              {/* Decorative background element */}
+              <div className="absolute -right-4 -bottom-4 h-24 w-24 rounded-full bg-primary/5 blur-2xl group-hover:bg-primary/10 transition-colors" />
+            </Card>
+          ))}
         </div>
       )}
 
@@ -339,7 +390,7 @@ export default function MultimediaMembersPage() {
                   <label key={role} className="flex items-center gap-3 cursor-pointer">
                     <input
                       type="checkbox"
-                      checked={form.roles.includes(role)}
+                      checked={form.serviceRoles.includes(role)}
                       onChange={() => toggleRole(role)}
                       className="rounded"
                     />
